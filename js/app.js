@@ -3,7 +3,7 @@ import { createClient } from
 
 
 // =========================================================
-// SUPABASE CONNECTION
+// SUPABASE
 // =========================================================
 
 const SUPABASE_URL =
@@ -44,7 +44,7 @@ let authMode = "signup";
 
 
 // =========================================================
-// OPEN / CLOSE AUTH MODAL
+// OPEN AUTH MODAL
 // =========================================================
 
 function openAuth(mode) {
@@ -88,7 +88,6 @@ function openAuth(mode) {
 
     switchAuth.textContent =
       "Need an account? Create one";
-
   }
 }
 
@@ -99,23 +98,137 @@ function closeAuth() {
 
 
 // =========================================================
-// BUTTON EVENTS
+// ACCOUNT MODAL
+// =========================================================
+
+async function openAccount() {
+
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    openAuth("login");
+    return;
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  authModal.classList.remove("hidden");
+
+  authTitle.textContent = "Your Account";
+
+  authDescription.textContent =
+    "Manage your Kelowna Development account.";
+
+  nameField.style.display = "none";
+
+  authForm.style.display = "none";
+
+  switchAuth.style.display = "none";
+
+  if (profile) {
+
+    authMessage.innerHTML = `
+      <div style="margin-top: 25px; padding: 20px; background: #f5f7f9; border-radius: 10px;">
+
+        <p>
+          <strong>Display Name</strong><br>
+          ${escapeHtml(profile.display_name || "Not set")}
+        </p>
+
+        <p>
+          <strong>Email</strong><br>
+          ${escapeHtml(user.email || "")}
+        </p>
+
+        <p>
+          <strong>Account Status</strong><br>
+          ${
+            profile.is_verified
+              ? "✓ Verified"
+              : "Not yet verified"
+          }
+        </p>
+
+      </div>
+    `;
+
+  } else {
+
+    authMessage.textContent =
+      "Your profile could not be loaded.";
+  }
+}
+
+
+// =========================================================
+// RESET AUTH MODAL
+// =========================================================
+
+function resetAuthModal() {
+
+  authForm.style.display = "block";
+
+  switchAuth.style.display = "block";
+
+  nameField.style.display = "block";
+
+}
+
+
+// =========================================================
+// NAVIGATION
 // =========================================================
 
 loginLink.addEventListener("click", function(event) {
 
   event.preventDefault();
 
-  openAuth("login");
+  supabase.auth.getUser().then(function(result) {
+
+    if (result.data.user) {
+
+      openAccount();
+
+    } else {
+
+      resetAuthModal();
+
+      openAuth("login");
+
+    }
+
+  });
 
 });
 
 
-signupLink.addEventListener("click", function(event) {
+signupLink.addEventListener("click", async function(event) {
 
   event.preventDefault();
 
-  openAuth("signup");
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (user) {
+
+    await supabase.auth.signOut();
+
+    updateNavigation();
+
+  } else {
+
+    resetAuthModal();
+
+    openAuth("signup");
+
+  }
 
 });
 
@@ -124,20 +237,36 @@ heroSignup.addEventListener("click", function(event) {
 
   event.preventDefault();
 
+  resetAuthModal();
+
   openAuth("signup");
 
 });
 
 
-closeModal.addEventListener("click", closeAuth);
+closeModal.addEventListener("click", function() {
+
+  closeAuth();
+
+  resetAuthModal();
+
+});
 
 
 document
   .querySelector(".modal-background")
-  .addEventListener("click", closeAuth);
+  .addEventListener("click", function() {
+
+    closeAuth();
+
+    resetAuthModal();
+
+  });
 
 
 switchAuth.addEventListener("click", function() {
+
+  resetAuthModal();
 
   if (authMode === "signup") {
 
@@ -221,6 +350,8 @@ authForm.addEventListener("submit", async function(event) {
 
         closeAuth();
 
+        resetAuthModal();
+
         updateNavigation();
 
       }, 700);
@@ -240,7 +371,7 @@ authForm.addEventListener("submit", async function(event) {
 
 
 // =========================================================
-// CHECK CURRENT LOGIN
+// NAVIGATION STATE
 // =========================================================
 
 async function updateNavigation() {
@@ -258,8 +389,6 @@ async function updateNavigation() {
 
     signupLink.classList.remove("button");
 
-    signupLink.style.cursor = "pointer";
-
   } else {
 
     loginLink.textContent = "Log In";
@@ -271,29 +400,6 @@ async function updateNavigation() {
   }
 
 }
-
-
-// =========================================================
-// LOG OUT
-// =========================================================
-
-signupLink.addEventListener("click", async function(event) {
-
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return;
-  }
-
-  event.preventDefault();
-
-  await supabase.auth.signOut();
-
-  updateNavigation();
-
-});
 
 
 // =========================================================
@@ -385,7 +491,7 @@ async function loadDevelopments() {
 
 
 // =========================================================
-// BASIC HTML ESCAPING
+// HTML ESCAPING
 // =========================================================
 
 function escapeHtml(value) {
@@ -406,7 +512,7 @@ function escapeHtml(value) {
 
 
 // =========================================================
-// START APPLICATION
+// START
 // =========================================================
 
 updateNavigation();
