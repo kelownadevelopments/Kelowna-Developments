@@ -381,23 +381,23 @@ async function updateNavigation() {
   } = await supabase.auth.getUser();
 
 
-  if (user) {
+if (user) {
 
-    loginLink.textContent = "Account";
+  loginLink.textContent = "Account";
 
-    signupLink.textContent = "Log Out";
+  signupLink.textContent = "Log Out";
 
-    signupLink.classList.remove("button");
+  signupLink.classList.remove("button");
 
-  } else {
+} else {
 
-    loginLink.textContent = "Log In";
+  loginLink.textContent = "Log In";
 
-    signupLink.textContent = "Create Account";
+  signupLink.textContent = "Create Account";
 
-    signupLink.classList.add("button");
+  signupLink.classList.add("button");
 
-  }
+}
 
 }
 
