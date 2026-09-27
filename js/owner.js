@@ -149,6 +149,34 @@ async function loadUsers() {
                     : "Active"
                 }
               </p>
+
+              <div class="user-actions">
+
+                ${
+                  profile.is_verified
+                    ? `
+                      <button
+                        type="button"
+                        class="secondary verify-button"
+                        data-user-id="${escapeHtml(profile.id)}"
+                        data-action="unverify"
+                      >
+                        Unverify
+                      </button>
+                    `
+                    : `
+                      <button
+                        type="button"
+                        class="button verify-button"
+                        data-user-id="${escapeHtml(profile.id)}"
+                        data-action="verify"
+                      >
+                        Verify
+                      </button>
+                    `
+                }
+
+              </div>
             </div>
 
           </div>
@@ -157,6 +185,44 @@ async function loadUsers() {
       `
     )
     .join("");
+
+  document.querySelectorAll(".verify-button").forEach((button) => {
+    button.addEventListener("click", () => {
+      updateVerification(
+        button.dataset.userId,
+        button.dataset.action === "verify"
+      );
+    });
+  });
+}
+
+async function updateVerification(userId, shouldVerify) {
+  const action = shouldVerify ? "verify" : "unverify";
+
+  const confirmed = window.confirm(
+    `Are you sure you want to ${action} this user?`
+  );
+
+  if (!confirmed) return;
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      is_verified: shouldVerify
+    })
+    .eq("id", userId);
+
+  if (error) {
+    console.error(error);
+
+    alert(
+      `Could not ${action} this user: ${error.message}`
+    );
+
+    return;
+  }
+
+  await loadUsers();
 }
 
 function escapeHtml(value) {
