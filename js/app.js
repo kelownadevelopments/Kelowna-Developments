@@ -1,14 +1,7 @@
 ```javascript
-import { createClient } from
-  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-
-// =========================================================
-// SUPABASE
-// =========================================================
-
-const SUPABASE_URL =
-  "https://diljkqsrqdktzyumrqkg.supabase.co";
+const SUPABASE_URL = "https://diljkqsrqdktzyumrqkg.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_JjzaLH_H48oLIvuRz9F5jg_yyC5xxII";
@@ -25,8 +18,7 @@ const supabase = createClient(
 
 const authModal = document.getElementById("authModal");
 const closeModal = document.getElementById("closeModal");
-const modalBackground =
-  document.querySelector(".modal-background");
+const modalBackground = document.querySelector(".modal-background");
 
 const loginLink = document.getElementById("loginLink");
 const signupLink = document.getElementById("signupLink");
@@ -34,20 +26,13 @@ const heroSignup = document.getElementById("heroSignup");
 
 const authForm = document.getElementById("authForm");
 const authTitle = document.getElementById("authTitle");
-const authDescription =
-  document.getElementById("authDescription");
-const authButtonText =
-  document.getElementById("authButtonText");
-const authMessage =
-  document.getElementById("authMessage");
+const authDescription = document.getElementById("authDescription");
+const authButtonText = document.getElementById("authButtonText");
+const authMessage = document.getElementById("authMessage");
 
-const nameField =
-  document.getElementById("nameField");
-const displayName =
-  document.getElementById("displayName");
-
-const switchAuth =
-  document.getElementById("switchAuth");
+const nameField = document.getElementById("nameField");
+const displayName = document.getElementById("displayName");
+const switchAuth = document.getElementById("switchAuth");
 
 const developmentList =
   document.getElementById("developmentList");
@@ -66,7 +51,7 @@ function openModal() {
 }
 
 
-function closeAuthModal() {
+function closeAuth() {
   if (authModal) {
     authModal.classList.add("hidden");
   }
@@ -74,7 +59,7 @@ function closeAuthModal() {
 
 
 // =========================================================
-// LOGIN / SIGNUP MODAL
+// AUTH SCREEN
 // =========================================================
 
 function openAuth(mode) {
@@ -83,56 +68,42 @@ function openAuth(mode) {
 
   openModal();
 
-  if (authMessage) {
-    authMessage.textContent = "";
-  }
+  authMessage.textContent = "";
 
-  if (authForm) {
-    authForm.style.display = "block";
-    authForm.reset();
-  }
+  authForm.style.display = "block";
+  switchAuth.style.display = "block";
 
-  if (switchAuth) {
-    switchAuth.style.display = "block";
-  }
+  authForm.reset();
 
 
   if (mode === "signup") {
 
-    authTitle.textContent =
-      "Create your account";
+    authTitle.textContent = "Create your account";
 
     authDescription.textContent =
       "Create an account to participate in the Kelowna Developments community.";
 
-    authButtonText.textContent =
-      "Create Account";
+    authButtonText.textContent = "Create Account";
 
-    nameField.style.display =
-      "block";
+    nameField.style.display = "block";
 
-    displayName.required =
-      true;
+    displayName.required = true;
 
     switchAuth.textContent =
       "Already have an account? Log in";
 
   } else {
 
-    authTitle.textContent =
-      "Log in";
+    authTitle.textContent = "Log in";
 
     authDescription.textContent =
       "Log in to your Kelowna Developments account.";
 
-    authButtonText.textContent =
-      "Log In";
+    authButtonText.textContent = "Log In";
 
-    nameField.style.display =
-      "none";
+    nameField.style.display = "none";
 
-    displayName.required =
-      false;
+    displayName.required = false;
 
     switchAuth.textContent =
       "Need an account? Create one";
@@ -147,13 +118,14 @@ function openAuth(mode) {
 
 async function openAccount() {
 
-  const {
-    data: { user },
-    error
-  } = await supabase.auth.getUser();
+  const result =
+    await supabase.auth.getUser();
+
+  const user =
+    result.data.user;
 
 
-  if (error || !user) {
+  if (!user) {
 
     openAuth("login");
 
@@ -162,98 +134,136 @@ async function openAccount() {
   }
 
 
-  const {
-    data: profile
-  } = await supabase
-
-    .from("profiles")
-
-    .select("*")
-
-    .eq("id", user.id)
-
-    .single();
+  const profileResult =
+    await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
 
 
-  const {
-    data: roleData
-  } = await supabase
+  const profile =
+    profileResult.data;
 
-    .from("user_roles")
 
-    .select("role")
-
-    .eq("user_id", user.id)
-
-    .single();
+  const roleResult =
+    await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .single();
 
 
   const role =
-    roleData?.role || "user";
+    roleResult.data?.role || "user";
 
 
   authTitle.textContent =
     "Your Account";
 
+
   authDescription.textContent =
-    "Manage your Kelowna Developments account.";
+    "Your Kelowna Developments account information.";
 
 
   authForm.style.display =
     "none";
 
+
   switchAuth.style.display =
     "none";
+
 
   nameField.style.display =
     "none";
 
 
-  const verified =
-    profile?.is_verified
-      ? "✓ Verified"
-      : "Not yet verified";
+  authMessage.innerHTML = "";
 
 
-  const roleName =
-    role === "owner"
-      ? "Owner"
-      : role === "moderator"
-        ? "Moderator"
-        : "User";
+  const accountInfo =
+    document.createElement("div");
 
 
-  authMessage.innerHTML = `
+  accountInfo.className =
+    "account-panel";
 
-    <div class="account-panel">
 
-      <p>
-        <strong>Display Name</strong><br>
-        ${escapeHtml(
-          profile?.display_name || "Not set"
-        )}
-      </p>
+  const nameParagraph =
+    document.createElement("p");
 
-      <p>
-        <strong>Email</strong><br>
-        ${escapeHtml(
-          user.email || ""
-        )}
-      </p>
+  nameParagraph.innerHTML =
+    "<strong>Display Name</strong><br>" +
+    escapeHtml(
+      profile?.display_name || "Not set"
+    );
 
-      <p>
-        <strong>Account Status</strong><br>
-        ${verified}
-      </p>
 
-      <p>
-        <strong>Account Role</strong><br>
-        ${roleName}
-      </p>
+  const emailParagraph =
+    document.createElement("p");
 
-    </div>
+  emailParagraph.innerHTML =
+    "<strong>Email</strong><br>" +
+    escapeHtml(
+      user.email || ""
+    );
 
-  `;
+
+  const statusParagraph =
+    document.createElement("p");
+
+  statusParagraph.innerHTML =
+    "<strong>Account Status</strong><br>" +
+    (
+      profile?.is_verified
+        ? "✓ Verified"
+        : "Not yet verified"
+    );
+
+
+  const roleParagraph =
+    document.createElement("p");
+
+  let roleName =
+    "User";
+
+
+  if (role === "owner") {
+
+    roleName = "Owner";
+
+  } else if (role === "moderator") {
+
+    roleName = "Moderator";
+
+  }
+
+
+  roleParagraph.innerHTML =
+    "<strong>Account Role</strong><br>" +
+    roleName;
+
+
+  accountInfo.appendChild(
+    nameParagraph
+  );
+
+  accountInfo.appendChild(
+    emailParagraph
+  );
+
+  accountInfo.appendChild(
+    statusParagraph
+  );
+
+  accountInfo.appendChild(
+    roleParagraph
+  );
+
+
+  authMessage.appendChild(
+    accountInfo
+  );
 
 
   if (
@@ -264,14 +274,18 @@ async function openAccount() {
     const dashboardButton =
       document.createElement("button");
 
+
     dashboardButton.type =
       "button";
+
 
     dashboardButton.className =
       "button full-width";
 
+
     dashboardButton.style.marginTop =
       "16px";
+
 
     dashboardButton.textContent =
       role === "owner"
@@ -283,25 +297,8 @@ async function openAccount() {
       "click",
       function() {
 
-        authMessage.innerHTML = `
-
-          <div class="account-panel">
-
-            <h3>
-              ${
-                role === "owner"
-                  ? "Owner Dashboard"
-                  : "Moderator Dashboard"
-              }
-            </h3>
-
-            <p>
-              Your management tools will appear here.
-            </p>
-
-          </div>
-
-        `;
+        authMessage.textContent =
+          "The dashboard will be built here.";
 
       }
     );
@@ -313,9 +310,6 @@ async function openAccount() {
 
   }
 
-
-  openModal();
-
 }
 
 
@@ -325,14 +319,14 @@ async function openAccount() {
 
 async function updateNavigation() {
 
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
+  const result =
+    await supabase.auth.getUser();
+
+  const user =
+    result.data.user;
 
 
   if (user) {
-
-    // Header
 
     loginLink.textContent =
       "Account";
@@ -345,8 +339,6 @@ async function updateNavigation() {
     );
 
 
-    // Hero
-
     if (heroSignup) {
 
       heroSignup.style.display =
@@ -355,8 +347,6 @@ async function updateNavigation() {
     }
 
   } else {
-
-    // Header
 
     loginLink.textContent =
       "Log In";
@@ -368,8 +358,6 @@ async function updateNavigation() {
       "button"
     );
 
-
-    // Hero
 
     if (heroSignup) {
 
@@ -384,87 +372,76 @@ async function updateNavigation() {
 
 
 // =========================================================
-// LOGIN / ACCOUNT
+// LOG IN / ACCOUNT
 // =========================================================
 
-if (loginLink) {
+loginLink.addEventListener(
+  "click",
+  async function(event) {
 
-  loginLink.addEventListener(
-    "click",
-    async function(event) {
-
-      event.preventDefault();
+    event.preventDefault();
 
 
-      const {
-        data: { user }
-      } = await supabase.auth.getUser();
+    const result =
+      await supabase.auth.getUser();
 
 
-      if (user) {
+    if (result.data.user) {
 
-        await openAccount();
+      await openAccount();
 
-      } else {
+    } else {
 
-        openAuth("login");
-
-      }
+      openAuth("login");
 
     }
-  );
 
-}
+  }
+);
 
 
 // =========================================================
 // CREATE ACCOUNT / LOG OUT
 // =========================================================
 
-if (signupLink) {
+signupLink.addEventListener(
+  "click",
+  async function(event) {
 
-  signupLink.addEventListener(
-    "click",
-    async function(event) {
-
-      event.preventDefault();
+    event.preventDefault();
 
 
-      const {
-        data: { user }
-      } = await supabase.auth.getUser();
+    const result =
+      await supabase.auth.getUser();
 
 
-      if (user) {
+    if (result.data.user) {
 
-        const {
-          error
-        } = await supabase.auth.signOut();
-
-
-        if (error) {
-
-          console.error(error);
-
-          return;
-
-        }
+      const logoutResult =
+        await supabase.auth.signOut();
 
 
-        closeAuthModal();
+      if (logoutResult.error) {
 
-        await updateNavigation();
+        console.error(
+          logoutResult.error
+        );
 
-      } else {
-
-        openAuth("signup");
+        return;
 
       }
 
-    }
-  );
 
-}
+      await updateNavigation();
+
+    } else {
+
+      openAuth("signup");
+
+    }
+
+  }
+);
 
 
 // =========================================================
@@ -497,7 +474,7 @@ if (closeModal) {
     "click",
     function() {
 
-      closeAuthModal();
+      closeAuth();
 
     }
   );
@@ -511,7 +488,7 @@ if (modalBackground) {
     "click",
     function() {
 
-      closeAuthModal();
+      closeAuth();
 
     }
   );
@@ -523,74 +500,60 @@ if (modalBackground) {
 // SWITCH LOGIN / SIGNUP
 // =========================================================
 
-if (switchAuth) {
+switchAuth.addEventListener(
+  "click",
+  function() {
 
-  switchAuth.addEventListener(
-    "click",
-    function() {
+    if (authMode === "signup") {
+
+      openAuth("login");
+
+    } else {
+
+      openAuth("signup");
+
+    }
+
+  }
+);
+
+
+// =========================================================
+// AUTH FORM
+// =========================================================
+
+authForm.addEventListener(
+  "submit",
+  async function(event) {
+
+    event.preventDefault();
+
+
+    authMessage.textContent =
+      "Please wait...";
+
+
+    const email =
+      document.getElementById("email")
+        .value
+        .trim();
+
+
+    const password =
+      document.getElementById("password")
+        .value;
+
+
+    try {
 
       if (authMode === "signup") {
 
-        openAuth("login");
-
-      } else {
-
-        openAuth("signup");
-
-      }
-
-    }
-  );
-
-}
+        const name =
+          displayName.value.trim();
 
 
-// =========================================================
-// FORM SUBMISSION
-// =========================================================
-
-if (authForm) {
-
-  authForm.addEventListener(
-    "submit",
-    async function(event) {
-
-      event.preventDefault();
-
-
-      authMessage.textContent =
-        "Please wait...";
-
-
-      const email =
-        document
-          .getElementById("email")
-          .value
-          .trim();
-
-
-      const password =
-        document
-          .getElementById("password")
-          .value;
-
-
-      try {
-
-
-        // SIGN UP
-
-        if (authMode === "signup") {
-
-          const name =
-            displayName
-              .value
-              .trim();
-
-
-          const {
-            error
-          } = await supabase.auth.signUp({
+        const result =
+          await supabase.auth.signUp({
 
             email: email,
 
@@ -600,8 +563,7 @@ if (authForm) {
 
               data: {
 
-                display_name:
-                  name
+                display_name: name
 
               }
 
@@ -610,76 +572,69 @@ if (authForm) {
           });
 
 
-          if (error) {
-            throw error;
-          }
+        if (result.error) {
 
-
-          authMessage.textContent =
-            "Account created! Check your email to confirm your account.";
-
-
-          authForm.reset();
-
+          throw result.error;
 
         }
-
-
-        // LOG IN
-
-        else {
-
-          const {
-            error
-          } = await supabase.auth
-            .signInWithPassword({
-
-              email: email,
-
-              password: password
-
-            });
-
-
-          if (error) {
-            throw error;
-          }
-
-
-          authMessage.textContent =
-            "Logged in successfully.";
-
-
-          await updateNavigation();
-
-
-          setTimeout(
-            function() {
-
-              closeAuthModal();
-
-            },
-            700
-          );
-
-        }
-
-
-      } catch (error) {
-
-        console.error(error);
 
 
         authMessage.textContent =
-          error.message ||
-          "Something went wrong.";
+          "Account created! Check your email to confirm your account.";
+
+
+        authForm.reset();
+
+
+      } else {
+
+        const result =
+          await supabase.auth.signInWithPassword({
+
+            email: email,
+
+            password: password
+
+          });
+
+
+        if (result.error) {
+
+          throw result.error;
+
+        }
+
+
+        authMessage.textContent =
+          "Logged in successfully.";
+
+
+        await updateNavigation();
+
+
+        setTimeout(
+          function() {
+
+            closeAuth();
+
+          },
+          700
+        );
 
       }
 
-    }
-  );
+    } catch (error) {
 
-}
+      console.error(error);
+
+      authMessage.textContent =
+        error.message ||
+        "Something went wrong.";
+
+    }
+
+  }
+);
 
 
 // =========================================================
@@ -696,7 +651,7 @@ supabase.auth.onAuthStateChange(
 
 
 // =========================================================
-// DEVELOPMENTS
+// LOAD DEVELOPMENTS
 // =========================================================
 
 async function loadDevelopments() {
@@ -706,35 +661,22 @@ async function loadDevelopments() {
   }
 
 
-  const {
-    data,
-    error
-  } = await supabase
-
-    .from("developments")
-
-    .select("*")
-
-    .eq(
-      "is_approved",
-      true
-    )
-
-    .order(
-      "created_at",
-      {
+  const result =
+    await supabase
+      .from("developments")
+      .select("*")
+      .eq("is_approved", true)
+      .order("created_at", {
         ascending: false
-      }
-    )
-
-    .limit(3);
+      })
+      .limit(3);
 
 
-  if (error) {
+  if (result.error) {
 
     console.error(
       "Could not load developments:",
-      error
+      result.error
     );
 
     return;
@@ -742,8 +684,13 @@ async function loadDevelopments() {
   }
 
 
-  if (!data || data.length === 0) {
+  if (
+    !result.data ||
+    result.data.length === 0
+  ) {
+
     return;
+
   }
 
 
@@ -751,7 +698,7 @@ async function loadDevelopments() {
     "";
 
 
-  data.forEach(
+  result.data.forEach(
     function(development) {
 
       const card =
@@ -764,51 +711,70 @@ async function loadDevelopments() {
         "development-card";
 
 
-      card.innerHTML = `
+      const type =
+        document.createElement("p");
 
-        <p class="eyebrow">
+      type.className =
+        "eyebrow";
 
-          ${escapeHtml(
-            development.project_type ||
-            "DEVELOPMENT"
-          )}
+      type.textContent =
+        development.project_type ||
+        "DEVELOPMENT";
 
-        </p>
 
-        <h3>
+      const title =
+        document.createElement("h3");
 
-          ${escapeHtml(
-            development.title
-          )}
+      title.textContent =
+        development.title;
 
-        </h3>
 
-        <p>
+      const description =
+        document.createElement("p");
 
-          ${escapeHtml(
-            development.description ||
-            "No description available."
-          )}
+      description.textContent =
+        development.description ||
+        "No description available.";
 
-        </p>
 
-        ${
-          development.address
-            ? `
-              <p>
-                <strong>
-                  Location:
-                </strong>
+      card.appendChild(type);
 
-                ${escapeHtml(
-                  development.address
-                )}
-              </p>
-            `
-            : ""
-        }
+      card.appendChild(title);
 
-      `;
+      card.appendChild(description);
+
+
+      if (development.address) {
+
+        const location =
+          document.createElement("p");
+
+
+        const strong =
+          document.createElement("strong");
+
+
+        strong.textContent =
+          "Location: ";
+
+
+        location.appendChild(
+          strong
+        );
+
+
+        location.appendChild(
+          document.createTextNode(
+            development.address
+          )
+        );
+
+
+        card.appendChild(
+          location
+        );
+
+      }
 
 
       developmentList.appendChild(
@@ -828,31 +794,11 @@ async function loadDevelopments() {
 function escapeHtml(value) {
 
   return String(value)
-
-    .replaceAll(
-      "&",
-      "&amp;"
-    )
-
-    .replaceAll(
-      "<",
-      "&lt;"
-    )
-
-    .replaceAll(
-      ">",
-      "&gt;"
-    )
-
-    .replaceAll(
-      '"',
-      "&quot;"
-    )
-
-    .replaceAll(
-      "'",
-      "&#039;"
-    );
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 
 }
 
