@@ -55,7 +55,108 @@ async function loadOwnerDashboard() {
     `;
   }
 
-  console.log("Owner dashboard loaded successfully.");
+  await loadUsers();
+}
+
+async function loadUsers() {
+  const userList = document.getElementById("userList");
+  const userMessage = document.getElementById("userMessage");
+
+  if (!userList) return;
+
+  const { data: profiles, error } = await supabase
+    .from("profiles")
+    .select(`
+      id,
+      display_name,
+      avatar_url,
+      bio,
+      is_verified,
+      is_banned,
+      created_at
+    `)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+
+    if (userMessage) {
+      userMessage.textContent =
+        "Could not load users. Check the browser console for details.";
+    }
+
+    return;
+  }
+
+  if (userMessage) {
+    userMessage.textContent =
+      `${profiles.length} account${profiles.length === 1 ? "" : "s"} found.`;
+  }
+
+  if (profiles.length === 0) {
+    userList.innerHTML = `
+      <p>No users have registered yet.</p>
+    `;
+
+    return;
+  }
+
+  userList.innerHTML = profiles
+    .map(
+      (profile) => `
+        <div class="user-card">
+
+          <div class="user-card-info">
+
+            ${
+              profile.avatar_url
+                ? `
+                  <img
+                    src="${escapeHtml(profile.avatar_url)}"
+                    alt=""
+                    class="user-avatar"
+                  >
+                `
+                : `
+                  <div class="user-avatar user-avatar-placeholder">
+                    ?
+                  </div>
+                `
+            }
+
+            <div>
+              <h3>
+                ${escapeHtml(profile.display_name || "Unnamed User")}
+              </h3>
+
+              <p>
+                Joined:
+                ${new Date(profile.created_at).toLocaleDateString()}
+              </p>
+
+              <p>
+                ${
+                  profile.is_verified
+                    ? "✓ Verified"
+                    : "Not verified"
+                }
+
+                ·
+
+                ${
+                  profile.is_banned
+                    ? "🚫 Banned"
+                    : "Active"
+                }
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+      `
+    )
+    .join("");
 }
 
 function escapeHtml(value) {
