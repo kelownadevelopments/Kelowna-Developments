@@ -25,6 +25,8 @@ const supabase = createClient(
 
 const authModal = document.getElementById("authModal");
 const closeModal = document.getElementById("closeModal");
+const modalBackground =
+  document.querySelector(".modal-background");
 
 const loginLink = document.getElementById("loginLink");
 const signupLink = document.getElementById("signupLink");
@@ -32,14 +34,20 @@ const heroSignup = document.getElementById("heroSignup");
 
 const authForm = document.getElementById("authForm");
 const authTitle = document.getElementById("authTitle");
-const authDescription = document.getElementById("authDescription");
-const authButtonText = document.getElementById("authButtonText");
-const authMessage = document.getElementById("authMessage");
+const authDescription =
+  document.getElementById("authDescription");
+const authButtonText =
+  document.getElementById("authButtonText");
+const authMessage =
+  document.getElementById("authMessage");
 
-const nameField = document.getElementById("nameField");
-const displayName = document.getElementById("displayName");
+const nameField =
+  document.getElementById("nameField");
+const displayName =
+  document.getElementById("displayName");
 
-const switchAuth = document.getElementById("switchAuth");
+const switchAuth =
+  document.getElementById("switchAuth");
 
 const developmentList =
   document.getElementById("developmentList");
@@ -48,21 +56,45 @@ let authMode = "signup";
 
 
 // =========================================================
-// OPEN AUTH MODAL
+// MODAL
+// =========================================================
+
+function openModal() {
+  if (authModal) {
+    authModal.classList.remove("hidden");
+  }
+}
+
+
+function closeAuthModal() {
+  if (authModal) {
+    authModal.classList.add("hidden");
+  }
+}
+
+
+// =========================================================
+// LOGIN / SIGNUP MODAL
 // =========================================================
 
 function openAuth(mode) {
 
   authMode = mode;
 
-  authModal.classList.remove("hidden");
+  openModal();
 
-  authMessage.textContent = "";
+  if (authMessage) {
+    authMessage.textContent = "";
+  }
 
-  authForm.reset();
+  if (authForm) {
+    authForm.style.display = "block";
+    authForm.reset();
+  }
 
-  authForm.style.display = "block";
-  switchAuth.style.display = "block";
+  if (switchAuth) {
+    switchAuth.style.display = "block";
+  }
 
 
   if (mode === "signup") {
@@ -85,7 +117,6 @@ function openAuth(mode) {
     switchAuth.textContent =
       "Already have an account? Log in";
 
-
   } else {
 
     authTitle.textContent =
@@ -107,60 +138,22 @@ function openAuth(mode) {
       "Need an account? Create one";
 
   }
-
 }
 
 
 // =========================================================
-// CLOSE AUTH MODAL
-// =========================================================
-
-function closeAuth() {
-
-  authModal.classList.add("hidden");
-
-}
-
-
-// =========================================================
-// RESET AUTH MODAL
-// =========================================================
-
-function resetAuthModal() {
-
-  authForm.style.display =
-    "block";
-
-  switchAuth.style.display =
-    "block";
-
-  nameField.style.display =
-    "block";
-
-  displayName.required =
-    true;
-
-  authMessage.textContent =
-    "";
-
-}
-
-
-// =========================================================
-// OPEN ACCOUNT
+// ACCOUNT
 // =========================================================
 
 async function openAccount() {
 
   const {
     data: { user },
-    error: userError
+    error
   } = await supabase.auth.getUser();
 
 
-  if (userError || !user) {
-
-    resetAuthModal();
+  if (error || !user) {
 
     openAuth("login");
 
@@ -170,8 +163,7 @@ async function openAccount() {
 
 
   const {
-    data: profile,
-    error: profileError
+    data: profile
   } = await supabase
 
     .from("profiles")
@@ -183,19 +175,8 @@ async function openAccount() {
     .single();
 
 
-  if (profileError) {
-
-    console.error(
-      "Could not load profile:",
-      profileError
-    );
-
-  }
-
-
   const {
-    data: roleData,
-    error: roleError
+    data: roleData
   } = await supabase
 
     .from("user_roles")
@@ -207,26 +188,12 @@ async function openAccount() {
     .single();
 
 
-  if (roleError) {
-
-    console.error(
-      "Could not load role:",
-      roleError
-    );
-
-  }
-
-
   const role =
     roleData?.role || "user";
 
 
-  authModal.classList.remove("hidden");
-
-
   authTitle.textContent =
     "Your Account";
-
 
   authDescription.textContent =
     "Manage your Kelowna Developments account.";
@@ -235,123 +202,81 @@ async function openAccount() {
   authForm.style.display =
     "none";
 
-
   switchAuth.style.display =
     "none";
-
 
   nameField.style.display =
     "none";
 
 
-  const verificationStatus =
+  const verified =
     profile?.is_verified
       ? "✓ Verified"
       : "Not yet verified";
 
 
-  let roleName =
-    "User";
-
-
-  if (role === "owner") {
-
-    roleName =
-      "Owner";
-
-  } else if (role === "moderator") {
-
-    roleName =
-      "Moderator";
-
-  }
+  const roleName =
+    role === "owner"
+      ? "Owner"
+      : role === "moderator"
+        ? "Moderator"
+        : "User";
 
 
   authMessage.innerHTML = `
 
     <div class="account-panel">
 
-      <div class="account-row">
+      <p>
+        <strong>Display Name</strong><br>
+        ${escapeHtml(
+          profile?.display_name || "Not set"
+        )}
+      </p>
 
-        <span class="account-label">
-          Display Name
-        </span>
+      <p>
+        <strong>Email</strong><br>
+        ${escapeHtml(
+          user.email || ""
+        )}
+      </p>
 
-        <span class="account-value">
-          ${escapeHtml(
-            profile?.display_name ||
-            "Not set"
-          )}
-        </span>
+      <p>
+        <strong>Account Status</strong><br>
+        ${verified}
+      </p>
 
-      </div>
-
-
-      <div class="account-row">
-
-        <span class="account-label">
-          Email
-        </span>
-
-        <span class="account-value">
-          ${escapeHtml(
-            user.email || ""
-          )}
-        </span>
-
-      </div>
-
-
-      <div class="account-row">
-
-        <span class="account-label">
-          Account Status
-        </span>
-
-        <span class="account-value">
-          ${verificationStatus}
-        </span>
-
-      </div>
-
-
-      <div class="account-row">
-
-        <span class="account-label">
-          Account Role
-        </span>
-
-        <span class="account-value">
-          ${roleName}
-        </span>
-
-      </div>
+      <p>
+        <strong>Account Role</strong><br>
+        ${roleName}
+      </p>
 
     </div>
 
   `;
 
 
-  // Owner dashboard button.
-  // This will become the main administration area
-  // as we build the site.
-
-  if (role === "owner" || role === "moderator") {
+  if (
+    role === "owner" ||
+    role === "moderator"
+  ) {
 
     const dashboardButton =
       document.createElement("button");
 
+    dashboardButton.type =
+      "button";
+
     dashboardButton.className =
       "button full-width";
 
-    dashboardButton.textContent =
-      role === "owner"
-        ? "Open Owner Dashboard"
-        : "Open Moderator Dashboard";
-
-
     dashboardButton.style.marginTop =
       "16px";
+
+    dashboardButton.textContent =
+      role === "owner"
+        ? "Owner Dashboard"
+        : "Moderator Dashboard";
 
 
     dashboardButton.addEventListener(
@@ -371,8 +296,7 @@ async function openAccount() {
             </h3>
 
             <p>
-              Your administration tools will appear here
-              as we build the management system.
+              Your management tools will appear here.
             </p>
 
           </div>
@@ -388,6 +312,9 @@ async function openAccount() {
     );
 
   }
+
+
+  openModal();
 
 }
 
@@ -405,7 +332,7 @@ async function updateNavigation() {
 
   if (user) {
 
-    // Logged-in header
+    // Header
 
     loginLink.textContent =
       "Account";
@@ -418,7 +345,7 @@ async function updateNavigation() {
     );
 
 
-    // Hide Create Account from hero
+    // Hero
 
     if (heroSignup) {
 
@@ -427,10 +354,9 @@ async function updateNavigation() {
 
     }
 
-
   } else {
 
-    // Logged-out header
+    // Header
 
     loginLink.textContent =
       "Log In";
@@ -443,7 +369,7 @@ async function updateNavigation() {
     );
 
 
-    // Show Create Account in hero
+    // Hero
 
     if (heroSignup) {
 
@@ -458,93 +384,91 @@ async function updateNavigation() {
 
 
 // =========================================================
-// LOGIN / ACCOUNT BUTTON
+// LOGIN / ACCOUNT
 // =========================================================
 
-loginLink.addEventListener(
-  "click",
-  async function(event) {
+if (loginLink) {
 
-    event.preventDefault();
+  loginLink.addEventListener(
+    "click",
+    async function(event) {
 
+      event.preventDefault();
 
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
-
-
-    if (user) {
-
-      openAccount();
-
-    } else {
-
-      resetAuthModal();
-
-      openAuth("login");
-
-    }
-
-  }
-);
-
-
-// =========================================================
-// CREATE ACCOUNT / LOG OUT BUTTON
-// =========================================================
-
-signupLink.addEventListener(
-  "click",
-  async function(event) {
-
-    event.preventDefault();
-
-
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
-
-
-    if (user) {
 
       const {
-        error
-      } = await supabase.auth.signOut();
+        data: { user }
+      } = await supabase.auth.getUser();
 
 
-      if (error) {
+      if (user) {
 
-        console.error(
-          "Logout error:",
-          error
-        );
+        await openAccount();
 
-        return;
+      } else {
+
+        openAuth("login");
 
       }
 
-
-      closeAuth();
-
-      resetAuthModal();
-
-      await updateNavigation();
-
-      return;
-
     }
+  );
 
-
-    resetAuthModal();
-
-    openAuth("signup");
-
-  }
-);
+}
 
 
 // =========================================================
-// HERO CREATE ACCOUNT BUTTON
+// CREATE ACCOUNT / LOG OUT
+// =========================================================
+
+if (signupLink) {
+
+  signupLink.addEventListener(
+    "click",
+    async function(event) {
+
+      event.preventDefault();
+
+
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+
+
+      if (user) {
+
+        const {
+          error
+        } = await supabase.auth.signOut();
+
+
+        if (error) {
+
+          console.error(error);
+
+          return;
+
+        }
+
+
+        closeAuthModal();
+
+        await updateNavigation();
+
+      } else {
+
+        openAuth("signup");
+
+      }
+
+    }
+  );
+
+}
+
+
+// =========================================================
+// HERO CREATE ACCOUNT
 // =========================================================
 
 if (heroSignup) {
@@ -554,8 +478,6 @@ if (heroSignup) {
     function(event) {
 
       event.preventDefault();
-
-      resetAuthModal();
 
       openAuth("signup");
 
@@ -569,22 +491,18 @@ if (heroSignup) {
 // CLOSE MODAL
 // =========================================================
 
-closeModal.addEventListener(
-  "click",
-  function() {
+if (closeModal) {
 
-    closeAuth();
+  closeModal.addEventListener(
+    "click",
+    function() {
 
-    resetAuthModal();
+      closeAuthModal();
 
-  }
-);
-
-
-const modalBackground =
-  document.querySelector(
-    ".modal-background"
+    }
   );
+
+}
 
 
 if (modalBackground) {
@@ -593,9 +511,7 @@ if (modalBackground) {
     "click",
     function() {
 
-      closeAuth();
-
-      resetAuthModal();
+      closeAuthModal();
 
     }
   );
@@ -607,180 +523,167 @@ if (modalBackground) {
 // SWITCH LOGIN / SIGNUP
 // =========================================================
 
-switchAuth.addEventListener(
-  "click",
-  function() {
+if (switchAuth) {
 
-    const previousMode =
-      authMode;
-
-
-    resetAuthModal();
-
-
-    if (previousMode === "signup") {
-
-      openAuth("login");
-
-    } else {
-
-      openAuth("signup");
-
-    }
-
-  }
-);
-
-
-// =========================================================
-// SIGN UP / LOG IN
-// =========================================================
-
-authForm.addEventListener(
-  "submit",
-  async function(event) {
-
-    event.preventDefault();
-
-
-    authMessage.textContent =
-      "Please wait...";
-
-
-    const email =
-      document
-        .getElementById("email")
-        .value
-        .trim();
-
-
-    const password =
-      document
-        .getElementById("password")
-        .value;
-
-
-    try {
-
-
-      // ---------------------------------------------
-      // SIGN UP
-      // ---------------------------------------------
+  switchAuth.addEventListener(
+    "click",
+    function() {
 
       if (authMode === "signup") {
 
-        const name =
-          displayName
-            .value
-            .trim();
+        openAuth("login");
 
+      } else {
 
-        const {
-          error
-        } = await supabase.auth.signUp({
-
-          email: email,
-
-          password: password,
-
-          options: {
-
-            data: {
-
-              display_name:
-                name
-
-            }
-
-          }
-
-        });
-
-
-        if (error) {
-
-          throw error;
-
-        }
-
-
-        authMessage.textContent =
-          "Account created! Check your email to confirm your account.";
-
-
-        authForm.reset();
-
+        openAuth("signup");
 
       }
 
+    }
+  );
 
-      // ---------------------------------------------
-      // LOG IN
-      // ---------------------------------------------
+}
 
-      else {
 
-        const {
-          error
-        } = await supabase.auth
-          .signInWithPassword({
+// =========================================================
+// FORM SUBMISSION
+// =========================================================
 
-            email:
-              email,
+if (authForm) {
 
-            password:
-              password
+  authForm.addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+
+      authMessage.textContent =
+        "Please wait...";
+
+
+      const email =
+        document
+          .getElementById("email")
+          .value
+          .trim();
+
+
+      const password =
+        document
+          .getElementById("password")
+          .value;
+
+
+      try {
+
+
+        // SIGN UP
+
+        if (authMode === "signup") {
+
+          const name =
+            displayName
+              .value
+              .trim();
+
+
+          const {
+            error
+          } = await supabase.auth.signUp({
+
+            email: email,
+
+            password: password,
+
+            options: {
+
+              data: {
+
+                display_name:
+                  name
+
+              }
+
+            }
 
           });
 
 
-        if (error) {
+          if (error) {
+            throw error;
+          }
 
-          throw error;
+
+          authMessage.textContent =
+            "Account created! Check your email to confirm your account.";
+
+
+          authForm.reset();
+
 
         }
 
 
+        // LOG IN
+
+        else {
+
+          const {
+            error
+          } = await supabase.auth
+            .signInWithPassword({
+
+              email: email,
+
+              password: password
+
+            });
+
+
+          if (error) {
+            throw error;
+          }
+
+
+          authMessage.textContent =
+            "Logged in successfully.";
+
+
+          await updateNavigation();
+
+
+          setTimeout(
+            function() {
+
+              closeAuthModal();
+
+            },
+            700
+          );
+
+        }
+
+
+      } catch (error) {
+
+        console.error(error);
+
+
         authMessage.textContent =
-          "Logged in successfully.";
-
-
-        await updateNavigation();
-
-
-        setTimeout(
-          function() {
-
-            closeAuth();
-
-            resetAuthModal();
-
-          },
-          700
-        );
+          error.message ||
+          "Something went wrong.";
 
       }
 
-
-    } catch (error) {
-
-      console.error(
-        error
-      );
-
-
-      authMessage.textContent =
-        error.message ||
-        "Something went wrong.";
-
     }
+  );
 
-  }
-);
+}
 
 
 // =========================================================
-// AUTH STATE LISTENER
+// AUTH STATE
 // =========================================================
 
 supabase.auth.onAuthStateChange(
@@ -793,15 +696,13 @@ supabase.auth.onAuthStateChange(
 
 
 // =========================================================
-// LOAD DEVELOPMENTS
+// DEVELOPMENTS
 // =========================================================
 
 async function loadDevelopments() {
 
   if (!developmentList) {
-
     return;
-
   }
 
 
@@ -842,9 +743,7 @@ async function loadDevelopments() {
 
 
   if (!data || data.length === 0) {
-
     return;
-
   }
 
 
@@ -876,7 +775,6 @@ async function loadDevelopments() {
 
         </p>
 
-
         <h3>
 
           ${escapeHtml(
@@ -884,7 +782,6 @@ async function loadDevelopments() {
           )}
 
         </h3>
-
 
         <p>
 
@@ -894,7 +791,6 @@ async function loadDevelopments() {
           )}
 
         </p>
-
 
         ${
           development.address
@@ -962,7 +858,7 @@ function escapeHtml(value) {
 
 
 // =========================================================
-// START APPLICATION
+// START
 // =========================================================
 
 updateNavigation();
