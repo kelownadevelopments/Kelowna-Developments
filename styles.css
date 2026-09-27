@@ -1,0 +1,311 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f5f7f9;
+  color: #17212b;
+}
+
+.container {
+  width: min(1150px, calc(100% - 40px));
+  margin: 0 auto;
+}
+
+
+/* HEADER */
+
+.site-header {
+  background: white;
+  border-bottom: 1px solid #e2e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.header-content {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+}
+
+.logo {
+  color: #17212b;
+  text-decoration: none;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+nav a {
+  color: #37434d;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+
+/* BUTTONS */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  border-radius: 8px;
+  background: #17212b;
+  color: white !important;
+  text-decoration: none;
+  border: 0;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.button:hover {
+  opacity: 0.88;
+}
+
+.button.secondary {
+  background: white;
+  color: #17212b !important;
+  border: 1px solid #d4dbe1;
+}
+
+.full-width {
+  width: 100%;
+}
+
+
+/* HERO */
+
+.hero {
+  padding: 110px 0;
+  background: white;
+  border-bottom: 1px solid #e2e7eb;
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #63717d;
+}
+
+.hero h1 {
+  max-width: 800px;
+  margin: 0;
+  font-size: clamp(42px, 7vw, 72px);
+  line-height: 1.02;
+  letter-spacing: -2px;
+}
+
+.hero-text {
+  max-width: 680px;
+  margin: 28px 0;
+  font-size: 20px;
+  line-height: 1.6;
+  color: #596771;
+}
+
+.hero-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+
+/* SECTIONS */
+
+.section {
+  padding: 80px 0;
+}
+
+.section-heading {
+  margin-bottom: 30px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: 36px;
+}
+
+
+/* DEVELOPMENT CARDS */
+
+.development-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.development-card,
+.empty-state {
+  background: white;
+  border: 1px solid #e0e6eb;
+  border-radius: 12px;
+  padding: 28px;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-state h3 {
+  margin-top: 0;
+}
+
+.empty-state p {
+  color: #687680;
+}
+
+
+/* FOOTER */
+
+.site-footer {
+  padding: 30px 0;
+  background: #17212b;
+  color: white;
+}
+
+.site-footer p {
+  margin: 0;
+  font-size: 14px;
+}
+
+
+/* MODAL */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-background {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.modal-box {
+  position: relative;
+  width: min(460px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  background: white;
+  border-radius: 14px;
+  padding: 35px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.close-button {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  border: 0;
+  background: transparent;
+  font-size: 30px;
+  cursor: pointer;
+  color: #697780;
+}
+
+.modal-box h2 {
+  margin: 0 0 12px;
+  font-size: 30px;
+}
+
+.modal-box p {
+  color: #66737d;
+  line-height: 1.5;
+}
+
+
+/* FORMS */
+
+.form-field {
+  margin: 20px 0;
+}
+
+.form-field label {
+  display: block;
+  margin-bottom: 7px;
+  font-weight: 700;
+}
+
+.form-field input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid #cfd7dd;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.form-field input:focus {
+  outline: 2px solid #aab8c2;
+  border-color: transparent;
+}
+
+.auth-message {
+  margin-top: 18px;
+  font-weight: 600;
+}
+
+.switch-auth {
+  display: block;
+  margin: 20px auto 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: #44535e;
+  font-weight: 600;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 800px) {
+
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 18px 0;
+  }
+
+  nav {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .development-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    padding: 75px 0;
+  }
+
+}
