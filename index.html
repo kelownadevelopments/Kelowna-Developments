@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -11,145 +12,343 @@
 
   <header class="site-header">
     <div class="container header-content">
-      <a href="index.html" class="logo">
-        Kelowna Developments
-      </a>
 
-      <nav>
-        <a href="index.html">Home</a>
-        <a href="#" id="loginLink">Log In</a>
-        <a href="#" id="signupLink" class="button">Create Account</a>
-      </nav>
-    </div>
+```
+  <a href="index.html" class="logo">
+    <span class="logo-mark">KD</span>
+    <span class="logo-text">
+      <strong>Kelowna</strong>
+      <span>Developments</span>
+    </span>
+  </a>
+
+  <nav class="site-nav">
+    <a href="index.html" class="nav-link active">Home</a>
+    <a href="#developments" class="nav-link">Developments</a>
+    <a href="#" id="loginLink" class="nav-link">Log In</a>
+    <a href="#" id="signupLink" class="button">Create Account</a>
+  </nav>
+
+</div>
+```
+
   </header>
 
   <main>
 
-    <section class="hero">
-      <div class="container">
-        <p class="eyebrow">KELOWNA, BRITISH COLUMBIA</p>
+```
+<!-- HERO -->
+<section class="hero">
+  <div class="container hero-content">
 
-        <h1>Explore developments in Kelowna.</h1>
+    <div class="hero-copy">
 
-        <p class="hero-text">
-          Discover projects, development proposals, construction activity,
-          and community discussions across Kelowna.
-        </p>
+      <p class="eyebrow">KELOWNA • BRITISH COLUMBIA</p>
 
-        <div class="hero-buttons">
-          <a href="#developments" class="button">Explore Developments</a>
-          <a href="#" id="heroSignup" class="button secondary">
-            Create Account
-          </a>
-        </div>
+      <h1>
+        Explore Kelowna's
+        <span>development landscape.</span>
+      </h1>
+
+      <p class="hero-text">
+        Discover projects from early proposals through completed
+        construction across Kelowna.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="#developments" class="button">
+          Explore Developments
+        </a>
+
+        <a href="#" id="heroSignup" class="button secondary">
+          Create Account
+        </a>
       </div>
-    </section>
 
-
-    <section id="developments" class="section">
-      <div class="container">
-
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">LATEST</p>
-            <h2>Recent Developments</h2>
-          </div>
-        </div>
-
-        <div id="developmentList" class="development-grid">
-
-          <div class="empty-state">
-            <h3>No developments yet</h3>
-            <p>
-              Approved developments will appear here.
-            </p>
-          </div>
-
-        </div>
-
-      </div>
-    </section>
-
-  </main>
-
-
-  <footer class="site-footer">
-    <div class="container">
-      <p>© 2026 Kelowna Developments. All Rights Reserved.</p>
     </div>
-  </footer>
+
+    <div class="hero-panel">
+
+      <div class="hero-panel-header">
+        <span class="status-dot"></span>
+        <span>Kelowna Development Database</span>
+      </div>
+
+      <div class="hero-stat">
+        <strong>Development</strong>
+        <span>Projects across Kelowna</span>
+      </div>
+
+      <div class="hero-stat">
+        <strong>5</strong>
+        <span>Official project statuses</span>
+      </div>
+
+      <div class="hero-stat">
+        <strong>Community</strong>
+        <span>Discussion &amp; project information</span>
+      </div>
+
+    </div>
+
+  </div>
+</section>
 
 
-  <!-- Login / Signup modal -->
-  <div id="authModal" class="modal hidden">
+<!-- DEVELOPMENTS -->
+<section id="developments" class="section developments-section">
 
-    <div class="modal-background"></div>
+  <div class="container">
 
-    <div class="modal-box">
+    <div class="section-heading">
 
-      <button id="closeModal" class="close-button">
-        ×
-      </button>
+      <div>
+        <p class="eyebrow">DEVELOPMENT DATABASE</p>
 
-      <div id="authContent">
+        <h2>Latest Developments</h2>
 
-        <p class="eyebrow">WELCOME</p>
-
-        <h2 id="authTitle">Create your account</h2>
-
-        <p id="authDescription">
-          Create an account to participate in the Kelowna Developments community.
+        <p class="section-description">
+          Explore the most recently approved development projects
+          currently listed on Kelowna Developments.
         </p>
+      </div>
 
-        <form id="authForm">
+      <a href="#developments" class="text-link">
+        View all developments
+        <span>→</span>
+      </a>
 
-          <div id="nameField" class="form-field">
-            <label for="displayName">Display Name</label>
-            <input
-              type="text"
-              id="displayName"
-              placeholder="Your name"
-            >
-          </div>
+    </div>
 
-          <div class="form-field">
-            <label for="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              placeholder="you@example.com"
-              required
-            >
-          </div>
 
-          <div class="form-field">
-            <label for="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              placeholder="At least 6 characters"
-              required
-            >
-          </div>
+    <!-- SEARCH / FILTER AREA -->
+    <div class="development-tools">
 
-          <button type="submit" class="button full-width">
-            <span id="authButtonText">Create Account</span>
-          </button>
+      <div class="search-box">
 
-        </form>
+        <label for="developmentSearch">
+          Search developments
+        </label>
 
-        <p id="authMessage" class="auth-message"></p>
+        <input
+          type="search"
+          id="developmentSearch"
+          placeholder="Search by project, address, or developer..."
+        >
 
-        <button id="switchAuth" class="switch-auth">
-          Already have an account? Log in
-        </button>
+      </div>
 
+
+      <div class="filter-box">
+
+        <label for="statusFilter">
+          Status
+        </label>
+
+        <select id="statusFilter">
+          <option value="all">All statuses</option>
+          <option value="Proposed">Proposed</option>
+          <option value="Concept">Concept</option>
+          <option value="Approved">Approved</option>
+          <option value="Under Construction">Under Construction</option>
+          <option value="Complete">Complete</option>
+        </select>
+
+      </div>
+
+    </div>
+
+
+    <div id="developmentList" class="development-grid">
+
+      <div class="empty-state">
+        <h3>No developments yet</h3>
+
+        <p>
+          Approved developments will appear here.
+        </p>
       </div>
 
     </div>
 
   </div>
 
+</section>
+
+
+<!-- COMMUNITY CTA -->
+<section class="community-section">
+
+  <div class="container">
+
+    <div class="community-card">
+
+      <div>
+        <p class="eyebrow">JOIN THE COMMUNITY</p>
+
+        <h2>Follow development in Kelowna.</h2>
+
+        <p>
+          Create an account to participate in discussions,
+          submit development projects, and build your profile.
+        </p>
+      </div>
+
+      <a href="#" id="communitySignup" class="button">
+        Create Account
+      </a>
+
+    </div>
+
+  </div>
+
+</section>
+```
+
+  </main>
+
+  <!-- FOOTER -->
+
+  <footer class="site-footer">
+
+```
+<div class="container footer-content">
+
+  <div>
+    <strong>Kelowna Developments</strong>
+
+    <p>
+      A public information platform for development
+      projects in Kelowna, British Columbia.
+    </p>
+  </div>
+
+  <div class="footer-links">
+
+    <a href="index.html">Home</a>
+    <a href="#developments">Developments</a>
+    <a href="#" id="footerLogin">Log In</a>
+
+  </div>
+
+</div>
+
+<div class="container footer-bottom">
+
+  <p>
+    © 2026 Kelowna Developments. All Rights Reserved.
+  </p>
+
+</div>
+```
+
+  </footer>
+
+  <!-- LOGIN / SIGNUP MODAL -->
+
+  <div id="authModal" class="modal hidden">
+
+```
+<div class="modal-background"></div>
+
+<div class="modal-box">
+
+  <button
+    id="closeModal"
+    class="close-button"
+    aria-label="Close"
+  >
+    ×
+  </button>
+
+  <div id="authContent">
+
+    <p class="eyebrow">WELCOME</p>
+
+    <h2 id="authTitle">Create your account</h2>
+
+    <p id="authDescription">
+      Create an account to participate in the Kelowna Developments community.
+    </p>
+
+
+    <form id="authForm">
+
+      <div id="nameField" class="form-field">
+
+        <label for="displayName">
+          Display Name
+        </label>
+
+        <input
+          type="text"
+          id="displayName"
+          placeholder="Your name"
+        >
+
+      </div>
+
+
+      <div class="form-field">
+
+        <label for="email">
+          Email
+        </label>
+
+        <input
+          type="email"
+          id="email"
+          placeholder="you@example.com"
+          required
+        >
+
+      </div>
+
+
+      <div class="form-field">
+
+        <label for="password">
+          Password
+        </label>
+
+        <input
+          type="password"
+          id="password"
+          placeholder="At least 6 characters"
+          required
+        >
+
+      </div>
+
+
+      <button
+        type="submit"
+        class="button full-width"
+      >
+        <span id="authButtonText">
+          Create Account
+        </span>
+      </button>
+
+    </form>
+
+
+    <p id="authMessage" class="auth-message"></p>
+
+
+    <button
+      id="switchAuth"
+      class="switch-auth"
+    >
+      Already have an account? Log in
+    </button>
+
+  </div>
+
+</div>
+```
+
+  </div>
 
   <script type="module" src="js/app.js"></script>
 
