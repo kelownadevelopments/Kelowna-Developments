@@ -8,7 +8,7 @@ const supabase = createClient(
   SUPABASE_PUBLISHABLE_KEY
 );
 
-async function checkOwnerAccess() {
+async function loadOwnerDashboard() {
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -18,18 +18,53 @@ async function checkOwnerAccess() {
     return;
   }
 
-  const { data: roleData, error } = await supabase
+  const { data: roleData, error: roleError } = await supabase
     .from("user_roles")
     .select("role")
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (error || roleData?.role !== "owner") {
+  if (roleError || roleData?.role !== "owner") {
     window.location.href = "index.html";
     return;
   }
 
-  console.log("Owner access granted.");
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name, avatar_url, is_verified")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const dashboardHero = document.querySelector(".hero");
+
+  if (dashboardHero) {
+    dashboardHero.innerHTML = `
+      <p class="eyebrow">ADMINISTRATION</p>
+
+      <h1>Owner Dashboard</h1>
+
+      <p>
+        Welcome, ${escapeHtml(
+          profile?.display_name || user.email || "Owner"
+        )}.
+      </p>
+
+      <p>
+        You are signed in as the Owner of Kelowna Developments.
+      </p>
+    `;
+  }
+
+  console.log("Owner dashboard loaded successfully.");
 }
 
-checkOwnerAccess();
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+loadOwnerDashboard();
