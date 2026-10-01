@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Edit Development | Kelowna Developments</title>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+
+      <a href="index.html" class="site-logo">
+        Kelowna Developments
+      </a>
+
+      <nav class="site-nav">
+        <a href="index.html">Home</a>
+        <a href="developments.html">Developments</a>
+        <a href="owner.html">Owner Dashboard</a>
+      </nav>
+
+    </div>
+  </header>
+
+  <main>
+
+    <section class="hero">
+      <div class="container">
+
+        <p class="eyebrow">ADMINISTRATION</p>
+
+        <h1>Edit Development</h1>
+
+        <p>
+          Update the information for this official development.
+        </p>
+
+      </div>
+    </section>
+
+    <section class="container dashboard-section">
+
+      <div id="editDevelopmentMessage">
+        Loading development...
+      </div>
+
+      <form id="editDevelopmentForm" style="display: none;">
+
+        <div class="form-group">
+          <label for="editTitle">Title</label>
+          <input
+            type="text"
+            id="editTitle"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="editAddress">Address</label>
+          <input
+            type="text"
+            id="editAddress"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="editDeveloper">Developer / Company</label>
+          <input
+            type="text"
+            id="editDeveloper"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="editProjectType">Project Type</label>
+          <select id="editProjectType">
+            <option value="">Select a type</option>
+            <option value="Residential">Residential</option>
+            <option value="Commercial">Commercial</option>
+            <option value="Mixed Use">Mixed Use</option>
+            <option value="Industrial">Industrial</option>
+            <option value="Institutional">Institutional</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="editStatus">Status</label>
+          <select id="editStatus">
+            <option value="">Select a status</option>
+            <option value="Proposed">Proposed</option>
+            <option value="Planned">Planned</option>
+            <option value="Approved">Approved</option>
+            <option value="Under Construction">Under Construction</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="editUnits">Units</label>
+          <input
+            type="number"
+            id="editUnits"
+            min="0"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="editStoreys">Storeys</label>
+          <input
+            type="number"
+            id="editStoreys"
+            min="0"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="editDescription">Description</label>
+          <textarea
+            id="editDescription"
+            rows="8"
+          ></textarea>
+        </div>
+
+        <button type="submit" class="button">
+          Save Changes
+        </button>
+
+        <a href="owner.html" class="button secondary">
+          Cancel
+        </a>
+
+        <p id="editDevelopmentSaveMessage"></p>
+
+      </form>
+
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      © 2026 Kelowna Developments. All Rights Reserved.
+    </div>
+  </footer>
+
+  <script type="module" src="js/edit-development.js"></script>
+
+</body>
+</html>
