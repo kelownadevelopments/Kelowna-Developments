@@ -261,7 +261,7 @@ async function loadDevelopmentRequests() {
       status,
       owner_notes,
       created_at,
-      profiles (
+      profiles!development_requests_submitted_by_fkey (
         display_name,
         avatar_url
       )
