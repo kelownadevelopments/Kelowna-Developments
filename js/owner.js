@@ -339,11 +339,19 @@ async function loadDevelopmentRequests() {
       }
 
       ${
-        request.description
-          ? `<p><strong>Description:</strong> ${request.description}</p>`
-          : ""
-      }
-    `;
+  request.description
+    ? `<p><strong>Description:</strong> ${request.description}</p>`
+    : ""
+}
+
+<button
+  class="button delete-request-button"
+  data-request-id="${request.id}"
+  type="button"
+>
+  Delete Request
+</button>
+`;
 
     list.appendChild(card);
   });
