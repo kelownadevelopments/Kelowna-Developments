@@ -61,3 +61,27 @@ async function loadDevelopment() {
 }
 
 loadDevelopment();
+
+async function updateDevelopmentNavigation() {
+  const loginLink = document.getElementById("loginLink");
+  const signupLink = document.getElementById("signupLink");
+
+  if (!loginLink || !signupLink) {
+    return;
+  }
+
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    loginLink.style.display = "none";
+    signupLink.style.display = "none";
+  } else {
+    loginLink.style.display = "";
+    signupLink.style.display = "";
+  }
+}
+
+updateDevelopmentNavigation();
+
