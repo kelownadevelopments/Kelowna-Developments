@@ -358,3 +358,39 @@ async function loadDevelopmentRequests() {
 }
 
 loadDevelopmentRequests();
+
+document.addEventListener("click", async (event) => {
+  const button = event.target.closest(".delete-request-button");
+
+  if (!button) {
+    return;
+  }
+
+  const requestId = button.dataset.requestId;
+
+  const confirmed = confirm(
+    "Are you sure you want to permanently delete this development request?"
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "Deleting...";
+
+  const { error } = await supabase
+    .from("development_requests")
+    .delete()
+    .eq("id", requestId);
+
+  if (error) {
+    console.error(error);
+    alert("Unable to delete the development request.");
+    button.disabled = false;
+    button.textContent = "Delete Request";
+    return;
+  }
+
+  loadDevelopmentRequests();
+});
