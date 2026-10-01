@@ -307,19 +307,103 @@ async function showAccount() {
 }
 
 async function loadDevelopments() {
-  if (!developmentList) return;
+  const developmentList = document.getElementById("developmentList");
+
+  if (!developmentList) {
+    return;
+  }
+
+  developmentList.innerHTML = "";
 
   const { data, error } = await supabase
     .from("developments")
-    .select("*")
+    .select(`
+      id,
+      title,
+      address,
+      description,
+      developer,
+      project_type,
+      status,
+      units,
+      storeys
+    `)
     .eq("is_approved", true)
     .order("created_at", { ascending: false })
     .limit(3);
 
   if (error) {
-    console.error("Could not load developments:", error);
+    console.error(error);
+    developmentList.innerHTML =
+      "<p>Unable to load developments.</p>";
     return;
   }
+
+  if (!data || data.length === 0) {
+    developmentList.innerHTML =
+      "<p>No developments have been published yet.</p>";
+    return;
+  }
+
+  data.forEach((development) => {
+    const card = document.createElement("a");
+
+    card.className = "development-card";
+    card.href = `development.html?id=${development.id}`;
+
+    card.innerHTML = `
+      <h3>${development.title}</h3>
+
+      ${
+        development.address
+          ? `<p><strong>Address:</strong> ${development.address}</p>`
+          : ""
+      }
+
+      ${
+        development.developer
+          ? `<p><strong>Developer:</strong> ${development.developer}</p>`
+          : ""
+      }
+
+      ${
+        development.project_type
+          ? `<p><strong>Project Type:</strong> ${development.project_type}</p>`
+          : ""
+      }
+
+      ${
+        development.status
+          ? `<p><strong>Status:</strong> ${development.status}</p>`
+          : ""
+      }
+
+      ${
+        development.units !== null
+          ? `<p><strong>Units:</strong> ${development.units}</p>`
+          : ""
+      }
+
+      ${
+        development.storeys !== null
+          ? `<p><strong>Storeys:</strong> ${development.storeys}</p>`
+          : ""
+      }
+
+      ${
+        development.description
+          ? `<p>${development.description}</p>`
+          : ""
+      }
+
+      <span class="development-card-link">
+        View Development →
+      </span>
+    `;
+
+    developmentList.appendChild(card);
+  });
+}
 
   if (!data || data.length === 0) {
     developmentList.innerHTML = `
