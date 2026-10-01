@@ -92,3 +92,49 @@ async function loadDevelopment() {
 }
 
 loadDevelopment();
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const saveMessage = document.getElementById(
+    "editDevelopmentSaveMessage"
+  );
+
+  saveMessage.textContent = "Saving changes...";
+
+  const title = document.getElementById("editTitle").value.trim();
+  const address = document.getElementById("editAddress").value.trim();
+  const developer = document.getElementById("editDeveloper").value.trim();
+  const projectType = document.getElementById("editProjectType").value;
+  const status = document.getElementById("editStatus").value;
+  const unitsValue = document.getElementById("editUnits").value;
+  const storeysValue = document.getElementById("editStoreys").value;
+  const description = document
+    .getElementById("editDescription")
+    .value
+    .trim();
+
+  const { error } = await supabase
+    .from("developments")
+    .update({
+      title: title,
+      address: address || null,
+      developer: developer || null,
+      project_type: projectType || null,
+      status: status || null,
+      units: unitsValue ? Number(unitsValue) : null,
+      storeys: storeysValue ? Number(storeysValue) : null,
+      description: description || null
+    })
+    .eq("id", developmentId);
+
+  if (error) {
+    console.error(error);
+    saveMessage.textContent =
+      "There was a problem saving the changes.";
+    return;
+  }
+
+  saveMessage.textContent =
+    "Changes saved successfully.";
+});
