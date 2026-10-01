@@ -82,13 +82,226 @@
       <div id="userList"></div>
 
     </section>
+<section class="dashboard-section" id="developments">
 
-   <section class="dashboard-section" id="developments">
-
-  <h2>Development Requests</h2>
+  <h2>Development Management</h2>
 
   <p>
-    Review development submissions from the community.
+    Create and manage the official development pages on Kelowna Developments.
+  </p>
+
+
+  <div class="community-card">
+
+    <p class="eyebrow">
+      CREATE DEVELOPMENT
+    </p>
+
+    <h3>
+      Create a New Development
+    </h3>
+
+    <p>
+      Only the Owner can create official development pages.
+    </p>
+
+
+    <form id="createDevelopmentForm">
+
+      <div class="form-field">
+
+        <label for="developmentTitle">
+          Development / Project Name
+        </label>
+
+        <input
+          type="text"
+          id="developmentTitle"
+          placeholder="Development name"
+          required
+        >
+
+      </div>
+
+
+      <div class="form-field">
+
+        <label for="developmentAddress">
+          Address
+        </label>
+
+        <input
+          type="text"
+          id="developmentAddress"
+          placeholder="Project address"
+        >
+
+      </div>
+
+
+      <div class="form-field">
+
+        <label for="developmentDeveloper">
+          Developer / Company
+        </label>
+
+        <input
+          type="text"
+          id="developmentDeveloper"
+          placeholder="Developer or company"
+        >
+
+      </div>
+
+
+      <div class="form-field">
+
+        <label for="developmentProjectType">
+          Project Type
+        </label>
+
+        <select id="developmentProjectType">
+
+          <option value="">
+            Select a project type
+          </option>
+
+          <option value="Residential">
+            Residential
+          </option>
+
+          <option value="Commercial">
+            Commercial
+          </option>
+
+          <option value="Mixed Use">
+            Mixed Use
+          </option>
+
+          <option value="Industrial">
+            Industrial
+          </option>
+
+          <option value="Institutional">
+            Institutional
+          </option>
+
+          <option value="Other">
+            Other
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="form-field">
+
+        <label for="developmentStatus">
+          Status
+        </label>
+
+        <select id="developmentStatus">
+
+          <option value="Proposed">
+            Proposed
+          </option>
+
+          <option value="Concept">
+            Concept
+          </option>
+
+          <option value="Approved">
+            Approved
+          </option>
+
+          <option value="Under Construction">
+            Under Construction
+          </option>
+
+          <option value="Complete">
+            Complete
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="form-field">
+
+        <label for="developmentUnits">
+          Number of Units
+        </label>
+
+        <input
+          type="number"
+          id="developmentUnits"
+          min="0"
+          placeholder="Optional"
+        >
+
+      </div>
+
+
+      <div class="form-field">
+
+        <label for="developmentStoreys">
+          Number of Storeys
+        </label>
+
+        <input
+          type="number"
+          id="developmentStoreys"
+          min="0"
+          placeholder="Optional"
+        >
+
+      </div>
+
+
+      <div class="form-field">
+
+        <label for="developmentDescription">
+          Description
+        </label>
+
+        <textarea
+          id="developmentDescription"
+          rows="8"
+          placeholder="Describe the development..."
+        ></textarea>
+
+      </div>
+
+
+      <button
+        type="submit"
+        class="button"
+      >
+        Create Development
+      </button>
+
+
+      <p
+        id="createDevelopmentMessage"
+        class="auth-message"
+      ></p>
+
+    </form>
+
+  </div>
+
+
+  <hr>
+
+
+  <h3>
+    Development Requests
+  </h3>
+
+  <p>
+    Review submissions from the community.
   </p>
 
   <div id="developmentRequestMessage">
