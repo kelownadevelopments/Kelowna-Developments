@@ -1,37 +1,36 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const SUPABASE_URL = "https://diljkqsrqdktzyumrqkg.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_JjzaLH_H48oLIvuRz9F5jg_yyC5xxII";
 
-const supabase = createClient(
-  "https://diljkqsrqdktzyumrqkg.supabase.co",
-  "sb_publishable_JjzaLH_H48oLIvuRz9F5jg_yyC5xxII"
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
 );
 
 const params = new URLSearchParams(window.location.search);
 const developmentId = params.get("id");
 
-const titleElement = document.getElementById("developmentTitle");
-const addressElement = document.getElementById("developmentAddress");
-const nameElement = document.getElementById("developmentName");
-const detailsElement = document.getElementById("developmentDetails");
-const descriptionElement = document.getElementById("developmentDescription");
-const messageElement = document.getElementById("developmentMessage");
-const contentElement = document.getElementById("developmentContent");
-const discussionList = document.getElementById("discussionList");
+const messageElement =
+  document.getElementById("developmentMessage");
+
+const contentElement =
+  document.getElementById("developmentContent");
 
 async function loadDevelopment() {
   if (!developmentId) {
-    messageElement.textContent = "No development was specified.";
+    messageElement.textContent =
+      "No development was specified.";
     return;
   }
 
-  const result = await supabase
+  const { data, error } = await supabaseClient
     .from("developments")
     .select("*")
     .eq("id", developmentId)
     .eq("is_approved", true)
     .single();
 
-  if (result.error) {
-    console.error("Development error:", result.error);
+  if (error) {
+    console.error(error);
 
     messageElement.textContent =
       "Unable to load this development.";
@@ -39,52 +38,64 @@ async function loadDevelopment() {
     return;
   }
 
-  const development = result.data;
+  document.getElementById("developmentTitle").textContent =
+    data.title;
 
-  titleElement.textContent = development.title;
-  addressElement.textContent =
-    development.address || "Kelowna, British Columbia";
+  document.getElementById("developmentAddress").textContent =
+    data.address || "Kelowna, British Columbia";
 
-  nameElement.textContent = development.title;
+  document.getElementById("developmentName").textContent =
+    data.title;
 
-  detailsElement.innerHTML = "";
+  const details =
+    document.getElementById("developmentDetails");
 
-  if (development.address) {
-    detailsElement.innerHTML +=
-      `<p><strong>Address:</strong> ${escapeHtml(development.address)}</p>`;
-  }
+  details.innerHTML = `
+    ${
+      data.address
+        ? `<p><strong>Address:</strong> ${escapeHtml(data.address)}</p>`
+        : ""
+    }
 
-  if (development.developer) {
-    detailsElement.innerHTML +=
-      `<p><strong>Developer:</strong> ${escapeHtml(development.developer)}</p>`;
-  }
+    ${
+      data.developer
+        ? `<p><strong>Developer:</strong> ${escapeHtml(data.developer)}</p>`
+        : ""
+    }
 
-  if (development.project_type) {
-    detailsElement.innerHTML +=
-      `<p><strong>Project Type:</strong> ${escapeHtml(development.project_type)}</p>`;
-  }
+    ${
+      data.project_type
+        ? `<p><strong>Project Type:</strong> ${escapeHtml(data.project_type)}</p>`
+        : ""
+    }
 
-  if (development.status) {
-    detailsElement.innerHTML +=
-      `<p><strong>Status:</strong> ${escapeHtml(development.status)}</p>`;
-  }
+    ${
+      data.status
+        ? `<p><strong>Status:</strong> ${escapeHtml(data.status)}</p>`
+        : ""
+    }
 
-  if (development.units !== null) {
-    detailsElement.innerHTML +=
-      `<p><strong>Units:</strong> ${development.units}</p>`;
-  }
+    ${
+      data.units !== null
+        ? `<p><strong>Units:</strong> ${data.units}</p>`
+        : ""
+    }
 
-  if (development.storeys !== null) {
-    detailsElement.innerHTML +=
-      `<p><strong>Storeys:</strong> ${development.storeys}</p>`;
-  }
+    ${
+      data.storeys !== null
+        ? `<p><strong>Storeys:</strong> ${data.storeys}</p>`
+        : ""
+    }
+  `;
 
-  descriptionElement.textContent =
-    development.description ||
+  document.getElementById(
+    "developmentDescription"
+  ).textContent =
+    data.description ||
     "No description has been provided yet.";
 
   document.title =
-    `${development.title} | Kelowna Developments`;
+    `${data.title} | Kelowna Developments`;
 
   messageElement.style.display = "none";
   contentElement.style.display = "block";
@@ -93,39 +104,45 @@ async function loadDevelopment() {
 }
 
 async function loadDiscussions() {
-  discussionList.innerHTML = "<p>Loading discussions...</p>";
+  const discussionList =
+    document.getElementById("discussionList");
 
-  const result = await supabase
+  if (!discussionList) {
+    return;
+  }
+
+  const { data, error } = await supabaseClient
     .from("discussions")
     .select("*")
     .eq("development_id", developmentId)
     .order("created_at", { ascending: true });
 
-  if (result.error) {
-    console.error("Discussion error:", result.error);
-
+  if (error) {
+    console.error(error);
     discussionList.innerHTML =
       "<p>Unable to load discussions.</p>";
-
     return;
   }
 
-  if (!result.data || result.data.length === 0) {
+  if (!data || data.length === 0) {
     discussionList.innerHTML =
       "<p>No discussions yet.</p>";
-
     return;
   }
 
-  discussionList.innerHTML = result.data
-    .map((discussion) => `
-      <div class="discussion-card">
-        <p>${escapeHtml(discussion.content)}</p>
-        <small>
-          ${new Date(discussion.created_at).toLocaleString()}
-        </small>
-      </div>
-    `)
+  discussionList.innerHTML = data
+    .map(
+      (discussion) => `
+        <div class="discussion-card">
+          <p>${escapeHtml(discussion.content)}</p>
+          <small>
+            ${new Date(
+              discussion.created_at
+            ).toLocaleString()}
+          </small>
+        </div>
+      `
+    )
     .join("");
 }
 
