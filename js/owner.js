@@ -552,4 +552,16 @@ async function loadOfficialDevelopments() {
   `).join("");
 }
 
+document.addEventListener("click", (event) => {
+  const button = event.target.closest(".edit-development-button");
+
+  if (!button) {
+    return;
+  }
+
+  const developmentId = button.dataset.id;
+
+  window.location.href = `edit-development.html?id=${developmentId}`;
+});
+
 loadOfficialDevelopments();
