@@ -560,16 +560,58 @@ async function loadOfficialDevelopments() {
   `).join("");
 }
 
-document.addEventListener("click", (event) => {
-  const button = event.target.closest(".edit-development-button");
+document.addEventListener("click", async (event) => {
+  const editButton = event.target.closest(".edit-development-button");
 
-  if (!button) {
+  if (editButton) {
+    const developmentId = editButton.dataset.id;
+
+    window.location.href =
+      `edit-development.html?id=${developmentId}`;
+
     return;
   }
 
-  const developmentId = button.dataset.id;
+  const deleteButton = event.target.closest(
+    ".delete-development-button"
+  );
 
-  window.location.href = `edit-development.html?id=${developmentId}`;
+  if (!deleteButton) {
+    return;
+  }
+
+  const developmentId = deleteButton.dataset.id;
+
+  const confirmed = confirm(
+    "Are you sure you want to permanently delete this development?\n\nThis will also remove its discussions and attachments."
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  deleteButton.disabled = true;
+  deleteButton.textContent = "Deleting...";
+
+  const { error } = await supabase
+    .from("developments")
+    .delete()
+    .eq("id", developmentId);
+
+  if (error) {
+    console.error(error);
+
+    alert(
+      "There was a problem deleting this development."
+    );
+
+    deleteButton.disabled = false;
+    deleteButton.textContent = "Delete";
+
+    return;
+  }
+
+  await loadOfficialDevelopments();
 });
 
 loadOfficialDevelopments();
