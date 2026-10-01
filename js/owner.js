@@ -455,3 +455,91 @@ if (createDevelopmentForm) {
   });
 }
 
+async function loadOfficialDevelopments() {
+  const list = document.getElementById("officialDevelopmentList");
+  const message = document.getElementById("officialDevelopmentMessage");
+
+  if (!list || !message) {
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("developments")
+    .select(`
+      id,
+      title,
+      address,
+      description,
+      developer,
+      project_type,
+      status,
+      units,
+      storeys,
+      created_at
+    `)
+    .eq("is_approved", true)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    message.textContent = "Unable to load official developments.";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    message.textContent = "No official developments have been created yet.";
+    list.innerHTML = "";
+    return;
+  }
+
+  message.textContent = "";
+
+  list.innerHTML = data.map((development) => `
+    <div class="development-card">
+      <h3>${escapeHtml(development.title)}</h3>
+
+      ${
+        development.address
+          ? `<p><strong>Address:</strong> ${escapeHtml(development.address)}</p>`
+          : ""
+      }
+
+      ${
+        development.developer
+          ? `<p><strong>Developer:</strong> ${escapeHtml(development.developer)}</p>`
+          : ""
+      }
+
+      ${
+        development.status
+          ? `<p><strong>Status:</strong> ${escapeHtml(development.status)}</p>`
+          : ""
+      }
+
+      ${
+        development.project_type
+          ? `<p><strong>Project Type:</strong> ${escapeHtml(development.project_type)}</p>`
+          : ""
+      }
+
+      <p>
+        <strong>Units:</strong>
+        ${development.units ?? "N/A"}
+      </p>
+
+      <p>
+        <strong>Storeys:</strong>
+        ${development.storeys ?? "N/A"}
+      </p>
+
+      <a
+        href="development.html?id=${development.id}"
+        class="button"
+      >
+        View Development
+      </a>
+    </div>
+  `).join("");
+}
+
+loadOfficialDevelopments();
