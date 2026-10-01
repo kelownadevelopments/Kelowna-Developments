@@ -532,12 +532,22 @@ async function loadOfficialDevelopments() {
         ${development.storeys ?? "N/A"}
       </p>
 
-      <a
-        href="development.html?id=${development.id}"
-        class="button"
-      >
-        View Development
-      </a>
+     <div class="development-actions">
+  <a
+    href="development.html?id=${development.id}"
+    class="button"
+  >
+    View Development
+  </a>
+
+  <button
+    type="button"
+    class="button edit-development-button"
+    data-id="${development.id}"
+  >
+    Edit
+  </button>
+</div>
     </div>
   `).join("");
 }
