@@ -22,15 +22,15 @@ messageElement.textContent =
 return;
 }
 
-const { data, error } = await supabaseClient
+const result = await supabaseClient
 .from("developments")
 .select("*")
 .eq("id", developmentId)
 .eq("is_approved", true)
 .single();
 
-if (error) {
-console.error(error);
+if (result.error) {
+console.error(result.error);
 
 ```
 messageElement.textContent =
@@ -40,6 +40,8 @@ return;
 ```
 
 }
+
+const data = result.data;
 
 document.getElementById("developmentTitle").textContent =
 data.title;
@@ -53,45 +55,49 @@ data.title;
 const details =
 document.getElementById("developmentDetails");
 
-details.innerHTML = `    ${
-      data.address
-        ?`<p><strong>Address:</strong> ${escapeHtml(data.address)}</p>`
-: ""
+details.innerHTML = "";
+
+if (data.address) {
+details.innerHTML +=
+"<p><strong>Address:</strong> " +
+escapeHtml(data.address) +
+"</p>";
 }
 
-```
-${
-  data.developer
-    ? `<p><strong>Developer:</strong> ${escapeHtml(data.developer)}</p>`
-    : ""
+if (data.developer) {
+details.innerHTML +=
+"<p><strong>Developer:</strong> " +
+escapeHtml(data.developer) +
+"</p>";
 }
 
-${
-  data.project_type
-    ? `<p><strong>Project Type:</strong> ${escapeHtml(data.project_type)}</p>`
-    : ""
+if (data.project_type) {
+details.innerHTML +=
+"<p><strong>Project Type:</strong> " +
+escapeHtml(data.project_type) +
+"</p>";
 }
 
-${
-  data.status
-    ? `<p><strong>Status:</strong> ${escapeHtml(data.status)}</p>`
-    : ""
+if (data.status) {
+details.innerHTML +=
+"<p><strong>Status:</strong> " +
+escapeHtml(data.status) +
+"</p>";
 }
 
-${
-  data.units !== null
-    ? `<p><strong>Units:</strong> ${data.units}</p>`
-    : ""
+if (data.units !== null) {
+details.innerHTML +=
+"<p><strong>Units:</strong> " +
+data.units +
+"</p>";
 }
 
-${
-  data.storeys !== null
-    ? `<p><strong>Storeys:</strong> ${data.storeys}</p>`
-    : ""
+if (data.storeys !== null) {
+details.innerHTML +=
+"<p><strong>Storeys:</strong> " +
+data.storeys +
+"</p>";
 }
-```
-
-`;
 
 document.getElementById(
 "developmentDescription"
@@ -100,7 +106,7 @@ data.description ||
 "No description has been provided yet.";
 
 document.title =
-`${data.title} | Kelowna Developments`;
+data.title + " | Kelowna Developments";
 
 messageElement.style.display = "none";
 contentElement.style.display = "block";
@@ -120,14 +126,14 @@ return;
 discussionList.innerHTML =
 "<p>Loading discussions...</p>";
 
-const { data, error } = await supabaseClient
+const result = await supabaseClient
 .from("discussions")
 .select("*")
 .eq("development_id", developmentId)
 .order("created_at", { ascending: true });
 
-if (error) {
-console.error(error);
+if (result.error) {
+console.error(result.error);
 
 ```
 discussionList.innerHTML =
@@ -137,6 +143,8 @@ return;
 ```
 
 }
+
+const data = result.data;
 
 if (!data || data.length === 0) {
 discussionList.innerHTML =
@@ -148,126 +156,203 @@ return;
 
 }
 
-discussionList.innerHTML = data
-.map(
-(discussion) => `         <div class="discussion-card">           <p>${escapeHtml(discussion.content)}</p>           <small>
-            ${new Date(
-              discussion.created_at
-            ).toLocaleString()}           </small>         </div>
-      `
-)
-.join("");
-}
+discussionList.innerHTML = "";
 
-async function setupDiscussionForm() {
-const formContainer =
-document.getElementById("discussionFormContainer");
-
-const loginMessage =
-document.getElementById("discussionLoginMessage");
-
-const form =
-document.getElementById("discussionForm");
-
-if (!formContainer || !loginMessage || !form) {
-return;
-}
-
-const {
-data: { user }
-} = await supabaseClient.auth.getUser();
-
-if (user) {
-formContainer.style.display = "block";
-loginMessage.style.display = "none";
-} else {
-formContainer.style.display = "none";
-loginMessage.style.display = "block";
-}
-
-form.addEventListener("submit", async (event) => {
-event.preventDefault();
+data.forEach(function (discussion) {
+const card =
+document.createElement("div");
 
 ```
-const contentInput =
-  document.getElementById("discussionContent");
+card.className =
+  "discussion-card";
 
-const submitButton =
-  document.getElementById("discussionSubmitButton");
+const paragraph =
+  document.createElement("p");
 
-const formMessage =
-  document.getElementById("discussionFormMessage");
+paragraph.textContent =
+  discussion.content;
 
-const content =
-  contentInput.value.trim();
+const date =
+  document.createElement("small");
 
-if (!content) {
-  formMessage.textContent =
-    "Please enter something before posting.";
+date.textContent =
+  new Date(
+    discussion.created_at
+  ).toLocaleString();
 
-  return;
-}
+card.appendChild(paragraph);
+card.appendChild(date);
 
-if (content.length > 5000) {
-  formMessage.textContent =
-    "Your discussion is too long.";
-
-  return;
-}
-
-submitButton.disabled = true;
-submitButton.textContent = "Posting...";
-formMessage.textContent = "";
-
-const {
-  data: { user: currentUser }
-} = await supabaseClient.auth.getUser();
-
-if (!currentUser) {
-  formMessage.textContent =
-    "You must be logged in to post a discussion.";
-
-  submitButton.disabled = false;
-  submitButton.textContent = "Post Discussion";
-
-  return;
-}
-
-const { error } = await supabaseClient
-  .from("discussions")
-  .insert({
-    development_id: developmentId,
-    user_id: currentUser.id,
-    content: content
-  });
-
-if (error) {
-  console.error(error);
-
-  formMessage.textContent =
-    "There was a problem posting your discussion.";
-
-  submitButton.disabled = false;
-  submitButton.textContent = "Post Discussion";
-
-  return;
-}
-
-contentInput.value = "";
-
-formMessage.textContent =
-  "Discussion posted successfully.";
-
-submitButton.disabled = false;
-submitButton.textContent = "Post Discussion";
-
-await loadDiscussions();
+discussionList.appendChild(card);
 ```
 
 });
 }
 
+async function setupDiscussionForm() {
+const formContainer =
+document.getElementById(
+"discussionFormContainer"
+);
+
+const loginMessage =
+document.getElementById(
+"discussionLoginMessage"
+);
+
+const form =
+document.getElementById(
+"discussionForm"
+);
+
+if (!formContainer || !loginMessage || !form) {
+return;
+}
+
+const userResult =
+await supabaseClient.auth.getUser();
+
+const user =
+userResult.data.user;
+
+if (user) {
+formContainer.style.display =
+"block";
+
+```
+loginMessage.style.display =
+  "none";
+```
+
+} else {
+formContainer.style.display =
+"none";
+
+```
+loginMessage.style.display =
+  "block";
+```
+
+}
+
+form.addEventListener(
+"submit",
+async function (event) {
+event.preventDefault();
+
+```
+  const contentInput =
+    document.getElementById(
+      "discussionContent"
+    );
+
+  const submitButton =
+    document.getElementById(
+      "discussionSubmitButton"
+    );
+
+  const formMessage =
+    document.getElementById(
+      "discussionFormMessage"
+    );
+
+  const content =
+    contentInput.value.trim();
+
+  if (!content) {
+    formMessage.textContent =
+      "Please enter something before posting.";
+
+    return;
+  }
+
+  if (content.length > 5000) {
+    formMessage.textContent =
+      "Your discussion is too long.";
+
+    return;
+  }
+
+  submitButton.disabled =
+    true;
+
+  submitButton.textContent =
+    "Posting...";
+
+  formMessage.textContent =
+    "";
+
+  const currentUserResult =
+    await supabaseClient.auth.getUser();
+
+  const currentUser =
+    currentUserResult.data.user;
+
+  if (!currentUser) {
+    formMessage.textContent =
+      "You must be logged in to post a discussion.";
+
+    submitButton.disabled =
+      false;
+
+    submitButton.textContent =
+      "Post Discussion";
+
+    return;
+  }
+
+  const insertResult =
+    await supabaseClient
+      .from("discussions")
+      .insert({
+        development_id: developmentId,
+        user_id: currentUser.id,
+        content: content
+      });
+
+  if (insertResult.error) {
+    console.error(
+      insertResult.error
+    );
+
+    formMessage.textContent =
+      "There was a problem posting your discussion.";
+
+    submitButton.disabled =
+      false;
+
+    submitButton.textContent =
+      "Post Discussion";
+
+    return;
+  }
+
+  contentInput.value =
+    "";
+
+  formMessage.textContent =
+    "Discussion posted successfully.";
+
+  submitButton.disabled =
+    false;
+
+  submitButton.textContent =
+    "Post Discussion";
+
+  await loadDiscussions();
+}
+```
+
+);
+}
+
 function escapeHtml(value) {
 return String(value ?? "")
 .replaceAll("&", "&")
-.re
+.replaceAll("<", "<")
+.replaceAll(">", ">")
+.replaceAll('"', """)
+.replaceAll("'", "'");
+}
+
+loadDevelopment();
