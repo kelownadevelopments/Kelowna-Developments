@@ -391,3 +391,56 @@ supabase.auth.onAuthStateChange(() => {
 
 updateNavigation();
 loadDevelopments();
+
+const developmentRequestForm = document.getElementById("developmentRequestForm");
+
+if (developmentRequestForm) {
+  developmentRequestForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const message = document.getElementById("developmentRequestMessage");
+
+    message.textContent = "Submitting...";
+
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      message.textContent = "You must be logged in to submit a development request.";
+      return;
+    }
+
+    const title = document.getElementById("requestTitle").value.trim();
+    const address = document.getElementById("requestAddress").value.trim();
+    const developer = document.getElementById("requestDeveloper").value.trim();
+    const projectType = document.getElementById("requestProjectType").value;
+    const unitsValue = document.getElementById("requestUnits").value;
+    const storeysValue = document.getElementById("requestStoreys").value;
+    const description = document.getElementById("requestDescription").value.trim();
+
+    const { error } = await supabase
+      .from("development_requests")
+      .insert({
+        submitted_by: user.id,
+        title: title,
+        address: address || null,
+        description: description || null,
+        developer: developer || null,
+        project_type: projectType || null,
+        units: unitsValue ? Number(unitsValue) : null,
+        storeys: storeysValue ? Number(storeysValue) : null
+      });
+
+    if (error) {
+      console.error(error);
+      message.textContent = "There was a problem submitting your request.";
+      return;
+    }
+
+    developmentRequestForm.reset();
+
+    message.textContent =
+      "Your development request has been submitted successfully.";
+  });
+}
