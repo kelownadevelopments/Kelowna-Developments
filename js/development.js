@@ -65,3 +65,65 @@ async function loadDevelopment() {
 }
 
 loadDevelopment();
+
+async function loadDiscussions() {
+  const discussionList = document.getElementById("discussionList");
+
+  if (!discussionList) {
+    return;
+  }
+
+  discussionList.innerHTML = "<p>Loading discussions...</p>";
+
+  const { data, error } = await supabase
+    .from("discussions")
+    .select(`
+      id,
+      content,
+      created_at,
+      user_id,
+      profiles (
+        display_name,
+        avatar_url
+      )
+    `)
+    .eq("development_id", developmentId)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    discussionList.innerHTML =
+      "<p>Unable to load discussions.</p>";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    discussionList.innerHTML =
+      "<p>No discussions yet.</p>";
+    return;
+  }
+
+  discussionList.innerHTML = data.map((discussion) => `
+    <div class="discussion-card">
+      <div class="discussion-author">
+        <strong>
+          ${escapeHtml(
+            discussion.profiles?.display_name || "User"
+          )}
+        </strong>
+
+        <span>
+          ${new Date(
+            discussion.created_at
+          ).toLocaleString()}
+        </span>
+      </div>
+
+      <p>
+        ${escapeHtml(discussion.content)}
+      </p>
+    </div>
+  `).join("");
+}
+
+loadDiscussions();
