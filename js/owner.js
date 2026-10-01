@@ -235,3 +235,118 @@ function escapeHtml(value) {
 }
 
 loadOwnerDashboard();
+
+async function loadDevelopmentRequests() {
+  const message = document.getElementById("developmentRequestMessage");
+  const list = document.getElementById("developmentRequestList");
+
+  if (!message || !list) {
+    return;
+  }
+
+  message.textContent = "Loading development requests...";
+  list.innerHTML = "";
+
+  const { data, error } = await supabase
+    .from("development_requests")
+    .select(`
+      id,
+      title,
+      address,
+      description,
+      developer,
+      project_type,
+      units,
+      storeys,
+      status,
+      owner_notes,
+      created_at,
+      profiles (
+        display_name,
+        avatar_url
+      )
+    `)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    message.textContent = "Unable to load development requests.";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    message.textContent = "No development requests have been submitted.";
+    return;
+  }
+
+  message.textContent = "";
+
+  data.forEach((request) => {
+    const card = document.createElement("div");
+    card.className = "dashboard-card";
+
+    const submittedBy =
+      request.profiles?.display_name || "Unknown user";
+
+    const date = new Date(request.created_at).toLocaleDateString();
+
+    card.innerHTML = `
+      <h3>${request.title}</h3>
+
+      <p>
+        <strong>Submitted by:</strong>
+        ${submittedBy}
+      </p>
+
+      <p>
+        <strong>Submitted:</strong>
+        ${date}
+      </p>
+
+      <p>
+        <strong>Status:</strong>
+        ${request.status}
+      </p>
+
+      ${
+        request.address
+          ? `<p><strong>Address:</strong> ${request.address}</p>`
+          : ""
+      }
+
+      ${
+        request.developer
+          ? `<p><strong>Developer:</strong> ${request.developer}</p>`
+          : ""
+      }
+
+      ${
+        request.project_type
+          ? `<p><strong>Project Type:</strong> ${request.project_type}</p>`
+          : ""
+      }
+
+      ${
+        request.units !== null
+          ? `<p><strong>Units:</strong> ${request.units}</p>`
+          : ""
+      }
+
+      ${
+        request.storeys !== null
+          ? `<p><strong>Storeys:</strong> ${request.storeys}</p>`
+          : ""
+      }
+
+      ${
+        request.description
+          ? `<p><strong>Description:</strong> ${request.description}</p>`
+          : ""
+      }
+    `;
+
+    list.appendChild(card);
+  });
+}
+
+loadDevelopmentRequests();
