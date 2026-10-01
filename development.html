@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -14,118 +15,168 @@
   <header class="site-header">
     <div class="container header-inner">
 
-      <a href="index.html" class="site-logo">
-        Kelowna Developments
-      </a>
+```
+  <a href="index.html" class="site-logo">
+    Kelowna Developments
+  </a>
 
-      <nav class="site-nav">
-        <a href="index.html">Home</a>
-        <a href="developments.html">Developments</a>
-        <a href="submit-development.html">Submit Development</a>
-      </nav>
+  <nav class="site-nav">
+    <a href="index.html">Home</a>
+    <a href="developments.html">Developments</a>
+    <a href="submit-development.html">Submit Development</a>
+  </nav>
 
-    </div>
+</div>
+```
+
   </header>
 
   <main>
 
-    <section class="hero">
-      <div class="container">
+```
+<section class="hero">
+  <div class="container">
 
-        <p class="eyebrow">
-          KELOWNA • BRITISH COLUMBIA
-        </p>
+    <p class="eyebrow">
+      KELOWNA • BRITISH COLUMBIA
+    </p>
 
-        <h1 id="developmentTitle">
+    <h1 id="developmentTitle">
+      Development
+    </h1>
+
+    <p id="developmentAddress">
+      Loading...
+    </p>
+
+  </div>
+</section>
+
+<section class="container development-layout">
+
+  <div class="development-main">
+
+    <div
+      id="developmentMessage"
+      class="development-message"
+    >
+      Loading development...
+    </div>
+
+    <div
+      id="developmentContent"
+      style="display: none;"
+    >
+
+      <section class="dashboard-section">
+
+        <h2 id="developmentName">
           Development
-        </h1>
+        </h2>
 
-        <p id="developmentAddress">
-          Loading...
+        <div id="developmentDetails"></div>
+
+      </section>
+
+      <section class="dashboard-section">
+
+        <h2>Description</h2>
+
+        <p id="developmentDescription">
+          Loading description...
         </p>
 
-      </div>
-    </section>
+      </section>
 
-    <section class="container development-layout">
+      <section class="dashboard-section">
 
-      <div class="development-main">
+        <h2>Discussion</h2>
 
-        <div
-          id="developmentMessage"
-          class="development-message"
-        >
-          Loading development...
+        <div id="discussionList">
+          <p>Loading discussions...</p>
         </div>
 
         <div
-          id="developmentContent"
+          id="discussionFormContainer"
+          class="discussion-form-container"
           style="display: none;"
         >
 
-          <section class="dashboard-section">
+          <h3>Join the Discussion</h3>
 
-            <h2 id="developmentName">
-              Development
-            </h2>
+          <form id="discussionForm">
 
-            <div id="developmentDetails"></div>
+            <textarea
+              id="discussionContent"
+              rows="5"
+              maxlength="5000"
+              placeholder="Share your thoughts about this development..."
+              required
+            ></textarea>
 
-          </section>
+            <button
+              type="submit"
+              class="button"
+              id="discussionSubmitButton"
+            >
+              Post Discussion
+            </button>
 
-          <section class="dashboard-section">
+            <p
+              id="discussionFormMessage"
+              class="discussion-form-message"
+            ></p>
 
-            <h2>Description</h2>
-
-            <p id="developmentDescription">
-              Loading description...
-            </p>
-
-          </section>
-
-          <section class="dashboard-section">
-
-            <h2>Discussion</h2>
-
-            <div id="discussionList">
-              <p>Loading discussions...</p>
-            </div>
-
-          </section>
+          </form>
 
         </div>
 
+        <div
+          id="discussionLoginMessage"
+          class="discussion-login-message"
+          style="display: none;"
+        >
+          <p>
+            Log in to join the discussion.
+          </p>
+        </div>
+
+      </section>
+
+    </div>
+
+  </div>
+
+  <aside class="development-sidebar">
+
+    <section class="dashboard-section">
+
+      <h2>Images</h2>
+
+      <div id="imageGallery">
+        <p>
+          Images uploaded in discussions will appear here.
+        </p>
       </div>
 
-      <aside class="development-sidebar">
+    </section>
 
-        <section class="dashboard-section">
+    <section class="dashboard-section">
 
-          <h2>Images</h2>
+      <h2>Files</h2>
 
-          <div id="imageGallery">
-            <p>
-              Images uploaded in discussions will appear here.
-            </p>
-          </div>
-
-        </section>
-
-        <section class="dashboard-section">
-
-          <h2>Files</h2>
-
-          <div id="fileList">
-            <p>
-              Files uploaded in discussions will appear here.
-            </p>
-          </div>
-
-        </section>
-
-      </aside>
+      <div id="fileList">
+        <p>
+          Files uploaded in discussions will appear here.
+        </p>
+      </div>
 
     </section>
+
+  </aside>
+
+</section>
+```
 
   </main>
 
