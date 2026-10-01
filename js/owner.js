@@ -547,6 +547,14 @@ async function loadOfficialDevelopments() {
   >
     Edit
   </button>
+
+  <button
+    type="button"
+    class="button delete-development-button"
+    data-id="${development.id}"
+  >
+    Delete
+  </button>
 </div>
     </div>
   `).join("");
