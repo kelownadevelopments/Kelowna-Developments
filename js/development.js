@@ -220,12 +220,9 @@ await loadDiscussions();
 });
 }
 function escapeHtml(value) {
-const text = String(value ?? "");
-return text
-.split("&").join("&")
-.split("<").join("<")
-.split(">").join(">")
-.split('"').join(""")
-.split("'").join("'");
+return String(value ?? "")
+.replaceAll("&", "&")
+.replaceAll("<", "<")
+.replaceAll(">", ">");
 }
 loadDevelopment();
