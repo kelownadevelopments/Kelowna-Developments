@@ -11,6 +11,7 @@
 
   <header class="site-header">
     <div class="container header-inner">
+
       <a href="index.html" class="logo">
         Kelowna Developments
       </a>
@@ -20,18 +21,29 @@
         <a href="index.html#developments">Developments</a>
         <a href="index.html">Back to Site</a>
       </nav>
+
     </div>
   </header>
+
 
   <main class="container">
 
     <section class="hero">
-      <p class="eyebrow">ADMINISTRATION</p>
 
-      <h1>Owner Dashboard</h1>
+      <p class="eyebrow">
+        ADMINISTRATION
+      </p>
 
-      <p>Loading your account...</p>
+      <h1>
+        Owner Dashboard
+      </h1>
+
+      <p>
+        Loading your account...
+      </p>
+
     </section>
+
 
     <section class="dashboard-grid">
 
@@ -42,7 +54,7 @@
 
       <a href="#developments" class="dashboard-card">
         <h2>Developments</h2>
-        <p>Review submitted developments.</p>
+        <p>Create and manage development pages.</p>
       </a>
 
       <a href="#discussions" class="dashboard-card">
@@ -67,6 +79,9 @@
 
     </section>
 
+
+    <!-- USERS -->
+
     <section class="dashboard-section" id="users">
 
       <h2>Users</h2>
@@ -82,263 +97,338 @@
       <div id="userList"></div>
 
     </section>
-<section class="dashboard-section" id="developments">
-
-  <h2>Development Management</h2>
-
-  <p>
-    Create and manage the official development pages on Kelowna Developments.
-  </p>
 
 
-  <div class="community-card">
+    <!-- DEVELOPMENT MANAGEMENT -->
 
-    <p class="eyebrow">
-      CREATE DEVELOPMENT
-    </p>
+    <section class="dashboard-section" id="developments">
 
-    <h3>
-      Create a New Development
-    </h3>
+      <h2>
+        Development Management
+      </h2>
 
-    <p>
-      Only the Owner can create official development pages.
-    </p>
+      <p>
+        Create and manage the official development pages on Kelowna Developments.
+      </p>
 
 
-    <form id="createDevelopmentForm">
+      <div class="community-card">
 
-      <div class="form-field">
+        <p class="eyebrow">
+          CREATE DEVELOPMENT
+        </p>
 
-        <label for="developmentTitle">
-          Development / Project Name
-        </label>
+        <h3>
+          Create a New Development
+        </h3>
 
-        <input
-          type="text"
-          id="developmentTitle"
-          placeholder="Development name"
-          required
-        >
+        <p>
+          Only the Owner can create official development pages.
+        </p>
+
+
+        <form id="createDevelopmentForm">
+
+          <div class="form-field">
+
+            <label for="developmentTitle">
+              Development / Project Name
+            </label>
+
+            <input
+              type="text"
+              id="developmentTitle"
+              placeholder="Development name"
+              required
+            >
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="developmentAddress">
+              Address
+            </label>
+
+            <input
+              type="text"
+              id="developmentAddress"
+              placeholder="Project address"
+            >
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="developmentDeveloper">
+              Developer / Company
+            </label>
+
+            <input
+              type="text"
+              id="developmentDeveloper"
+              placeholder="Developer or company"
+            >
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="developmentProjectType">
+              Project Type
+            </label>
+
+            <select id="developmentProjectType">
+
+              <option value="">
+                Select a project type
+              </option>
+
+              <option value="Residential">
+                Residential
+              </option>
+
+              <option value="Commercial">
+                Commercial
+              </option>
+
+              <option value="Mixed Use">
+                Mixed Use
+              </option>
+
+              <option value="Industrial">
+                Industrial
+              </option>
+
+              <option value="Institutional">
+                Institutional
+              </option>
+
+              <option value="Other">
+                Other
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="developmentStatus">
+              Status
+            </label>
+
+            <select id="developmentStatus">
+
+              <option value="Proposed">
+                Proposed
+              </option>
+
+              <option value="Concept">
+                Concept
+              </option>
+
+              <option value="Approved">
+                Approved
+              </option>
+
+              <option value="Under Construction">
+                Under Construction
+              </option>
+
+              <option value="Complete">
+                Complete
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="developmentUnits">
+              Number of Units
+            </label>
+
+            <input
+              type="number"
+              id="developmentUnits"
+              min="0"
+              placeholder="Optional"
+            >
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="developmentStoreys">
+              Number of Storeys
+            </label>
+
+            <input
+              type="number"
+              id="developmentStoreys"
+              min="0"
+              placeholder="Optional"
+            >
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="developmentDescription">
+              Description
+            </label>
+
+            <textarea
+              id="developmentDescription"
+              rows="8"
+              placeholder="Describe the development..."
+            ></textarea>
+
+          </div>
+
+
+          <button
+            type="submit"
+            class="button"
+          >
+            Create Development
+          </button>
+
+
+          <p
+            id="createDevelopmentMessage"
+            class="auth-message"
+          ></p>
+
+        </form>
 
       </div>
 
 
-      <div class="form-field">
+      <hr>
 
-        <label for="developmentAddress">
-          Address
-        </label>
 
-        <input
-          type="text"
-          id="developmentAddress"
-          placeholder="Project address"
-        >
+      <h3>
+        Development Requests
+      </h3>
 
+      <p>
+        Review submissions from the community.
+      </p>
+
+      <div id="developmentRequestMessage">
+        Loading development requests...
       </div>
 
+      <div id="developmentRequestList"></div>
 
-      <div class="form-field">
+    </section>
 
-        <label for="developmentDeveloper">
-          Developer / Company
-        </label>
 
-        <input
-          type="text"
-          id="developmentDeveloper"
-          placeholder="Developer or company"
-        >
+    <!-- OFFICIAL DEVELOPMENTS -->
 
+    <section class="dashboard-section" id="officialDevelopments">
+
+      <h2>
+        Official Developments
+      </h2>
+
+      <p>
+        Manage the development pages currently published on Kelowna Developments.
+      </p>
+
+      <div id="officialDevelopmentMessage">
+        Loading official developments...
       </div>
 
+      <div id="officialDevelopmentList"></div>
 
-      <div class="form-field">
-
-        <label for="developmentProjectType">
-          Project Type
-        </label>
-
-        <select id="developmentProjectType">
-
-          <option value="">
-            Select a project type
-          </option>
-
-          <option value="Residential">
-            Residential
-          </option>
-
-          <option value="Commercial">
-            Commercial
-          </option>
-
-          <option value="Mixed Use">
-            Mixed Use
-          </option>
-
-          <option value="Industrial">
-            Industrial
-          </option>
-
-          <option value="Institutional">
-            Institutional
-          </option>
-
-          <option value="Other">
-            Other
-          </option>
-
-        </select>
-
-      </div>
+    </section>
 
 
-      <div class="form-field">
-
-        <label for="developmentStatus">
-          Status
-        </label>
-
-        <select id="developmentStatus">
-
-          <option value="Proposed">
-            Proposed
-          </option>
-
-          <option value="Concept">
-            Concept
-          </option>
-
-          <option value="Approved">
-            Approved
-          </option>
-
-          <option value="Under Construction">
-            Under Construction
-          </option>
-
-          <option value="Complete">
-            Complete
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="form-field">
-
-        <label for="developmentUnits">
-          Number of Units
-        </label>
-
-        <input
-          type="number"
-          id="developmentUnits"
-          min="0"
-          placeholder="Optional"
-        >
-
-      </div>
-
-
-      <div class="form-field">
-
-        <label for="developmentStoreys">
-          Number of Storeys
-        </label>
-
-        <input
-          type="number"
-          id="developmentStoreys"
-          min="0"
-          placeholder="Optional"
-        >
-
-      </div>
-
-
-      <div class="form-field">
-
-        <label for="developmentDescription">
-          Description
-        </label>
-
-        <textarea
-          id="developmentDescription"
-          rows="8"
-          placeholder="Describe the development..."
-        ></textarea>
-
-      </div>
-
-
-      <button
-        type="submit"
-        class="button"
-      >
-        Create Development
-      </button>
-
-
-      <p
-        id="createDevelopmentMessage"
-        class="auth-message"
-      ></p>
-
-    </form>
-
-  </div>
-
-
-  <hr>
-
-
-  <h3>
-    Development Requests
-  </h3>
-
-  <p>
-    Review submissions from the community.
-  </p>
-
-  <div id="developmentRequestMessage">
-    Loading development requests...
-  </div>
-
-  <div id="developmentRequestList"></div>
-
-</section>
+    <!-- DISCUSSIONS -->
 
     <section class="dashboard-section" id="discussions">
-      <h2>Discussions</h2>
-      <p>Discussion moderation tools will appear here.</p>
+
+      <h2>
+        Discussions
+      </h2>
+
+      <p>
+        Discussion moderation tools will appear here.
+      </p>
+
     </section>
+
+
+    <!-- MODERATION -->
 
     <section class="dashboard-section" id="moderation">
-      <h2>Bans & Reports</h2>
-      <p>Moderation tools will appear here.</p>
+
+      <h2>
+        Bans & Reports
+      </h2>
+
+      <p>
+        Moderation tools will appear here.
+      </p>
+
     </section>
+
+
+    <!-- ROLES -->
 
     <section class="dashboard-section" id="roles">
-      <h2>Roles</h2>
-      <p>Role management tools will appear here.</p>
+
+      <h2>
+        Roles
+      </h2>
+
+      <p>
+        Role management tools will appear here.
+      </p>
+
     </section>
 
+
+    <!-- AUDIT LOG -->
+
     <section class="dashboard-section" id="audit">
-      <h2>Audit Log</h2>
-      <p>Administrative activity will appear here.</p>
+
+      <h2>
+        Audit Log
+      </h2>
+
+      <p>
+        Administrative activity will appear here.
+      </p>
+
     </section>
 
   </main>
 
+
   <footer class="site-footer">
+
     <div class="container">
-      <p>© 2026 Kelowna Developments. All Rights Reserved.</p>
+
+      <p>
+        © 2026 Kelowna Developments. All Rights Reserved.
+      </p>
+
     </div>
+
   </footer>
+
 
   <script type="module" src="js/owner.js"></script>
 
