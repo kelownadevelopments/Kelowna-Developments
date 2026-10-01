@@ -1020,3 +1020,63 @@ button:active {
     position: static;
   }
 }
+
+/* Development Information */
+
+.development-main .dashboard-section {
+  background: #ffffff;
+  border: 1px solid #e2e2e2;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+#developmentName {
+  font-size: 28px;
+  margin-bottom: 24px;
+}
+
+#developmentDetails {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+#developmentDetails p {
+  margin: 0;
+  padding: 16px;
+  background: #f6f7f8;
+  border-radius: 8px;
+}
+
+#developmentDetails strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.65;
+}
+
+.development-sidebar .dashboard-section {
+  background: #ffffff;
+  border: 1px solid #e2e2e2;
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.development-sidebar h2 {
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 600px) {
+  #developmentDetails {
+    grid-template-columns: 1fr;
+  }
+
+  .development-main .dashboard-section {
+    padding: 20px;
+  }
+}
