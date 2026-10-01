@@ -394,3 +394,64 @@ document.addEventListener("click", async (event) => {
 
   loadDevelopmentRequests();
 });
+
+const createDevelopmentForm = document.getElementById("createDevelopmentForm");
+
+if (createDevelopmentForm) {
+  createDevelopmentForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const message = document.getElementById("createDevelopmentMessage");
+
+    message.textContent = "Creating development...";
+
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      message.textContent = "You must be logged in.";
+      return;
+    }
+
+    const title = document.getElementById("developmentTitle").value.trim();
+    const address = document.getElementById("developmentAddress").value.trim();
+    const developer = document.getElementById("developmentDeveloper").value.trim();
+    const projectType = document.getElementById("developmentProjectType").value;
+    const status = document.getElementById("developmentStatus").value;
+    const unitsValue = document.getElementById("developmentUnits").value;
+    const storeysValue = document.getElementById("developmentStoreys").value;
+    const description = document.getElementById("developmentDescription").value.trim();
+
+    const { error } = await supabase
+      .from("developments")
+      .insert({
+        title: title,
+        address: address || null,
+        description: description || null,
+        developer: developer || null,
+        project_type: projectType || null,
+        status: status,
+        units: unitsValue ? Number(unitsValue) : null,
+        storeys: storeysValue ? Number(storeysValue) : null,
+        submitted_by: user.id,
+        approved_by: user.id,
+        is_approved: true,
+        approved_at: new Date().toISOString()
+      });
+
+    if (error) {
+      console.error(error);
+      message.textContent = "There was a problem creating the development.";
+      return;
+    }
+
+    createDevelopmentForm.reset();
+
+    message.textContent =
+      "Development created successfully.";
+    
+    loadDevelopmentRequests();
+  });
+}
+
