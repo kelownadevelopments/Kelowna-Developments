@@ -948,3 +948,75 @@ button:active {
     padding: 28px 22px;
   }
 }
+
+/* Development Page */
+
+.development-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 32px;
+  align-items: start;
+}
+
+.development-main,
+.development-sidebar {
+  min-width: 0;
+}
+
+.development-sidebar {
+  position: sticky;
+  top: 24px;
+}
+
+.development-main .dashboard-section,
+.development-sidebar .dashboard-section {
+  margin-bottom: 24px;
+}
+
+.development-main h2,
+.development-sidebar h2 {
+  margin-top: 0;
+}
+
+.development-message {
+  padding: 24px;
+}
+
+.discussion-card {
+  padding: 18px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.discussion-card:last-child {
+  border-bottom: none;
+}
+
+.discussion-card p {
+  margin: 10px 0 8px;
+}
+
+.discussion-card small {
+  opacity: 0.65;
+}
+
+.discussion-author {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+#imageGallery,
+#fileList {
+  min-height: 80px;
+}
+
+@media (max-width: 800px) {
+  .development-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .development-sidebar {
+    position: static;
+  }
+}
