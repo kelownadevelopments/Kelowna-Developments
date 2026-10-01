@@ -419,12 +419,17 @@ heroSignup?.addEventListener("click", (event) => {
   openAuthModal(false);
 });
 
+javascript id="q3r8xp"
 supabase.auth.onAuthStateChange(() => {
   updateNavigation();
 });
 
-updateNavigation();
-loadDevelopments();
+async function initializeApp() {
+  await updateNavigation();
+  await loadDevelopments();
+}
+
+initializeApp();
 
 const developmentRequestForm = document.getElementById("developmentRequestForm");
 
