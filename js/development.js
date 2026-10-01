@@ -133,7 +133,7 @@ data.forEach(function (discussion) {
 const card = document.createElement("div");
 card.className = "discussion-card";
 
-```
+  
 const paragraph = document.createElement("p");
 paragraph.textContent = discussion.content;
 
@@ -145,7 +145,7 @@ card.appendChild(paragraph);
 card.appendChild(date);
 
 discussionList.appendChild(card);
-```
+
 
 });
 }
@@ -180,7 +180,7 @@ loginMessage.style.display = "block";
 form.addEventListener("submit", async function (event) {
 event.preventDefault();
 
-```
+
 const contentInput =
   document.getElementById("discussionContent");
 
@@ -255,7 +255,7 @@ submitButton.disabled = false;
 submitButton.textContent = "Post Discussion";
 
 await loadDiscussions();
-```
+
 
 });
 }
