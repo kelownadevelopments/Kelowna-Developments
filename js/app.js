@@ -405,56 +405,6 @@ async function loadDevelopments() {
   });
 }
 
-  if (!data || data.length === 0) {
-    developmentList.innerHTML = `
-      <div class="empty-state">
-        <h3>No developments yet</h3>
-        <p>Approved developments will appear here.</p>
-      </div>
-    `;
-    return;
-  }
-
-  developmentList.innerHTML = data
-    .map(
-      (development) => `
-        <article class="development-card">
-          <h3>${escapeHtml(development.title)}</h3>
-
-          ${
-            development.address
-              ? `<p class="development-address">${escapeHtml(
-                  development.address
-                )}</p>`
-              : ""
-          }
-
-          ${
-            development.description
-              ? `<p>${escapeHtml(development.description)}</p>`
-              : ""
-          }
-
-          ${
-            development.developer
-              ? `<p><strong>Developer:</strong> ${escapeHtml(
-                  development.developer
-                )}</p>`
-              : ""
-          }
-
-          ${
-            development.project_type
-              ? `<p><strong>Type:</strong> ${escapeHtml(
-                  development.project_type
-                )}</p>`
-              : ""
-          }
-        </article>
-      `
-    )
-    .join("");
-}
 
 closeModal?.addEventListener("click", closeAuthModal);
 
