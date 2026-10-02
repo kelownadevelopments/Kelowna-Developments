@@ -1,7 +1,9 @@
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
 const SUPABASE_URL = "https://diljkqsrqdktzyumrqkg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_JjzaLH_H48oLIvuRz9F5jg_yyC5xxII";
 
-const supabase = window.supabase.createClient(
+const supabase = createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
@@ -263,6 +265,8 @@ async function handleAuthSubmit(event) {
       if (authForm) {
         authForm.reset();
       }
+
+      await updateNavigation();
     }
   } catch (error) {
     console.error("Authentication error:", error);
@@ -297,11 +301,15 @@ async function updateNavigation() {
   if (!user) {
     if (loginLink) {
       loginLink.textContent = "Log In";
+      loginLink.href = "#";
+      loginLink.classList.remove("button");
       loginLink.style.display = "";
     }
 
     if (signupLink) {
       signupLink.textContent = "Create Account";
+      signupLink.href = "#";
+      signupLink.classList.add("button");
       signupLink.style.display = "";
     }
 
@@ -318,6 +326,7 @@ async function updateNavigation() {
   if (signupLink) {
     signupLink.textContent = "Log Out";
     signupLink.href = "#";
+    signupLink.classList.remove("button");
     signupLink.style.display = "";
 
     signupLink.onclick = async event => {
@@ -416,7 +425,7 @@ async function loadDevelopments() {
               src="${escapeHtml(firstImage.image_url)}"
               alt="${escapeHtml(
                 firstImage.file_name ||
-                  development.title
+                development.title
               )}"
               class="development-card-image"
             >
@@ -448,26 +457,6 @@ async function loadDevelopments() {
           </div>
         `
         : "";
-
-      const unitsHtml =
-        development.units !== null &&
-        development.units !== undefined
-          ? `
-            <span>
-              ${escapeHtml(development.units)} units
-            </span>
-          `
-          : "";
-
-      const storeysHtml =
-        development.storeys !== null &&
-        development.storeys !== undefined
-          ? `
-            <span>
-              ${escapeHtml(development.storeys)} storeys
-            </span>
-          `
-          : "";
 
       return `
         <article class="development-card">
@@ -525,12 +514,29 @@ async function loadDevelopments() {
             }
 
             ${
-              unitsHtml || storeysHtml
+              development.units !== null &&
+              development.units !== undefined
                 ? `
-                  <div class="development-card-meta">
-                    ${unitsHtml}
-                    ${storeysHtml}
-                  </div>
+                  <p>
+                    <strong>Units:</strong>
+                    ${escapeHtml(
+                      development.units
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+            ${
+              development.storeys !== null &&
+              development.storeys !== undefined
+                ? `
+                  <p>
+                    <strong>Storeys:</strong>
+                    ${escapeHtml(
+                      development.storeys
+                    )}
+                  </p>
                 `
                 : ""
             }
@@ -674,24 +680,19 @@ function setupDevelopmentSearch() {
   const developmentList =
     document.getElementById("developmentList");
 
-  if (
-    !searchInput ||
-    !statusFilter ||
-    !typeFilter ||
-    !developmentList
-  ) {
+  if (!developmentList) {
     return;
   }
 
   const filterDevelopments = () => {
     const search =
-      searchInput.value.trim().toLowerCase();
+      searchInput?.value.trim().toLowerCase() || "";
 
     const status =
-      statusFilter.value.trim().toLowerCase();
+      statusFilter?.value.trim().toLowerCase() || "";
 
     const type =
-      typeFilter.value.trim().toLowerCase();
+      typeFilter?.value.trim().toLowerCase() || "";
 
     const cards =
       developmentList.querySelectorAll(
@@ -714,23 +715,13 @@ function setupDevelopmentSearch() {
           .trim()
           .toLowerCase() || "";
 
-      const typeText =
-        Array.from(
-          card.querySelectorAll("p")
-        )
-          .map(element =>
-            element.textContent
-              .toLowerCase()
-          )
-          .join(" ");
-
       const matchesStatus =
         !status ||
         statusLabel.includes(status);
 
       const matchesType =
         !type ||
-        typeText.includes(type);
+        text.includes(type);
 
       card.style.display =
         matchesSearch &&
@@ -741,20 +732,26 @@ function setupDevelopmentSearch() {
     });
   };
 
-  searchInput.addEventListener(
-    "input",
-    filterDevelopments
-  );
+  if (searchInput) {
+    searchInput.addEventListener(
+      "input",
+      filterDevelopments
+    );
+  }
 
-  statusFilter.addEventListener(
-    "change",
-    filterDevelopments
-  );
+  if (statusFilter) {
+    statusFilter.addEventListener(
+      "change",
+      filterDevelopments
+    );
+  }
 
-  typeFilter.addEventListener(
-    "change",
-    filterDevelopments
-  );
+  if (typeFilter) {
+    typeFilter.addEventListener(
+      "change",
+      filterDevelopments
+    );
+  }
 }
 
 async function initializeApp() {
@@ -767,11 +764,15 @@ async function initializeApp() {
   setupDevelopmentSearch();
 }
 
+if (document.readyState === "loading") {
+  document.addEventListener(
+    "DOMContentLoaded",
+    initializeApp
+  );
+} else {
+  initializeApp();
+}
+
 supabase.auth.onAuthStateChange(() => {
   updateNavigation();
 });
-
-document.addEventListener(
-  "DOMContentLoaded",
-  initializeApp
-);
