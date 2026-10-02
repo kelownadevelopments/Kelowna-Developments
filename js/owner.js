@@ -1961,6 +1961,328 @@ function setupUnbanButtons() {
     });
 }
 
+async function loadRoles() {
+  const roleManagementList =
+    document.getElementById(
+      "roleManagementList"
+    );
+
+  if (!roleManagementList) {
+    return;
+  }
+
+  roleManagementList.innerHTML =
+    "<p>Loading roles...</p>";
+
+  const currentUser =
+    await getCurrentUser();
+
+  if (!currentUser) {
+    return;
+  }
+
+  const {
+    data: users,
+    error: usersError
+  } = await supabase
+    .from("profiles")
+    .select(`
+      id,
+      display_name,
+      avatar_url,
+      created_at
+    `)
+    .order(
+      "created_at",
+      {
+        ascending: true
+      }
+    );
+
+  if (usersError) {
+    console.error(
+      "Unable to load users for roles:",
+      usersError
+    );
+
+    roleManagementList.innerHTML =
+      "<p>Unable to load roles.</p>";
+
+    return;
+  }
+
+  const {
+    data: roles,
+    error: rolesError
+  } = await supabase
+    .from("user_roles")
+    .select(`
+      user_id,
+      role
+    `);
+
+  if (rolesError) {
+    console.error(
+      "Unable to load roles:",
+      rolesError
+    );
+
+    roleManagementList.innerHTML =
+      "<p>Unable to load roles.</p>";
+
+    return;
+  }
+
+  const roleMap =
+    new Map(
+      (roles || []).map(role => [
+        role.user_id,
+        role.role
+      ])
+    );
+
+  if (
+    !users ||
+    users.length === 0
+  ) {
+    roleManagementList.innerHTML =
+      "<p>No users found.</p>";
+
+    return;
+  }
+
+  roleManagementList.innerHTML =
+    users
+      .map(user => {
+        const currentRole =
+          roleMap.get(user.id) ||
+          "user";
+
+        const isCurrentUser =
+          user.id === currentUser.id;
+
+        return `
+          <article class="dashboard-card">
+
+            <div class="dashboard-card-header">
+
+              <div>
+
+                <h3>
+                  ${escapeHtml(
+                    user.display_name ||
+                    "Unnamed User"
+                  )}
+                </h3>
+
+                <small>
+                  Joined
+                  ${escapeHtml(
+                    new Date(
+                      user.created_at
+                    ).toLocaleDateString()
+                  )}
+                </small>
+
+              </div>
+
+              ${
+                isCurrentUser
+                  ? `
+                    <span class="verified-badge">
+                      You
+                    </span>
+                  `
+                  : ""
+              }
+
+            </div>
+
+
+            <div class="form-field">
+
+              <label
+                for="role-${user.id}"
+              >
+                Account Role
+              </label>
+
+              <select
+                id="role-${user.id}"
+                class="role-select"
+                data-user-id="${user.id}"
+                ${
+                  isCurrentUser
+                    ? "disabled"
+                    : ""
+                }
+              >
+
+                <option
+                  value="user"
+                  ${
+                    currentRole === "user"
+                      ? "selected"
+                      : ""
+                  }
+                >
+                  User
+                </option>
+
+                <option
+                  value="moderator"
+                  ${
+                    currentRole === "moderator"
+                      ? "selected"
+                      : ""
+                  }
+                >
+                  Moderator
+                </option>
+
+                <option
+                  value="owner"
+                  ${
+                    currentRole === "owner"
+                      ? "selected"
+                      : ""
+                  }
+                >
+                  Owner
+                </option>
+
+              </select>
+
+            </div>
+
+
+            ${
+              isCurrentUser
+                ? `
+                  <p>
+                    Your own role cannot be changed
+                    from this dashboard.
+                  </p>
+                `
+                : `
+                  <button
+                    type="button"
+                    class="button save-role-button"
+                    data-user-id="${user.id}"
+                  >
+                    Save Role
+                  </button>
+                `
+            }
+
+          </article>
+        `;
+      })
+      .join("");
+
+
+  document
+    .querySelectorAll(
+      ".save-role-button"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        async () => {
+
+          const userId =
+            button.dataset.userId;
+
+          const select =
+            document.querySelector(
+              `.role-select[data-user-id="${userId}"]`
+            );
+
+          if (
+            !userId ||
+            !select
+          ) {
+            return;
+          }
+
+          const newRole =
+            select.value;
+
+          if (
+            ![
+              "user",
+              "moderator",
+              "owner"
+            ].includes(newRole)
+          ) {
+            return;
+          }
+
+          const confirmed =
+            window.confirm(
+              `Change this user's role to ${newRole}?`
+            );
+
+          if (!confirmed) {
+            return;
+          }
+
+          button.disabled = true;
+          button.textContent =
+            "Saving...";
+
+          const {
+            error
+          } = await supabase
+            .from("user_roles")
+            .update({
+              role: newRole
+            })
+            .eq(
+              "user_id",
+              userId
+            );
+
+          if (error) {
+            console.error(
+              "Unable to update role:",
+              error
+            );
+
+            button.disabled = false;
+            button.textContent =
+              "Save Role";
+
+            const message =
+              document.getElementById(
+                "roleManagementMessage"
+              );
+
+            if (message) {
+              message.textContent =
+                error.message ||
+                "Unable to update role.";
+            }
+
+            return;
+          }
+
+          const message =
+            document.getElementById(
+              "roleManagementMessage"
+            );
+
+          if (message) {
+            message.textContent =
+              "Role updated successfully.";
+          }
+
+          await loadRoles();
+        }
+      );
+    });
+}
 
 function setupCreateDevelopmentForm() {
   if (!createDevelopmentForm) {
