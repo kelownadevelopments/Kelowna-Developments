@@ -59,7 +59,7 @@
 
       <a href="#discussions" class="dashboard-card">
         <h2>Discussions</h2>
-        <p>Moderate project discussions.</p>
+        <p>Review and moderate community discussions.</p>
       </a>
 
       <a href="#moderation" class="dashboard-card">
@@ -90,9 +90,7 @@
         Registered accounts on Kelowna Developments.
       </p>
 
-      <div id="userMessage">
-        
-      </div>
+      <div id="userMessage"></div>
 
       <div id="userList"></div>
 
@@ -240,11 +238,28 @@
                 Under Construction
               </option>
 
-              <option value="Complete">
-                Complete
+              <option value="Completed">
+                Completed
               </option>
 
             </select>
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="developmentCompletionYear">
+              Expected Completion Year
+            </label>
+
+            <input
+              type="number"
+              id="developmentCompletionYear"
+              min="2020"
+              max="2100"
+              placeholder="Optional, e.g. 2027"
+            >
 
           </div>
 
@@ -325,9 +340,7 @@
         Review submissions from the community.
       </p>
 
-      <div id="developmentRequestMessage">
-        Loading development requests...
-      </div>
+      <div id="developmentRequestMessage"></div>
 
       <div id="developmentRequestList"></div>
 
@@ -336,7 +349,10 @@
 
     <!-- OFFICIAL DEVELOPMENTS -->
 
-    <section class="dashboard-section" id="officialDevelopments">
+    <section
+      class="dashboard-section"
+      id="officialDevelopments"
+    >
 
       <h2>
         Official Developments
@@ -346,9 +362,7 @@
         Manage the development pages currently published on Kelowna Developments.
       </p>
 
-      <div id="officialDevelopmentMessage">
-        Loading official developments...
-      </div>
+      <div id="officialDevelopmentMessage"></div>
 
       <div id="officialDevelopmentList"></div>
 
@@ -357,22 +371,35 @@
 
     <!-- DISCUSSIONS -->
 
-    <section class="dashboard-section" id="discussions">
+    <section
+      class="dashboard-section"
+      id="discussions"
+    >
 
       <h2>
         Discussions
       </h2>
 
       <p>
-        Discussion moderation tools will appear here.
+        Review and moderate discussions posted across development pages.
       </p>
+
+      <div
+        id="discussionModerationMessage"
+        class="auth-message"
+      ></div>
+
+      <div id="discussionModerationList"></div>
 
     </section>
 
 
     <!-- MODERATION -->
 
-    <section class="dashboard-section" id="moderation">
+    <section
+      class="dashboard-section"
+      id="moderation"
+    >
 
       <h2>
         Bans & Reports
@@ -387,7 +414,10 @@
 
     <!-- ROLES -->
 
-    <section class="dashboard-section" id="roles">
+    <section
+      class="dashboard-section"
+      id="roles"
+    >
 
       <h2>
         Roles
@@ -402,7 +432,10 @@
 
     <!-- AUDIT LOG -->
 
-    <section class="dashboard-section" id="audit">
+    <section
+      class="dashboard-section"
+      id="audit"
+    >
 
       <h2>
         Audit Log
