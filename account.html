@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account | Kelowna Developments</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+
+      <a href="index.html" class="logo">
+        <span class="logo-text">
+          <strong>Kelowna</strong>
+          <span>Developments</span>
+        </span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="index.html#developments">Developments</a>
+        <a href="#" id="loginLink">Log In</a>
+        <a href="#" id="signupLink" class="button">Create Account</a>
+      </nav>
+
+    </div>
+  </header>
+
+  <main>
+
+    <section class="hero">
+      <div class="container">
+
+        <p class="eyebrow">ACCOUNT</p>
+
+        <h1>
+          Your Account
+        </h1>
+
+        <p>
+          Manage your Kelowna Developments profile and account information.
+        </p>
+
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+
+        <div class="account-panel">
+
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">PROFILE</p>
+              <h2>Account Information</h2>
+            </div>
+          </div>
+
+          <div id="accountMessage" class="auth-message"></div>
+
+          <div class="account-details">
+
+            <div class="account-detail">
+              <span class="account-detail-label">
+                Display Name
+              </span>
+              <strong id="accountDisplayName">
+                Loading...
+              </strong>
+            </div>
+
+            <div class="account-detail">
+              <span class="account-detail-label">
+                Email
+              </span>
+              <strong id="accountEmail">
+                Loading...
+              </strong>
+            </div>
+
+            <div class="account-detail">
+              <span class="account-detail-label">
+                Role
+              </span>
+              <strong id="accountRole">
+                Loading...
+              </strong>
+            </div>
+
+            <div class="account-detail">
+              <span class="account-detail-label">
+                Verification
+              </span>
+              <strong id="accountVerified">
+                Loading...
+              </strong>
+            </div>
+
+            <div class="account-detail">
+              <span class="account-detail-label">
+                Account Created
+              </span>
+              <strong id="accountCreated">
+                Loading...
+              </strong>
+            </div>
+
+          </div>
+
+          <div class="account-bio-section">
+            <span class="account-detail-label">
+              Bio
+            </span>
+
+            <p id="accountBio">
+              Loading...
+            </p>
+          </div>
+
+          <div class="account-actions">
+
+            <a
+              href="owner.html"
+              id="accountOwnerDashboard"
+              class="button"
+              hidden
+            >
+              Owner Dashboard
+            </a>
+
+            <button
+              type="button"
+              id="accountLogout"
+              class="button secondary"
+            >
+              Log Out
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>
+        © 2026 Kelowna Developments. All Rights Reserved.
+      </p>
+    </div>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/account.js"></script>
+
+</body>
+</html>
