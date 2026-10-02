@@ -1193,3 +1193,57 @@ button:active {
     height: 100px;
   }
 }
+
+/* Development Status */
+
+.development-status-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  padding: 9px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.development-status-label {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.development-completion {
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.status-concept {
+  background: #e8e8e8;
+  color: #444;
+}
+
+.status-proposed {
+  background: #fff0c2;
+  color: #735500;
+}
+
+.status-approved {
+  background: #dceeff;
+  color: #15558a;
+}
+
+.status-construction {
+  background: #ffe0b2;
+  color: #8a4b00;
+}
+
+.status-completed {
+  background: #d9f2df;
+  color: #216b35;
+}
+
+.status-default {
+  background: #eeeeee;
+  color: #444;
+}
