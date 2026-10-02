@@ -45,50 +45,51 @@ async function loadDevelopment() {
   document.getElementById("developmentName").textContent =
     data.title;
 
-  const details = document.getElementById("developmentDetails");
+  addStatusBanner(data);
+
+  const details =
+    document.getElementById("developmentDetails");
 
   details.innerHTML = "";
 
   if (data.address) {
-    details.innerHTML +=
-      "<p><strong>Address:</strong> " +
-      escapeHtml(data.address) +
-      "</p>";
+    addDetail(details, "Address", data.address);
   }
 
   if (data.developer) {
-    details.innerHTML +=
-      "<p><strong>Developer:</strong> " +
-      escapeHtml(data.developer) +
-      "</p>";
+    addDetail(details, "Developer", data.developer);
   }
 
   if (data.project_type) {
-    details.innerHTML +=
-      "<p><strong>Project Type:</strong> " +
-      escapeHtml(data.project_type) +
-      "</p>";
+    addDetail(details, "Project Type", data.project_type);
   }
 
   if (data.status) {
-    details.innerHTML +=
-      "<p><strong>Status:</strong> " +
-      escapeHtml(data.status) +
-      "</p>";
+    addDetail(details, "Status", data.status);
+  }
+
+  if (data.completion_year) {
+    addDetail(
+      details,
+      "Expected Completion",
+      String(data.completion_year)
+    );
   }
 
   if (data.units !== null) {
-    details.innerHTML +=
-      "<p><strong>Units:</strong> " +
-      data.units +
-      "</p>";
+    addDetail(
+      details,
+      "Units",
+      String(data.units)
+    );
   }
 
   if (data.storeys !== null) {
-    details.innerHTML +=
-      "<p><strong>Storeys:</strong> " +
-      data.storeys +
-      "</p>";
+    addDetail(
+      details,
+      "Storeys",
+      String(data.storeys)
+    );
   }
 
   document.getElementById("developmentDescription").textContent =
@@ -105,6 +106,121 @@ async function loadDevelopment() {
   await loadAttachments();
   setupFileSelection();
   await setupDiscussionForm();
+}
+
+function addDetail(container, label, value) {
+  const paragraph =
+    document.createElement("p");
+
+  const strong =
+    document.createElement("strong");
+
+  strong.textContent =
+    label + ":";
+
+  paragraph.appendChild(strong);
+
+  paragraph.appendChild(
+    document.createTextNode(
+      " " + value
+    )
+  );
+
+  container.appendChild(paragraph);
+}
+
+function addStatusBanner(data) {
+  const existing =
+    document.getElementById(
+      "developmentStatusBanner"
+    );
+
+  if (existing) {
+    existing.remove();
+  }
+
+  if (!data.status) {
+    return;
+  }
+
+  const banner =
+    document.createElement("div");
+
+  banner.id =
+    "developmentStatusBanner";
+
+  const statusClass =
+    getStatusClass(data.status);
+
+  banner.className =
+    "development-status-banner " +
+    statusClass;
+
+  const statusText =
+    document.createElement("span");
+
+  statusText.className =
+    "development-status-label";
+
+  statusText.textContent =
+    data.status;
+
+  banner.appendChild(statusText);
+
+  if (data.completion_year) {
+    const completion =
+      document.createElement("span");
+
+    completion.className =
+      "development-completion";
+
+    completion.textContent =
+      "Expected completion: " +
+      data.completion_year;
+
+    banner.appendChild(completion);
+  }
+
+  const title =
+    document.getElementById(
+      "developmentTitle"
+    );
+
+  title.parentNode.insertBefore(
+    banner,
+    title
+  );
+}
+
+function getStatusClass(status) {
+  const normalized =
+    String(status)
+      .toLowerCase()
+      .replace(/\s+/g, "-");
+
+  if (normalized === "concept") {
+    return "status-concept";
+  }
+
+  if (normalized === "proposed") {
+    return "status-proposed";
+  }
+
+  if (normalized === "approved") {
+    return "status-approved";
+  }
+
+  if (
+    normalized === "under-construction"
+  ) {
+    return "status-construction";
+  }
+
+  if (normalized === "completed") {
+    return "status-completed";
+  }
+
+  return "status-default";
 }
 
 async function loadDiscussions() {
@@ -630,14 +746,15 @@ async function setupDiscussionForm() {
       const discussionId =
         insertResult.data.id;
 
-      const uploadedPaths = [];
-
-      let failedUploads = [];
+      const failedUploads = [];
 
       for (const file of selectedFiles) {
         const safeFileName =
           file.name
-            .replace(/[^a-zA-Z0-9._-]/g, "_");
+            .replace(
+              /[^a-zA-Z0-9._-]/g,
+              "_"
+            );
 
         const uniqueName =
           crypto.randomUUID() +
@@ -678,10 +795,6 @@ async function setupDiscussionForm() {
 
           continue;
         }
-
-        uploadedPaths.push(
-          storagePath
-        );
 
         const publicUrlResult =
           supabaseClient
@@ -795,13 +908,6 @@ function formatFileSize(bytes) {
     (bytes / (1024 * 1024)).toFixed(1) +
     " MB"
   );
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
 }
 
 loadDevelopment();
