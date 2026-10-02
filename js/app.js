@@ -129,11 +129,9 @@ function openAuthModal(mode = "login") {
 }
 
 function closeModal() {
-  if (!authModal) {
-    return;
+  if (authModal) {
+    authModal.classList.remove("open");
   }
-
-  authModal.classList.remove("open");
 }
 
 function setupAuthModal() {
@@ -151,10 +149,7 @@ function setupAuthModal() {
 
   if (loginLink) {
     loginLink.addEventListener("click", event => {
-      const isAccountLink =
-        loginLink.dataset.loggedIn === "true";
-
-      if (isAccountLink) {
+      if (loginLink.dataset.loggedIn === "true") {
         return;
       }
 
@@ -165,10 +160,7 @@ function setupAuthModal() {
 
   if (signupLink) {
     signupLink.addEventListener("click", async event => {
-      const isLoggedIn =
-        signupLink.dataset.loggedIn === "true";
-
-      if (isLoggedIn) {
+      if (signupLink.dataset.loggedIn === "true") {
         event.preventDefault();
 
         try {
@@ -320,7 +312,7 @@ async function handleAuthSubmit(event) {
 
   try {
     if (authMode === "signup") {
-      const { error } =
+      const { data, error } =
         await supabase.auth.signUp({
           email,
           password,
@@ -337,8 +329,15 @@ async function handleAuthSubmit(event) {
       }
 
       if (authMessage) {
-        authMessage.textContent =
-          "Account created successfully. You can now log in.";
+        if (
+          data.session
+        ) {
+          authMessage.textContent =
+            "Account created successfully.";
+        } else {
+          authMessage.textContent =
+            "Account created successfully. Check your email if confirmation is required, then log in.";
+        }
       }
 
       authMode = "login";
@@ -425,16 +424,11 @@ async function updateNavigation() {
   }
 
   const {
-    data: { user },
-    error
-  } = await supabase.auth.getUser();
+    data: { session }
+  } = await supabase.auth.getSession();
 
-  if (error) {
-    console.error(
-      "Unable to check authentication:",
-      error
-    );
-  }
+  const user =
+    session?.user || null;
 
   if (!user) {
     loginLink.textContent =
@@ -857,8 +851,11 @@ function setupDevelopmentRequestForm() {
       event.preventDefault();
 
       const {
-        data: { user }
-      } = await supabase.auth.getUser();
+        data: { session }
+      } = await supabase.auth.getSession();
+
+      const user =
+        session?.user || null;
 
       if (!user) {
         if (message) {
@@ -980,8 +977,8 @@ function setupDevelopmentRequestForm() {
 
 async function initializeApp() {
   setupAuthModal();
-  setupDevelopmentRequestForm();
   setupDevelopmentSearch();
+  setupDevelopmentRequestForm();
 
   await updateNavigation();
   await loadDevelopments();
