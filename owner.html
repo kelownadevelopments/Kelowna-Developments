@@ -3,13 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Owner Dashboard | Kelowna Developments</title>
+
   <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
   <header class="site-header">
+
     <div class="container header-inner">
 
       <a href="index.html" class="logo">
@@ -17,16 +20,30 @@
       </a>
 
       <nav class="main-nav">
-        <a href="index.html">Home</a>
-        <a href="index.html#developments">Developments</a>
-        <a href="index.html">Back to Site</a>
+
+        <a href="index.html">
+          Home
+        </a>
+
+        <a href="index.html#developments">
+          Developments
+        </a>
+
+        <a href="index.html">
+          Back to Site
+        </a>
+
       </nav>
 
     </div>
+
   </header>
 
 
   <main class="container">
+
+
+    <!-- DASHBOARD HERO -->
 
     <section class="hero">
 
@@ -45,36 +62,103 @@
     </section>
 
 
+    <!-- DASHBOARD NAVIGATION -->
+
     <section class="dashboard-grid">
 
-      <a href="#users" class="dashboard-card">
-        <h2>Users</h2>
-        <p>View and manage registered accounts.</p>
+      <a
+        href="#users"
+        class="dashboard-card"
+      >
+
+        <h2>
+          Users
+        </h2>
+
+        <p>
+          View and manage registered accounts.
+        </p>
+
       </a>
 
-      <a href="#developments" class="dashboard-card">
-        <h2>Developments</h2>
-        <p>Create and manage development pages.</p>
+
+      <a
+        href="#developments"
+        class="dashboard-card"
+      >
+
+        <h2>
+          Developments
+        </h2>
+
+        <p>
+          Create and manage development pages.
+        </p>
+
       </a>
 
-      <a href="#discussions" class="dashboard-card">
-        <h2>Discussions</h2>
-        <p>Review and moderate community discussions.</p>
+
+      <a
+        href="#discussions"
+        class="dashboard-card"
+      >
+
+        <h2>
+          Discussions
+        </h2>
+
+        <p>
+          Review and moderate community discussions.
+        </p>
+
       </a>
 
-      <a href="#moderation" class="dashboard-card">
-        <h2>Bans & Reports</h2>
-        <p>Review reports and manage bans.</p>
+
+      <a
+        href="#moderation"
+        class="dashboard-card"
+      >
+
+        <h2>
+          Bans & Reports
+        </h2>
+
+        <p>
+          Review reports and manage bans.
+        </p>
+
       </a>
 
-      <a href="#roles" class="dashboard-card">
-        <h2>Roles</h2>
-        <p>Manage moderators and staff.</p>
+
+      <a
+        href="#roles"
+        class="dashboard-card"
+      >
+
+        <h2>
+          Roles
+        </h2>
+
+        <p>
+          Manage moderators and staff.
+        </p>
+
       </a>
 
-      <a href="#audit" class="dashboard-card">
-        <h2>Audit Log</h2>
-        <p>View administrative activity.</p>
+
+      <a
+        href="#audit"
+        class="dashboard-card"
+      >
+
+        <h2>
+          Audit Log
+        </h2>
+
+        <p>
+          View administrative activity.
+        </p>
+
       </a>
 
     </section>
@@ -82,9 +166,14 @@
 
     <!-- USERS -->
 
-    <section class="dashboard-section" id="users">
+    <section
+      class="dashboard-section"
+      id="users"
+    >
 
-      <h2>Users</h2>
+      <h2>
+        Users
+      </h2>
 
       <p>
         Registered accounts on Kelowna Developments.
@@ -99,7 +188,10 @@
 
     <!-- DEVELOPMENT MANAGEMENT -->
 
-    <section class="dashboard-section" id="developments">
+    <section
+      class="dashboard-section"
+      id="developments"
+    >
 
       <h2>
         Development Management
@@ -126,6 +218,7 @@
 
 
         <form id="createDevelopmentForm">
+
 
           <div class="form-field">
 
@@ -394,101 +487,84 @@
     </section>
 
 
-    <!-- MODERATION -->
+    <!-- BANS & REPORTS -->
 
-   <section
-  class="dashboard-section"
-  id="moderation"
->
-
-  <h2>
-    Bans & Reports
-  </h2>
-
-  <p>
-    Review community reports and manage user bans.
-  </p>
-
-
-  <div
-    id="reportModerationMessage"
-    class="auth-message"
-  ></div>
-
-
-  <h3>
-    Reports
-  </h3>
-
-  <p>
-    Reports submitted by community members.
-  </p>
-
-  <div id="reportList">
-    Loading reports...
-  </div>
-
-
-  <hr>
-
-
-  <h3>
-    Active Bans
-  </h3>
-
-  <p>
-    Users currently banned from the site.
-  </p>
-
-  <div id="banList">
-    Loading bans...
-  </div>
-
-</section>
+    <section
+      class="dashboard-section"
+      id="moderation"
+    >
 
       <h2>
         Bans & Reports
       </h2>
 
       <p>
-        Moderation tools will appear here.
+        Review community reports and manage user bans.
       </p>
+
+
+      <div
+        id="reportModerationMessage"
+        class="auth-message"
+      ></div>
+
+
+      <h3>
+        Reports
+      </h3>
+
+      <p>
+        Reports submitted by community members.
+      </p>
+
+      <div id="reportList">
+        Loading reports...
+      </div>
+
+
+      <hr>
+
+
+      <h3>
+        Active Bans
+      </h3>
+
+      <p>
+        Users currently banned from the site.
+      </p>
+
+      <div id="banList">
+        Loading bans...
+      </div>
 
     </section>
 
 
     <!-- ROLES -->
 
-  <section
-  class="dashboard-section"
-  id="roles"
->
+    <section
+      class="dashboard-section"
+      id="roles"
+    >
 
-  <h2>
-    Roles
-  </h2>
-
-  <p>
-    Manage account roles and staff access.
-  </p>
-
-  <div
-    id="roleManagementMessage"
-    class="auth-message"
-  ></div>
-
-  <div id="roleManagementList">
-    Loading roles...
-  </div>
-
-</section>
       <h2>
         Roles
       </h2>
 
       <p>
-        Role management tools will appear here.
+        Manage account roles and staff access.
       </p>
+
+
+      <div
+        id="roleManagementMessage"
+        class="auth-message"
+      ></div>
+
+
+      <div id="roleManagementList">
+        Loading roles...
+      </div>
 
     </section>
 
@@ -505,10 +581,22 @@
       </h2>
 
       <p>
-        Administrative activity will appear here.
+        Review administrative and moderation activity across Kelowna Developments.
       </p>
 
+
+      <div
+        id="auditMessage"
+        class="auth-message"
+      ></div>
+
+
+      <div id="auditLogList">
+        Loading audit log...
+      </div>
+
     </section>
+
 
   </main>
 
@@ -526,7 +614,10 @@
   </footer>
 
 
-  <script type="module" src="js/owner.js"></script>
+  <script
+    type="module"
+    src="js/owner.js"
+  ></script>
 
 </body>
 </html>
