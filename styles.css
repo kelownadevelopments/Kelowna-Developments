@@ -1364,3 +1364,47 @@ button:active {
     height: 240px;
   }
 }
+
+/* Development card preset images */
+
+.development-card-image-link {
+  display: block;
+  overflow: hidden;
+  border-radius: 10px 10px 0 0;
+}
+
+.development-card-image {
+  display: block;
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.development-card-image-link:hover .development-card-image {
+  transform: scale(1.03);
+}
+
+.development-card-content {
+  padding: 20px;
+}
+
+.development-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.development-card-meta span {
+  padding: 6px 10px;
+  background: #f1f2f3;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .development-card-image {
+    height: 210px;
+  }
+}
