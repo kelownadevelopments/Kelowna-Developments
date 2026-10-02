@@ -1247,3 +1247,19 @@ button:active {
   background: #eeeeee;
   color: #444;
 }
+
+/* Development Card Status */
+
+.development-card .development-status-banner {
+  margin-bottom: 14px;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.development-card .development-status-label {
+  font-size: 12px;
+}
+
+.development-card .development-completion {
+  font-size: 12px;
+}
