@@ -8,48 +8,42 @@ const supabase = createClient(
   SUPABASE_KEY
 );
 
+
 const userList =
   document.getElementById("userList");
 
 const requestList =
-  document.getElementById(
-    "developmentRequestList"
-  );
+  document.getElementById("developmentRequestList");
 
 const requestMessage =
-  document.getElementById(
-    "developmentRequestMessage"
-  );
+  document.getElementById("developmentRequestMessage");
 
 const createDevelopmentForm =
-  document.getElementById(
-    "createDevelopmentForm"
-  );
+  document.getElementById("createDevelopmentForm");
 
 const createDevelopmentMessage =
-  document.getElementById(
-    "createDevelopmentMessage"
-  );
+  document.getElementById("createDevelopmentMessage");
 
 const officialDevelopmentList =
-  document.getElementById(
-    "officialDevelopmentList"
-  );
+  document.getElementById("officialDevelopmentList");
 
 const officialDevelopmentMessage =
-  document.getElementById(
-    "officialDevelopmentMessage"
-  );
+  document.getElementById("officialDevelopmentMessage");
 
 const discussionModerationList =
-  document.getElementById(
-    "discussionModerationList"
-  );
+  document.getElementById("discussionModerationList");
 
 const discussionModerationMessage =
-  document.getElementById(
-    "discussionModerationMessage"
-  );
+  document.getElementById("discussionModerationMessage");
+
+const reportList =
+  document.getElementById("reportList");
+
+const banList =
+  document.getElementById("banList");
+
+const reportModerationMessage =
+  document.getElementById("reportModerationMessage");
 
 
 function escapeHtml(value) {
@@ -79,30 +73,22 @@ function getStatusClass(status) {
     .toLowerCase()
     .replace(/\s+/g, "-");
 
-  if (
-    normalized.includes("concept")
-  ) {
+  if (normalized.includes("concept")) {
     return "status-concept";
   }
 
-  if (
-    normalized.includes("proposed")
-  ) {
+  if (normalized.includes("proposed")) {
     return "status-proposed";
   }
 
   if (
     normalized.includes("construction") ||
-    normalized.includes(
-      "under-construction"
-    )
+    normalized.includes("under-construction")
   ) {
     return "status-construction";
   }
 
-  if (
-    normalized.includes("approved")
-  ) {
+  if (normalized.includes("approved")) {
     return "status-approved";
   }
 
@@ -114,22 +100,6 @@ function getStatusClass(status) {
   }
 
   return "status-default";
-}
-
-
-function setOwnerLoadingText(text) {
-  const elements =
-    document.querySelectorAll("*");
-
-  elements.forEach(element => {
-    if (
-      element.children.length === 0 &&
-      element.textContent.trim() ===
-        "Loading your account..."
-    ) {
-      element.textContent = text;
-    }
-  });
 }
 
 
@@ -154,9 +124,7 @@ async function getCurrentUser() {
 
 async function checkOwner(user) {
   if (!user) {
-    window.location.href =
-      "index.html";
-
+    window.location.href = "index.html";
     return false;
   }
 
@@ -166,10 +134,7 @@ async function checkOwner(user) {
   } = await supabase
     .from("user_roles")
     .select("role")
-    .eq(
-      "user_id",
-      user.id
-    )
+    .eq("user_id", user.id)
     .single();
 
   if (
@@ -177,9 +142,7 @@ async function checkOwner(user) {
     !role ||
     role.role !== "owner"
   ) {
-    window.location.href =
-      "index.html";
-
+    window.location.href = "index.html";
     return false;
   }
 
@@ -203,10 +166,7 @@ async function loadOwnerAccount(user) {
       avatar_url,
       is_verified
     `)
-    .eq(
-      "id",
-      user.id
-    )
+    .eq("id", user.id)
     .single();
 
   if (error) {
@@ -215,9 +175,10 @@ async function loadOwnerAccount(user) {
       error
     );
 
-    setOwnerLoadingText(
-      "Unable to load your account."
-    );
+    if (accountText) {
+      accountText.textContent =
+        "Unable to load your account.";
+    }
 
     return;
   }
@@ -234,10 +195,6 @@ async function loadOwnerAccount(user) {
         ${escapeHtml(displayName)}
       </strong>
     `;
-  } else {
-    setOwnerLoadingText(
-      `Signed in as ${displayName}`
-    );
   }
 }
 
@@ -274,11 +231,8 @@ async function loadUsers() {
       error
     );
 
-    userList.innerHTML = `
-      <p>
-        Unable to load users.
-      </p>
-    `;
+    userList.innerHTML =
+      "<p>Unable to load users.</p>";
 
     return;
   }
@@ -287,11 +241,8 @@ async function loadUsers() {
     !users ||
     users.length === 0
   ) {
-    userList.innerHTML = `
-      <p>
-        No users found.
-      </p>
-    `;
+    userList.innerHTML =
+      "<p>No users found.</p>";
 
     return;
   }
@@ -389,9 +340,7 @@ async function loadUsers() {
       .join("");
 
   document
-    .querySelectorAll(
-      ".verify-user-button"
-    )
+    .querySelectorAll(".verify-user-button")
     .forEach(button => {
       button.addEventListener(
         "click",
@@ -400,16 +349,10 @@ async function loadUsers() {
             button.dataset.userId;
 
           const currentlyVerified =
-            button.dataset.verified ===
-            "true";
-
-          if (!userId) {
-            return;
-          }
+            button.dataset.verified === "true";
 
           button.disabled = true;
-          button.textContent =
-            "Saving...";
+          button.textContent = "Saving...";
 
           const {
             error
@@ -419,19 +362,12 @@ async function loadUsers() {
               is_verified:
                 !currentlyVerified
             })
-            .eq(
-              "id",
-              userId
-            );
+            .eq("id", userId);
 
           if (error) {
-            console.error(
-              "Unable to update verification:",
-              error
-            );
+            console.error(error);
 
             button.disabled = false;
-
             button.textContent =
               currentlyVerified
                 ? "Unverify"
@@ -482,10 +418,7 @@ async function loadDevelopmentRequests() {
     );
 
   if (error) {
-    console.error(
-      "Unable to load development requests:",
-      error
-    );
+    console.error(error);
 
     requestList.innerHTML =
       "<p>Unable to load development requests.</p>";
@@ -643,19 +576,13 @@ async function loadDevelopmentRequests() {
       .join("");
 
   document
-    .querySelectorAll(
-      ".delete-request-button"
-    )
+    .querySelectorAll(".delete-request-button")
     .forEach(button => {
       button.addEventListener(
         "click",
         async () => {
           const requestId =
             button.dataset.id;
-
-          if (!requestId) {
-            return;
-          }
 
           const confirmed =
             window.confirm(
@@ -667,43 +594,23 @@ async function loadDevelopmentRequests() {
           }
 
           button.disabled = true;
-          button.textContent =
-            "Deleting...";
+          button.textContent = "Deleting...";
 
           const {
             error
           } = await supabase
-            .from(
-              "development_requests"
-            )
+            .from("development_requests")
             .delete()
-            .eq(
-              "id",
-              requestId
-            );
+            .eq("id", requestId);
 
           if (error) {
-            console.error(
-              "Unable to delete request:",
-              error
-            );
+            console.error(error);
 
             button.disabled = false;
             button.textContent =
               "Delete Request";
 
-            if (requestMessage) {
-              requestMessage.textContent =
-                error.message ||
-                "Unable to delete the request.";
-            }
-
             return;
-          }
-
-          if (requestMessage) {
-            requestMessage.textContent =
-              "Development request deleted.";
           }
 
           await loadDevelopmentRequests();
@@ -753,10 +660,7 @@ async function loadOfficialDevelopments() {
     );
 
   if (error) {
-    console.error(
-      "Unable to load official developments:",
-      error
-    );
+    console.error(error);
 
     officialDevelopmentList.innerHTML =
       "<p>Unable to load official developments.</p>";
@@ -778,19 +682,14 @@ async function loadOfficialDevelopments() {
     developments
       .map(development => {
         const images =
-          development.development_images ||
-          [];
+          development.development_images || [];
 
         const firstImage =
           images.length
             ? [...images].sort(
                 (a, b) =>
-                  new Date(
-                    a.created_at
-                  ) -
-                  new Date(
-                    b.created_at
-                  )
+                  new Date(a.created_at) -
+                  new Date(b.created_at)
               )[0]
             : null;
 
@@ -967,19 +866,13 @@ async function loadOfficialDevelopments() {
 
 function setupOfficialDevelopmentButtons() {
   document
-    .querySelectorAll(
-      ".edit-development-button"
-    )
+    .querySelectorAll(".edit-development-button")
     .forEach(button => {
       button.addEventListener(
         "click",
         () => {
           const developmentId =
             button.dataset.id;
-
-          if (!developmentId) {
-            return;
-          }
 
           window.location.href =
             `edit-development.html?id=${developmentId}`;
@@ -988,19 +881,13 @@ function setupOfficialDevelopmentButtons() {
     });
 
   document
-    .querySelectorAll(
-      ".delete-development-button"
-    )
+    .querySelectorAll(".delete-development-button")
     .forEach(button => {
       button.addEventListener(
         "click",
         async () => {
           const developmentId =
             button.dataset.id;
-
-          if (!developmentId) {
-            return;
-          }
 
           const confirmed =
             window.confirm(
@@ -1012,45 +899,22 @@ function setupOfficialDevelopmentButtons() {
           }
 
           button.disabled = true;
-          button.textContent =
-            "Deleting...";
+          button.textContent = "Deleting...";
 
           const {
             error
           } = await supabase
             .from("developments")
             .delete()
-            .eq(
-              "id",
-              developmentId
-            );
+            .eq("id", developmentId);
 
           if (error) {
-            console.error(
-              "Unable to delete development:",
-              error
-            );
+            console.error(error);
 
             button.disabled = false;
-            button.textContent =
-              "Delete";
-
-            if (
-              officialDevelopmentMessage
-            ) {
-              officialDevelopmentMessage.textContent =
-                error.message ||
-                "Unable to delete development.";
-            }
+            button.textContent = "Delete";
 
             return;
-          }
-
-          if (
-            officialDevelopmentMessage
-          ) {
-            officialDevelopmentMessage.textContent =
-              "Development deleted successfully.";
           }
 
           await loadOfficialDevelopments();
@@ -1095,22 +959,10 @@ async function loadDiscussions() {
     );
 
   if (error) {
-    console.error(
-      "Unable to load discussions:",
-      error
-    );
+    console.error(error);
 
-    discussionModerationList.innerHTML = `
-      <p>
-        Unable to load discussions.
-      </p>
-    `;
-
-    if (discussionModerationMessage) {
-      discussionModerationMessage.textContent =
-        error.message ||
-        "Unable to load discussions.";
-    }
+    discussionModerationList.innerHTML =
+      "<p>Unable to load discussions.</p>";
 
     return;
   }
@@ -1119,11 +971,8 @@ async function loadDiscussions() {
     !discussions ||
     discussions.length === 0
   ) {
-    discussionModerationList.innerHTML = `
-      <p>
-        No discussions have been posted yet.
-      </p>
-    `;
+    discussionModerationList.innerHTML =
+      "<p>No discussions have been posted yet.</p>";
 
     return;
   }
@@ -1132,22 +981,13 @@ async function loadDiscussions() {
     discussions
       .map(discussion => {
         const development =
-          discussion.developments ||
-          {};
+          discussion.developments || {};
 
         const profile =
-          discussion.profiles ||
-          {};
-
-        const date =
-          new Date(
-            discussion.created_at
-          ).toLocaleString();
+          discussion.profiles || {};
 
         return `
-          <article
-            class="dashboard-card discussion-moderation-item"
-          >
+          <article class="dashboard-card">
 
             <div class="dashboard-card-header">
 
@@ -1173,11 +1013,14 @@ async function loadDiscussions() {
               </div>
 
               <small>
-                ${escapeHtml(date)}
+                ${escapeHtml(
+                  new Date(
+                    discussion.created_at
+                  ).toLocaleString()
+                )}
               </small>
 
             </div>
-
 
             <div class="dashboard-description">
 
@@ -1193,7 +1036,6 @@ async function loadDiscussions() {
 
             </div>
 
-
             <div class="development-actions">
 
               <a
@@ -1207,8 +1049,6 @@ async function loadDiscussions() {
                 type="button"
                 class="button delete-discussion-button"
                 data-id="${discussion.id}"
-                data-user-id="${discussion.user_id}"
-                data-development-id="${discussion.development_id}"
               >
                 Delete Discussion
               </button>
@@ -1236,16 +1076,6 @@ function setupDiscussionModerationButtons() {
           const discussionId =
             button.dataset.id;
 
-          const userId =
-            button.dataset.userId;
-
-          const developmentId =
-            button.dataset.developmentId;
-
-          if (!discussionId) {
-            return;
-          }
-
           const confirmed =
             window.confirm(
               "Are you sure you want to permanently delete this discussion?"
@@ -1256,36 +1086,45 @@ function setupDiscussionModerationButtons() {
           }
 
           button.disabled = true;
-          button.textContent =
-            "Deleting...";
+          button.textContent = "Deleting...";
 
           const {
-            error
+            data: discussion,
+            error: discussionLookupError
           } = await supabase
             .from("discussions")
-            .delete()
-            .eq(
-              "id",
-              discussionId
-            );
+            .select(`
+              user_id,
+              development_id
+            `)
+            .eq("id", discussionId)
+            .single();
 
-          if (error) {
+          if (discussionLookupError) {
             console.error(
-              "Unable to delete discussion:",
-              error
+              discussionLookupError
             );
 
             button.disabled = false;
             button.textContent =
               "Delete Discussion";
 
-            if (
-              discussionModerationMessage
-            ) {
-              discussionModerationMessage.textContent =
-                error.message ||
-                "Unable to delete discussion.";
-            }
+            return;
+          }
+
+          const {
+            error
+          } = await supabase
+            .from("discussions")
+            .delete()
+            .eq("id", discussionId);
+
+          if (error) {
+            console.error(error);
+
+            button.disabled = false;
+            button.textContent =
+              "Delete Discussion";
 
             return;
           }
@@ -1295,29 +1134,18 @@ function setupDiscussionModerationButtons() {
 
           if (currentUser) {
             const {
-              error:
-                auditError
+              error: auditError
             } = await supabase
-              .from(
-                "moderation_actions"
-              )
+              .from("moderation_actions")
               .insert({
                 moderator_id:
                   currentUser.id,
                 action:
                   "deleted_discussion",
                 target_user_id:
-                  userId || null,
+                  discussion.user_id,
                 development_id:
-                  developmentId
-                    ? Number(
-                        developmentId
-                      )
-                    : null,
-                discussion_id:
-                  Number(
-                    discussionId
-                  ),
+                  discussion.development_id,
                 reason:
                   "Discussion deleted by owner."
               });
@@ -1330,14 +1158,804 @@ function setupDiscussionModerationButtons() {
             }
           }
 
-          if (
-            discussionModerationMessage
-          ) {
-            discussionModerationMessage.textContent =
-              "Discussion deleted successfully.";
+          await loadDiscussions();
+        }
+      );
+    });
+}
+
+
+async function loadReports() {
+  if (!reportList) {
+    return;
+  }
+
+  reportList.innerHTML =
+    "<p>Loading reports...</p>";
+
+  const {
+    data: reports,
+    error
+  } = await supabase
+    .from("reports")
+    .select(`
+      id,
+      reporter_id,
+      reported_user_id,
+      development_id,
+      discussion_id,
+      attachment_id,
+      reason,
+      status,
+      created_at
+    `)
+    .eq(
+      "status",
+      "pending"
+    )
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
+
+  if (error) {
+    console.error(
+      "Unable to load reports:",
+      error
+    );
+
+    reportList.innerHTML =
+      "<p>Unable to load reports.</p>";
+
+    return;
+  }
+
+  if (
+    !reports ||
+    reports.length === 0
+  ) {
+    reportList.innerHTML =
+      "<p>No pending reports.</p>";
+
+    return;
+  }
+
+  const userIds = [
+    ...new Set(
+      reports.flatMap(report => [
+        report.reporter_id,
+        report.reported_user_id
+      ])
+      .filter(Boolean)
+    )
+  ];
+
+  let profiles = [];
+
+  if (userIds.length) {
+    const {
+      data,
+      error: profileError
+    } = await supabase
+      .from("profiles")
+      .select(`
+        id,
+        display_name,
+        avatar_url
+      `)
+      .in(
+        "id",
+        userIds
+      );
+
+    if (!profileError) {
+      profiles = data || [];
+    }
+  }
+
+  const profileMap =
+    new Map(
+      profiles.map(profile => [
+        profile.id,
+        profile
+      ])
+    );
+
+  reportList.innerHTML =
+    reports
+      .map(report => {
+        const reporter =
+          profileMap.get(
+            report.reporter_id
+          );
+
+        const reportedUser =
+          profileMap.get(
+            report.reported_user_id
+          );
+
+        return `
+          <article class="dashboard-card">
+
+            <div class="dashboard-card-header">
+
+              <div>
+
+                <h3>
+                  Report #${escapeHtml(
+                    report.id
+                  )}
+                </h3>
+
+                <small>
+                  ${escapeHtml(
+                    new Date(
+                      report.created_at
+                    ).toLocaleString()
+                  )}
+                </small>
+
+              </div>
+
+              <span class="request-status">
+                Pending
+              </span>
+
+            </div>
+
+
+            <p>
+              <strong>
+                Reported by:
+              </strong>
+
+              ${escapeHtml(
+                reporter?.display_name ||
+                "Unknown User"
+              )}
+            </p>
+
+
+            ${
+              reportedUser
+                ? `
+                  <p>
+                    <strong>
+                      Reported user:
+                    </strong>
+
+                    ${escapeHtml(
+                      reportedUser.display_name ||
+                      "Unknown User"
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+
+            ${
+              report.development_id
+                ? `
+                  <p>
+                    <strong>
+                      Development ID:
+                    </strong>
+
+                    ${escapeHtml(
+                      report.development_id
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+
+            ${
+              report.discussion_id
+                ? `
+                  <p>
+                    <strong>
+                      Discussion ID:
+                    </strong>
+
+                    ${escapeHtml(
+                      report.discussion_id
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+
+            ${
+              report.attachment_id
+                ? `
+                  <p>
+                    <strong>
+                      Attachment ID:
+                    </strong>
+
+                    ${escapeHtml(
+                      report.attachment_id
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+
+            <div class="dashboard-description">
+
+              <strong>
+                Reason
+              </strong>
+
+              <p>
+                ${escapeHtml(
+                  report.reason
+                )}
+              </p>
+
+            </div>
+
+
+            <div class="development-actions">
+
+              <button
+                type="button"
+                class="button dismiss-report-button"
+                data-id="${report.id}"
+              >
+                Dismiss
+              </button>
+
+              ${
+                report.reported_user_id
+                  ? `
+                    <button
+                      type="button"
+                      class="button ban-report-user-button"
+                      data-id="${report.id}"
+                      data-user-id="${report.reported_user_id}"
+                    >
+                      Ban User
+                    </button>
+                  `
+                  : ""
+              }
+
+            </div>
+
+          </article>
+        `;
+      })
+      .join("");
+
+  setupReportButtons();
+}
+
+
+function setupReportButtons() {
+  document
+    .querySelectorAll(
+      ".dismiss-report-button"
+    )
+    .forEach(button => {
+      button.addEventListener(
+        "click",
+        async () => {
+          const reportId =
+            button.dataset.id;
+
+          button.disabled = true;
+          button.textContent = "Saving...";
+
+          const {
+            error
+          } = await supabase
+            .from("reports")
+            .update({
+              status: "dismissed"
+            })
+            .eq(
+              "id",
+              reportId
+            );
+
+          if (error) {
+            console.error(error);
+
+            button.disabled = false;
+            button.textContent =
+              "Dismiss";
+
+            return;
           }
 
-          await loadDiscussions();
+          await loadReports();
+        }
+      );
+    });
+
+
+  document
+    .querySelectorAll(
+      ".ban-report-user-button"
+    )
+    .forEach(button => {
+      button.addEventListener(
+        "click",
+        async () => {
+          const reportId =
+            button.dataset.id;
+
+          const userId =
+            button.dataset.userId;
+
+          const duration =
+            window.prompt(
+              "Enter ban duration:\n\n7 = 7 days\n30 = 30 days\n0 = permanent\n\nEnter 7, 30, or 0:"
+            );
+
+          if (
+            duration === null
+          ) {
+            return;
+          }
+
+          if (
+            !["0", "7", "30"].includes(
+              duration.trim()
+            )
+          ) {
+            window.alert(
+              "Please enter 7, 30, or 0."
+            );
+
+            return;
+          }
+
+          let reason =
+            window.prompt(
+              "Enter the reason for the ban:"
+            );
+
+          if (reason === null) {
+            return;
+          }
+
+          reason =
+            reason.trim();
+
+          if (!reason) {
+            reason =
+              "Ban issued following a community report.";
+          }
+
+          button.disabled = true;
+          button.textContent = "Banning...";
+
+          const currentUser =
+            await getCurrentUser();
+
+          if (!currentUser) {
+            return;
+          }
+
+          let expiresAt = null;
+
+          if (duration !== "0") {
+            const days =
+              Number(duration);
+
+            const expiration =
+              new Date();
+
+            expiration.setDate(
+              expiration.getDate() +
+              days
+            );
+
+            expiresAt =
+              expiration.toISOString();
+          }
+
+          const {
+            error: banError
+          } = await supabase
+            .from("bans")
+            .insert({
+              user_id:
+                userId,
+              banned_by:
+                currentUser.id,
+              reason,
+              expires_at:
+                expiresAt
+            });
+
+          if (banError) {
+            console.error(
+              "Unable to create ban:",
+              banError
+            );
+
+            button.disabled = false;
+            button.textContent =
+              "Ban User";
+
+            window.alert(
+              banError.message ||
+              "Unable to ban user."
+            );
+
+            return;
+          }
+
+          const {
+            error: profileError
+          } = await supabase
+            .from("profiles")
+            .update({
+              is_banned: true,
+              ban_reason: reason
+            })
+            .eq(
+              "id",
+              userId
+            );
+
+          if (profileError) {
+            console.error(
+              "Unable to update user profile:",
+              profileError
+            );
+          }
+
+          const {
+            error: reportError
+          } = await supabase
+            .from("reports")
+            .update({
+              status: "reviewed"
+            })
+            .eq(
+              "id",
+              reportId
+            );
+
+          if (reportError) {
+            console.error(
+              "Unable to update report:",
+              reportError
+            );
+          }
+
+          await supabase
+            .from("moderation_actions")
+            .insert({
+              moderator_id:
+                currentUser.id,
+              action:
+                "banned_user",
+              target_user_id:
+                userId,
+              reason
+            });
+
+          if (
+            reportModerationMessage
+          ) {
+            reportModerationMessage.textContent =
+              "User banned and report reviewed.";
+          }
+
+          await loadReports();
+          await loadBans();
+          await loadUsers();
+        }
+      );
+    });
+}
+
+
+async function loadBans() {
+  if (!banList) {
+    return;
+  }
+
+  banList.innerHTML =
+    "<p>Loading bans...</p>";
+
+  const {
+    data: bans,
+    error
+  } = await supabase
+    .from("bans")
+    .select(`
+      id,
+      user_id,
+      banned_by,
+      reason,
+      expires_at,
+      created_at
+    `)
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
+
+  if (error) {
+    console.error(
+      "Unable to load bans:",
+      error
+    );
+
+    banList.innerHTML =
+      "<p>Unable to load bans.</p>";
+
+    return;
+  }
+
+  if (
+    !bans ||
+    bans.length === 0
+  ) {
+    banList.innerHTML =
+      "<p>No bans have been issued.</p>";
+
+    return;
+  }
+
+  const userIds = [
+    ...new Set(
+      bans.map(
+        ban => ban.user_id
+      )
+    )
+  ];
+
+  const {
+    data: profiles
+  } = await supabase
+    .from("profiles")
+    .select(`
+      id,
+      display_name,
+      avatar_url,
+      is_banned
+    `)
+    .in(
+      "id",
+      userIds
+    );
+
+  const profileMap =
+    new Map(
+      (profiles || []).map(
+        profile => [
+          profile.id,
+          profile
+        ]
+      )
+    );
+
+  const now =
+    new Date();
+
+  const activeBans =
+    bans.filter(ban => {
+      if (!ban.expires_at) {
+        return true;
+      }
+
+      return (
+        new Date(
+          ban.expires_at
+        ) > now
+      );
+    });
+
+  if (
+    activeBans.length === 0
+  ) {
+    banList.innerHTML =
+      "<p>No active bans.</p>";
+
+    return;
+  }
+
+  banList.innerHTML =
+    activeBans
+      .map(ban => {
+        const profile =
+          profileMap.get(
+            ban.user_id
+          );
+
+        const permanent =
+          !ban.expires_at;
+
+        return `
+          <article class="dashboard-card">
+
+            <div class="dashboard-card-header">
+
+              <div>
+
+                <h3>
+                  ${escapeHtml(
+                    profile?.display_name ||
+                    "Unknown User"
+                  )}
+                </h3>
+
+                <small>
+                  Banned
+                  ${escapeHtml(
+                    new Date(
+                      ban.created_at
+                    ).toLocaleString()
+                  )}
+                </small>
+
+              </div>
+
+              <span class="banned-badge">
+                Banned
+              </span>
+
+            </div>
+
+
+            <p>
+              <strong>
+                Reason:
+              </strong>
+
+              ${escapeHtml(
+                ban.reason ||
+                "No reason provided."
+              )}
+            </p>
+
+
+            <p>
+              <strong>
+                Duration:
+              </strong>
+
+              ${
+                permanent
+                  ? "Permanent"
+                  : `Until ${escapeHtml(
+                      new Date(
+                        ban.expires_at
+                      ).toLocaleString()
+                    )}`
+              }
+            </p>
+
+
+            <div class="development-actions">
+
+              <button
+                type="button"
+                class="button unban-user-button"
+                data-ban-id="${ban.id}"
+                data-user-id="${ban.user_id}"
+              >
+                Unban User
+              </button>
+
+            </div>
+
+          </article>
+        `;
+      })
+      .join("");
+
+  setupUnbanButtons();
+}
+
+
+function setupUnbanButtons() {
+  document
+    .querySelectorAll(
+      ".unban-user-button"
+    )
+    .forEach(button => {
+      button.addEventListener(
+        "click",
+        async () => {
+          const banId =
+            button.dataset.banId;
+
+          const userId =
+            button.dataset.userId;
+
+          const confirmed =
+            window.confirm(
+              "Are you sure you want to unban this user?"
+            );
+
+          if (!confirmed) {
+            return;
+          }
+
+          button.disabled = true;
+          button.textContent = "Unbanning...";
+
+          const currentUser =
+            await getCurrentUser();
+
+          if (!currentUser) {
+            return;
+          }
+
+          const {
+            error: banError
+          } = await supabase
+            .from("bans")
+            .delete()
+            .eq(
+              "id",
+              banId
+            );
+
+          if (banError) {
+            console.error(
+              "Unable to remove ban:",
+              banError
+            );
+
+            button.disabled = false;
+            button.textContent =
+              "Unban User";
+
+            return;
+          }
+
+          const {
+            error: profileError
+          } = await supabase
+            .from("profiles")
+            .update({
+              is_banned: false,
+              ban_reason: null
+            })
+            .eq(
+              "id",
+              userId
+            );
+
+          if (profileError) {
+            console.error(
+              "Unable to update profile:",
+              profileError
+            );
+          }
+
+          await supabase
+            .from("moderation_actions")
+            .insert({
+              moderator_id:
+                currentUser.id,
+              action:
+                "unbanned_user",
+              target_user_id:
+                userId,
+              reason:
+                "User unbanned by owner."
+            });
+
+          await loadBans();
+          await loadUsers();
         }
       );
     });
@@ -1411,22 +2029,14 @@ function setupCreateDevelopmentForm() {
         )?.value.trim() || "";
 
       if (!title) {
-        if (
-          createDevelopmentMessage
-        ) {
-          createDevelopmentMessage.textContent =
-            "Please enter a development title.";
-        }
+        createDevelopmentMessage.textContent =
+          "Please enter a development title.";
 
         return;
       }
 
-      if (
-        createDevelopmentMessage
-      ) {
-        createDevelopmentMessage.textContent =
-          "Creating development...";
-      }
+      createDevelopmentMessage.textContent =
+        "Creating development...";
 
       const {
         error
@@ -1446,9 +2056,7 @@ function setupCreateDevelopmentForm() {
             status || null,
           completion_year:
             completionYear
-              ? Number(
-                  completionYear
-                )
+              ? Number(completionYear)
               : null,
           units:
             units
@@ -1469,30 +2077,19 @@ function setupCreateDevelopmentForm() {
         });
 
       if (error) {
-        console.error(
-          "Unable to create development:",
-          error
-        );
+        console.error(error);
 
-        if (
-          createDevelopmentMessage
-        ) {
-          createDevelopmentMessage.textContent =
-            error.message ||
-            "Unable to create development.";
-        }
+        createDevelopmentMessage.textContent =
+          error.message ||
+          "Unable to create development.";
 
         return;
       }
 
       createDevelopmentForm.reset();
 
-      if (
-        createDevelopmentMessage
-      ) {
-        createDevelopmentMessage.textContent =
-          "Development created successfully.";
-      }
+      createDevelopmentMessage.textContent =
+        "Development created successfully.";
 
       await loadOfficialDevelopments();
     }
@@ -1516,6 +2113,8 @@ async function initializeOwnerDashboard() {
   await loadDevelopmentRequests();
   await loadOfficialDevelopments();
   await loadDiscussions();
+  await loadReports();
+  await loadBans();
 
   setupCreateDevelopmentForm();
 }
