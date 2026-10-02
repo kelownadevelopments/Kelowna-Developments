@@ -125,13 +125,21 @@ function openAuthModal(mode = "login") {
     authForm.reset();
   }
 
+  authModal.classList.remove("hidden");
   authModal.classList.add("open");
+
+  if (authEmail) {
+    authEmail.focus();
+  }
 }
 
 function closeModal() {
-  if (authModal) {
-    authModal.classList.remove("open");
+  if (!authModal) {
+    return;
   }
+
+  authModal.classList.remove("open");
+  authModal.classList.add("hidden");
 }
 
 function setupAuthModal() {
@@ -148,43 +156,56 @@ function setupAuthModal() {
     document.getElementById("heroSignup");
 
   if (loginLink) {
-    loginLink.addEventListener("click", event => {
-      if (loginLink.dataset.loggedIn === "true") {
-        return;
-      }
+    loginLink.addEventListener(
+      "click",
+      event => {
+        if (
+          loginLink.dataset.loggedIn ===
+          "true"
+        ) {
+          return;
+        }
 
-      event.preventDefault();
-      openAuthModal("login");
-    });
+        event.preventDefault();
+        openAuthModal("login");
+      }
+    );
   }
 
   if (signupLink) {
-    signupLink.addEventListener("click", async event => {
-      if (signupLink.dataset.loggedIn === "true") {
-        event.preventDefault();
+    signupLink.addEventListener(
+      "click",
+      async event => {
+        if (
+          signupLink.dataset.loggedIn ===
+          "true"
+        ) {
+          event.preventDefault();
 
-        try {
-          const { error } =
-            await supabase.auth.signOut();
+          try {
+            const { error } =
+              await supabase.auth.signOut();
 
-          if (error) {
-            throw error;
+            if (error) {
+              throw error;
+            }
+
+            window.location.href =
+              "index.html";
+          } catch (error) {
+            console.error(
+              "Logout error:",
+              error
+            );
           }
 
-          window.location.href = "index.html";
-        } catch (error) {
-          console.error(
-            "Logout error:",
-            error
-          );
+          return;
         }
 
-        return;
+        event.preventDefault();
+        openAuthModal("signup");
       }
-
-      event.preventDefault();
-      openAuthModal("signup");
-    });
+    );
   }
 
   if (communitySignup) {
@@ -329,9 +350,7 @@ async function handleAuthSubmit(event) {
       }
 
       if (authMessage) {
-        if (
-          data.session
-        ) {
+        if (data.session) {
           authMessage.textContent =
             "Account created successfully.";
         } else {
@@ -423,60 +442,67 @@ async function updateNavigation() {
     return;
   }
 
-  const {
-    data: { session }
-  } = await supabase.auth.getSession();
+  try {
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
 
-  const user =
-    session?.user || null;
+    const user =
+      session?.user || null;
 
-  if (!user) {
+    if (!user) {
+      loginLink.textContent =
+        "Log In";
+
+      loginLink.href =
+        "#";
+
+      loginLink.dataset.loggedIn =
+        "false";
+
+      signupLink.textContent =
+        "Create Account";
+
+      signupLink.href =
+        "#";
+
+      signupLink.dataset.loggedIn =
+        "false";
+
+      signupLink.classList.add(
+        "button"
+      );
+
+      return;
+    }
+
     loginLink.textContent =
-      "Log In";
+      "Account";
 
     loginLink.href =
-      "#";
+      "account.html";
 
     loginLink.dataset.loggedIn =
-      "false";
+      "true";
 
     signupLink.textContent =
-      "Create Account";
+      "Log Out";
 
     signupLink.href =
       "#";
 
     signupLink.dataset.loggedIn =
-      "false";
+      "true";
 
     signupLink.classList.add(
       "button"
     );
-
-    return;
+  } catch (error) {
+    console.error(
+      "Unable to check authentication:",
+      error
+    );
   }
-
-  loginLink.textContent =
-    "Account";
-
-  loginLink.href =
-    "account.html";
-
-  loginLink.dataset.loggedIn =
-    "true";
-
-  signupLink.textContent =
-    "Log Out";
-
-  signupLink.href =
-    "#";
-
-  signupLink.dataset.loggedIn =
-    "true";
-
-  signupLink.classList.remove(
-    "button"
-  );
 }
 
 async function loadDevelopments() {
