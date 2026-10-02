@@ -2654,6 +2654,7 @@ async function initializeOwnerDashboard() {
 await loadReports();
 await loadBans();
 await loadRoles();
+await loadAuditLog();
 
 setupCreateDevelopmentForm();
 }
