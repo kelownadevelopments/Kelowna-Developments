@@ -112,6 +112,9 @@ function openAuthModal(mode = "login") {
       authMode === "signup"
         ? ""
         : "none";
+
+    authDisplayName.required =
+      authMode === "signup";
   }
 
   if (authMessage) {
@@ -126,9 +129,11 @@ function openAuthModal(mode = "login") {
 }
 
 function closeModal() {
-  if (authModal) {
-    authModal.classList.remove("open");
+  if (!authModal) {
+    return;
   }
+
+  authModal.classList.remove("open");
 }
 
 function setupAuthModal() {
@@ -146,13 +151,45 @@ function setupAuthModal() {
 
   if (loginLink) {
     loginLink.addEventListener("click", event => {
+      const isAccountLink =
+        loginLink.dataset.loggedIn === "true";
+
+      if (isAccountLink) {
+        return;
+      }
+
       event.preventDefault();
       openAuthModal("login");
     });
   }
 
   if (signupLink) {
-    signupLink.addEventListener("click", event => {
+    signupLink.addEventListener("click", async event => {
+      const isLoggedIn =
+        signupLink.dataset.loggedIn === "true";
+
+      if (isLoggedIn) {
+        event.preventDefault();
+
+        try {
+          const { error } =
+            await supabase.auth.signOut();
+
+          if (error) {
+            throw error;
+          }
+
+          window.location.href = "index.html";
+        } catch (error) {
+          console.error(
+            "Logout error:",
+            error
+          );
+        }
+
+        return;
+      }
+
       event.preventDefault();
       openAuthModal("signup");
     });
@@ -186,13 +223,18 @@ function setupAuthModal() {
   }
 
   if (authSwitch) {
-    authSwitch.addEventListener("click", () => {
-      openAuthModal(
-        authMode === "login"
-          ? "signup"
-          : "login"
-      );
-    });
+    authSwitch.addEventListener(
+      "click",
+      event => {
+        event.preventDefault();
+
+        openAuthModal(
+          authMode === "login"
+            ? "signup"
+            : "login"
+        );
+      }
+    );
   }
 
   if (authModal) {
@@ -258,15 +300,15 @@ async function handleAuthSubmit(event) {
     return;
   }
 
-  if (authForm) {
-    const submitButton =
-      authForm.querySelector(
-        'button[type="submit"]'
-      );
+  const submitButton =
+    authForm
+      ? authForm.querySelector(
+          'button[type="submit"]'
+        )
+      : null;
 
-    if (submitButton) {
-      submitButton.disabled = true;
-    }
+  if (submitButton) {
+    submitButton.disabled = true;
   }
 
   if (authSubmit) {
@@ -319,6 +361,13 @@ async function handleAuthSubmit(event) {
       if (authDisplayName) {
         authDisplayName.style.display =
           "none";
+
+        authDisplayName.required =
+          false;
+      }
+
+      if (authPassword) {
+        authPassword.value = "";
       }
     } else {
       const { error } =
@@ -351,15 +400,8 @@ async function handleAuthSubmit(event) {
         "Something went wrong.";
     }
   } finally {
-    if (authForm) {
-      const submitButton =
-        authForm.querySelector(
-          'button[type="submit"]'
-        );
-
-      if (submitButton) {
-        submitButton.disabled = false;
-      }
+    if (submitButton) {
+      submitButton.disabled = false;
     }
 
     if (authSubmit) {
@@ -378,83 +420,69 @@ async function updateNavigation() {
   const signupLink =
     document.getElementById("signupLink");
 
-  if (!loginLink && !signupLink) {
+  if (!loginLink || !signupLink) {
     return;
   }
 
   const {
-    data: { user }
+    data: { user },
+    error
   } = await supabase.auth.getUser();
 
+  if (error) {
+    console.error(
+      "Unable to check authentication:",
+      error
+    );
+  }
+
   if (!user) {
-    if (loginLink) {
-      loginLink.textContent =
-        "Log In";
+    loginLink.textContent =
+      "Log In";
 
-      loginLink.href = "#";
+    loginLink.href =
+      "#";
 
-      loginLink.classList.remove(
-        "button"
-      );
-    }
+    loginLink.dataset.loggedIn =
+      "false";
 
-    if (signupLink) {
-      signupLink.textContent =
-        "Create Account";
+    signupLink.textContent =
+      "Create Account";
 
-      signupLink.href = "#";
+    signupLink.href =
+      "#";
 
-      signupLink.classList.add(
-        "button"
-      );
+    signupLink.dataset.loggedIn =
+      "false";
 
-      signupLink.onclick = null;
-    }
+    signupLink.classList.add(
+      "button"
+    );
 
     return;
   }
 
-  if (loginLink) {
-    loginLink.textContent =
-      "Account";
+  loginLink.textContent =
+    "Account";
 
-    loginLink.href =
-      "account.html";
+  loginLink.href =
+    "account.html";
 
-    loginLink.classList.remove(
-      "button"
-    );
-  }
+  loginLink.dataset.loggedIn =
+    "true";
 
-  if (signupLink) {
-    signupLink.textContent =
-      "Log Out";
+  signupLink.textContent =
+    "Log Out";
 
-    signupLink.href = "#";
+  signupLink.href =
+    "#";
 
-    signupLink.classList.remove(
-      "button"
-    );
+  signupLink.dataset.loggedIn =
+    "true";
 
-    signupLink.onclick =
-      async event => {
-        event.preventDefault();
-
-        const { error } =
-          await supabase.auth.signOut();
-
-        if (error) {
-          console.error(
-            "Logout error:",
-            error
-          );
-          return;
-        }
-
-        window.location.href =
-          "index.html";
-      };
-  }
+  signupLink.classList.remove(
+    "button"
+  );
 }
 
 async function loadDevelopments() {
@@ -953,11 +981,10 @@ function setupDevelopmentRequestForm() {
 async function initializeApp() {
   setupAuthModal();
   setupDevelopmentRequestForm();
+  setupDevelopmentSearch();
 
   await updateNavigation();
   await loadDevelopments();
-
-  setupDevelopmentSearch();
 }
 
 if (
