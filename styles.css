@@ -1080,3 +1080,116 @@ button:active {
     padding: 20px;
   }
 }
+
+/* Discussion Images */
+
+.discussion-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.discussion-attachments a {
+  display: block;
+}
+
+.discussion-image {
+  display: block;
+  width: 180px;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e2e2e2;
+}
+
+.discussion-image:hover {
+  opacity: 0.9;
+}
+
+/* Development Image Gallery */
+
+#imageGallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+#imageGallery a {
+  display: block;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.gallery-image {
+  display: block;
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+#imageGallery a:hover .gallery-image {
+  transform: scale(1.03);
+}
+
+/* Uploaded Files */
+
+#fileList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gallery-file,
+.discussion-file {
+  display: block;
+  padding: 10px 12px;
+  background: #f6f7f8;
+  border-radius: 8px;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.gallery-file:hover,
+.discussion-file:hover {
+  background: #eef0f2;
+}
+
+/* Selected Uploads */
+
+#selectedFiles {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.selected-file,
+.selected-file-error {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #f6f7f8;
+  font-size: 14px;
+}
+
+.selected-file-error {
+  background: #fff0f0;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .discussion-image {
+    width: 140px;
+    height: 105px;
+  }
+
+  #imageGallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gallery-image {
+    height: 100px;
+  }
+}
