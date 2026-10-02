@@ -10,16 +10,17 @@ const supabase = createClient(
 
 const authModal = document.getElementById("authModal");
 const authForm = document.getElementById("authForm");
-const authEmail = document.getElementById("authEmail");
-const authPassword = document.getElementById("authPassword");
-const authDisplayName = document.getElementById("authDisplayName");
+const authEmail = document.getElementById("email");
+const authPassword = document.getElementById("password");
+const authDisplayName = document.getElementById("displayName");
 const authTitle = document.getElementById("authTitle");
-const authSubmit = document.getElementById("authSubmit");
-const authSwitch = document.getElementById("authSwitch");
+const authSubmit = document.getElementById("authButtonText");
+const authSwitch = document.getElementById("switchAuth");
 const authMessage = document.getElementById("authMessage");
-const closeAuthModal = document.getElementById("closeAuthModal");
+const closeAuthModal = document.getElementById("closeModal");
 
 let authMode = "login";
+let allDevelopments = [];
 
 function escapeHtml(value) {
   if (value === null || value === undefined) {
@@ -34,36 +35,44 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
-function getStatusClass(status) {
+function normalizeStatus(status) {
   if (!status) {
-    return "status-default";
+    return "";
   }
 
-  const normalized = String(status)
+  return String(status)
     .trim()
     .toLowerCase()
-    .replace(/\s+/g, "-");
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ");
+}
 
-  if (normalized.includes("concept")) {
+function getStatusClass(status) {
+  const normalized = normalizeStatus(status);
+
+  if (normalized === "concept") {
     return "status-concept";
   }
 
-  if (normalized.includes("proposed")) {
+  if (normalized === "proposed") {
     return "status-proposed";
   }
 
-  if (normalized.includes("approved")) {
+  if (normalized === "approved") {
     return "status-approved";
   }
 
   if (
-    normalized.includes("construction") ||
-    normalized.includes("under-construction")
+    normalized === "under construction" ||
+    normalized === "construction"
   ) {
     return "status-construction";
   }
 
-  if (normalized.includes("completed")) {
+  if (
+    normalized === "completed" ||
+    normalized === "complete"
+  ) {
     return "status-completed";
   }
 
@@ -79,12 +88,16 @@ function openAuthModal(mode = "login") {
 
   if (authTitle) {
     authTitle.textContent =
-      authMode === "signup" ? "Create Account" : "Log In";
+      authMode === "signup"
+        ? "Create your account"
+        : "Log In";
   }
 
   if (authSubmit) {
     authSubmit.textContent =
-      authMode === "signup" ? "Create Account" : "Log In";
+      authMode === "signup"
+        ? "Create Account"
+        : "Log In";
   }
 
   if (authSwitch) {
@@ -96,7 +109,9 @@ function openAuthModal(mode = "login") {
 
   if (authDisplayName) {
     authDisplayName.style.display =
-      authMode === "signup" ? "block" : "none";
+      authMode === "signup"
+        ? ""
+        : "none";
   }
 
   if (authMessage) {
@@ -117,9 +132,17 @@ function closeModal() {
 }
 
 function setupAuthModal() {
-  const loginLink = document.getElementById("loginLink");
-  const signupLink = document.getElementById("signupLink");
-  const heroSignup = document.getElementById("heroSignup");
+  const loginLink =
+    document.getElementById("loginLink");
+
+  const signupLink =
+    document.getElementById("signupLink");
+
+  const communitySignup =
+    document.getElementById("communitySignup");
+
+  const heroSignup =
+    document.getElementById("heroSignup");
 
   if (loginLink) {
     loginLink.addEventListener("click", event => {
@@ -135,35 +158,64 @@ function setupAuthModal() {
     });
   }
 
+  if (communitySignup) {
+    communitySignup.addEventListener(
+      "click",
+      event => {
+        event.preventDefault();
+        openAuthModal("signup");
+      }
+    );
+  }
+
   if (heroSignup) {
-    heroSignup.addEventListener("click", event => {
-      event.preventDefault();
-      openAuthModal("signup");
-    });
+    heroSignup.addEventListener(
+      "click",
+      event => {
+        event.preventDefault();
+        openAuthModal("signup");
+      }
+    );
   }
 
   if (closeAuthModal) {
-    closeAuthModal.addEventListener("click", closeModal);
+    closeAuthModal.addEventListener(
+      "click",
+      closeModal
+    );
   }
 
   if (authSwitch) {
     authSwitch.addEventListener("click", () => {
       openAuthModal(
-        authMode === "login" ? "signup" : "login"
+        authMode === "login"
+          ? "signup"
+          : "login"
       );
     });
   }
 
   if (authModal) {
-    authModal.addEventListener("click", event => {
-      if (event.target === authModal) {
-        closeModal();
+    authModal.addEventListener(
+      "click",
+      event => {
+        if (
+          event.target === authModal ||
+          event.target.classList.contains(
+            "modal-background"
+          )
+        ) {
+          closeModal();
+        }
       }
-    });
+    );
   }
 
   if (authForm) {
-    authForm.addEventListener("submit", handleAuthSubmit);
+    authForm.addEventListener(
+      "submit",
+      handleAuthSubmit
+    );
   }
 }
 
@@ -174,11 +226,16 @@ async function handleAuthSubmit(event) {
     return;
   }
 
-  const email = authEmail.value.trim();
-  const password = authPassword.value;
-  const displayName = authDisplayName
-    ? authDisplayName.value.trim()
-    : "";
+  const email =
+    authEmail.value.trim();
+
+  const password =
+    authPassword.value;
+
+  const displayName =
+    authDisplayName
+      ? authDisplayName.value.trim()
+      : "";
 
   if (!email || !password) {
     if (authMessage) {
@@ -189,7 +246,10 @@ async function handleAuthSubmit(event) {
     return;
   }
 
-  if (authMode === "signup" && !displayName) {
+  if (
+    authMode === "signup" &&
+    !displayName
+  ) {
     if (authMessage) {
       authMessage.textContent =
         "Please enter a display name.";
@@ -198,8 +258,18 @@ async function handleAuthSubmit(event) {
     return;
   }
 
+  if (authForm) {
+    const submitButton =
+      authForm.querySelector(
+        'button[type="submit"]'
+      );
+
+    if (submitButton) {
+      submitButton.disabled = true;
+    }
+  }
+
   if (authSubmit) {
-    authSubmit.disabled = true;
     authSubmit.textContent =
       authMode === "signup"
         ? "Creating Account..."
@@ -208,15 +278,17 @@ async function handleAuthSubmit(event) {
 
   try {
     if (authMode === "signup") {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            display_name: displayName
+      const { error } =
+        await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              display_name:
+                displayName
+            }
           }
-        }
-      });
+        });
 
       if (error) {
         throw error;
@@ -230,11 +302,13 @@ async function handleAuthSubmit(event) {
       authMode = "login";
 
       if (authTitle) {
-        authTitle.textContent = "Log In";
+        authTitle.textContent =
+          "Log In";
       }
 
       if (authSubmit) {
-        authSubmit.textContent = "Log In";
+        authSubmit.textContent =
+          "Log In";
       }
 
       if (authSwitch) {
@@ -243,7 +317,8 @@ async function handleAuthSubmit(event) {
       }
 
       if (authDisplayName) {
-        authDisplayName.style.display = "none";
+        authDisplayName.style.display =
+          "none";
       }
     } else {
       const { error } =
@@ -265,15 +340,29 @@ async function handleAuthSubmit(event) {
       await updateNavigation();
     }
   } catch (error) {
-    console.error("Authentication error:", error);
+    console.error(
+      "Authentication error:",
+      error
+    );
 
     if (authMessage) {
       authMessage.textContent =
-        error.message || "Something went wrong.";
+        error.message ||
+        "Something went wrong.";
     }
   } finally {
+    if (authForm) {
+      const submitButton =
+        authForm.querySelector(
+          'button[type="submit"]'
+        );
+
+      if (submitButton) {
+        submitButton.disabled = false;
+      }
+    }
+
     if (authSubmit) {
-      authSubmit.disabled = false;
       authSubmit.textContent =
         authMode === "signup"
           ? "Create Account"
@@ -283,8 +372,11 @@ async function handleAuthSubmit(event) {
 }
 
 async function updateNavigation() {
-  const loginLink = document.getElementById("loginLink");
-  const signupLink = document.getElementById("signupLink");
+  const loginLink =
+    document.getElementById("loginLink");
+
+  const signupLink =
+    document.getElementById("signupLink");
 
   if (!loginLink && !signupLink) {
     return;
@@ -296,50 +388,80 @@ async function updateNavigation() {
 
   if (!user) {
     if (loginLink) {
-      loginLink.textContent = "Log In";
+      loginLink.textContent =
+        "Log In";
+
       loginLink.href = "#";
-      loginLink.classList.remove("button");
+
+      loginLink.classList.remove(
+        "button"
+      );
     }
 
     if (signupLink) {
-      signupLink.textContent = "Create Account";
+      signupLink.textContent =
+        "Create Account";
+
       signupLink.href = "#";
-      signupLink.classList.add("button");
+
+      signupLink.classList.add(
+        "button"
+      );
+
+      signupLink.onclick = null;
     }
 
     return;
   }
 
   if (loginLink) {
-    loginLink.textContent = "Account";
-    loginLink.href = "account.html";
-    loginLink.classList.remove("button");
+    loginLink.textContent =
+      "Account";
+
+    loginLink.href =
+      "account.html";
+
+    loginLink.classList.remove(
+      "button"
+    );
   }
 
   if (signupLink) {
-    signupLink.textContent = "Log Out";
+    signupLink.textContent =
+      "Log Out";
+
     signupLink.href = "#";
-    signupLink.classList.remove("button");
 
-    signupLink.onclick = async event => {
-      event.preventDefault();
+    signupLink.classList.remove(
+      "button"
+    );
 
-      const { error } =
-        await supabase.auth.signOut();
+    signupLink.onclick =
+      async event => {
+        event.preventDefault();
 
-      if (error) {
-        console.error("Logout error:", error);
-        return;
-      }
+        const { error } =
+          await supabase.auth.signOut();
 
-      window.location.href = "index.html";
-    };
+        if (error) {
+          console.error(
+            "Logout error:",
+            error
+          );
+          return;
+        }
+
+        window.location.href =
+          "index.html";
+      };
   }
 }
 
 async function loadDevelopments() {
   const developmentList =
-    document.getElementById("developmentList");
+    document.getElementById(
+      "developmentList"
+    );
 
   if (!developmentList) {
     return;
@@ -368,10 +490,16 @@ async function loadDevelopments() {
         created_at
       )
     `)
-    .eq("is_approved", true)
-    .order("created_at", {
-      ascending: false
-    });
+    .eq(
+      "is_approved",
+      true
+    )
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
 
   if (error) {
     console.error(
@@ -385,169 +513,299 @@ async function loadDevelopments() {
     return;
   }
 
-  if (!developments || developments.length === 0) {
-    developmentList.innerHTML =
-      "<p>No developments have been published yet.</p>";
+  allDevelopments =
+    developments || [];
+
+  renderDevelopments();
+}
+
+function renderDevelopments() {
+  const developmentList =
+    document.getElementById(
+      "developmentList"
+    );
+
+  if (!developmentList) {
+    return;
+  }
+
+  const searchInput =
+    document.getElementById(
+      "developmentSearch"
+    );
+
+  const statusFilter =
+    document.getElementById(
+      "statusFilter"
+    );
+
+  const search =
+    searchInput?.value
+      .trim()
+      .toLowerCase() || "";
+
+  const selectedStatus =
+    normalizeStatus(
+      statusFilter?.value || "all"
+    );
+
+  const filteredDevelopments =
+    allDevelopments.filter(
+      development => {
+        const developmentStatus =
+          normalizeStatus(
+            development.status
+          );
+
+        const searchableText = [
+          development.title,
+          development.address,
+          development.developer,
+          development.project_type,
+          development.status,
+          development.description
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        const matchesSearch =
+          !search ||
+          searchableText.includes(
+            search
+          );
+
+        const matchesStatus =
+          !selectedStatus ||
+          selectedStatus === "all" ||
+          developmentStatus ===
+            selectedStatus;
+
+        return (
+          matchesSearch &&
+          matchesStatus
+        );
+      }
+    );
+
+  if (
+    filteredDevelopments.length ===
+    0
+  ) {
+    developmentList.innerHTML = `
+      <div class="empty-state">
+        <h3>No matching developments</h3>
+        <p>
+          Try changing your search or status filter.
+        </p>
+      </div>
+    `;
 
     return;
   }
 
-  developmentList.innerHTML = developments
-    .map(development => {
-      const images =
-        development.development_images || [];
+  developmentList.innerHTML =
+    filteredDevelopments
+      .map(
+        development => {
+          const images =
+            development.development_images ||
+            [];
 
-      const firstImage = images.length
-        ? [...images].sort(
-            (a, b) =>
-              new Date(a.created_at) -
-              new Date(b.created_at)
-          )[0]
-        : null;
+          const firstImage =
+            images.length
+              ? [...images].sort(
+                  (a, b) =>
+                    new Date(
+                      a.created_at
+                    ) -
+                    new Date(
+                      b.created_at
+                    )
+                )[0]
+              : null;
 
-      const imageHtml = firstImage
-        ? `
-          <a
-            href="development.html?id=${development.id}"
-            class="development-card-image-link"
-          >
-            <img
-              src="${escapeHtml(firstImage.image_url)}"
-              alt="${escapeHtml(
-                firstImage.file_name ||
-                development.title
-              )}"
-              class="development-card-image"
-            >
-          </a>
-        `
-        : "";
+          const imageHtml =
+            firstImage
+              ? `
+                <a
+                  href="development.html?id=${development.id}"
+                  class="development-card-image-link"
+                >
+                  <img
+                    src="${escapeHtml(
+                      firstImage.image_url
+                    )}"
+                    alt="${escapeHtml(
+                      firstImage.file_name ||
+                      development.title
+                    )}"
+                    class="development-card-image"
+                  >
+                </a>
+              `
+              : "";
 
-      return `
-        <article class="development-card">
+          return `
+            <article class="development-card">
 
-          ${imageHtml}
+              ${imageHtml}
 
-          <div class="development-card-content">
+              <div class="development-card-content">
 
-            ${
-              development.status
-                ? `
-                  <div class="development-status-banner ${getStatusClass(
-                    development.status
-                  )}">
-                    <span class="development-status-label">
-                      ${escapeHtml(
-                        development.status
-                      )}
-                    </span>
+                ${
+                  development.status
+                    ? `
+                      <div
+                        class="development-status-banner ${getStatusClass(
+                          development.status
+                        )}"
+                      >
+                        <span class="development-status-label">
+                          ${escapeHtml(
+                            development.status
+                          )}
+                        </span>
 
-                    ${
-                      development.completion_year
-                        ? `
-                          <span class="development-completion">
-                            Expected completion:
-                            ${escapeHtml(
-                              development.completion_year
-                            )}
-                          </span>
-                        `
-                        : ""
-                    }
-                  </div>
-                `
-                : ""
-            }
+                        ${
+                          development.completion_year
+                            ? `
+                              <span class="development-completion">
+                                Expected completion:
+                                ${escapeHtml(
+                                  development.completion_year
+                                )}
+                              </span>
+                            `
+                            : ""
+                        }
+                      </div>
+                    `
+                    : ""
+                }
 
-            <h3>
-              <a
-                href="development.html?id=${development.id}"
-              >
-                ${escapeHtml(development.title)}
-              </a>
-            </h3>
-
-            ${
-              development.address
-                ? `
-                  <p class="development-card-address">
+                <h3>
+                  <a
+                    href="development.html?id=${development.id}"
+                  >
                     ${escapeHtml(
-                      development.address
+                      development.title
                     )}
-                  </p>
-                `
-                : ""
-            }
+                  </a>
+                </h3>
 
-            ${
-              development.developer
-                ? `
-                  <p>
-                    <strong>Developer:</strong>
-                    ${escapeHtml(
-                      development.developer
-                    )}
-                  </p>
-                `
-                : ""
-            }
+                ${
+                  development.address
+                    ? `
+                      <p class="development-card-address">
+                        ${escapeHtml(
+                          development.address
+                        )}
+                      </p>
+                    `
+                    : ""
+                }
 
-            ${
-              development.project_type
-                ? `
-                  <p>
-                    <strong>Type:</strong>
-                    ${escapeHtml(
-                      development.project_type
-                    )}
-                  </p>
-                `
-                : ""
-            }
+                ${
+                  development.developer
+                    ? `
+                      <p>
+                        <strong>Developer:</strong>
+                        ${escapeHtml(
+                          development.developer
+                        )}
+                      </p>
+                    `
+                    : ""
+                }
 
-            ${
-              development.units !== null &&
-              development.units !== undefined
-                ? `
-                  <p>
-                    <strong>Units:</strong>
-                    ${escapeHtml(
-                      development.units
-                    )}
-                  </p>
-                `
-                : ""
-            }
+                ${
+                  development.project_type
+                    ? `
+                      <p>
+                        <strong>Type:</strong>
+                        ${escapeHtml(
+                          development.project_type
+                        )}
+                      </p>
+                    `
+                    : ""
+                }
 
-            ${
-              development.storeys !== null &&
-              development.storeys !== undefined
-                ? `
-                  <p>
-                    <strong>Storeys:</strong>
-                    ${escapeHtml(
-                      development.storeys
-                    )}
-                  </p>
-                `
-                : ""
-            }
+                ${
+                  development.units !==
+                    null &&
+                  development.units !==
+                    undefined
+                    ? `
+                      <p>
+                        <strong>Units:</strong>
+                        ${escapeHtml(
+                          development.units
+                        )}
+                      </p>
+                    `
+                    : ""
+                }
 
-            <div class="development-actions">
-              <a
-                href="development.html?id=${development.id}"
-                class="button"
-              >
-                View Development
-              </a>
-            </div>
+                ${
+                  development.storeys !==
+                    null &&
+                  development.storeys !==
+                    undefined
+                    ? `
+                      <p>
+                        <strong>Storeys:</strong>
+                        ${escapeHtml(
+                          development.storeys
+                        )}
+                      </p>
+                    `
+                    : ""
+                }
 
-          </div>
+                <div class="development-actions">
+                  <a
+                    href="development.html?id=${development.id}"
+                    class="button"
+                  >
+                    View Development
+                  </a>
+                </div>
 
-        </article>
-      `;
-    })
-    .join("");
+              </div>
+
+            </article>
+          `;
+        }
+      )
+      .join("");
+}
+
+function setupDevelopmentSearch() {
+  const searchInput =
+    document.getElementById(
+      "developmentSearch"
+    );
+
+  const statusFilter =
+    document.getElementById(
+      "statusFilter"
+    );
+
+  if (searchInput) {
+    searchInput.addEventListener(
+      "input",
+      renderDevelopments
+    );
+  }
+
+  if (statusFilter) {
+    statusFilter.addEventListener(
+      "change",
+      renderDevelopments
+    );
+  }
 }
 
 function setupDevelopmentRequestForm() {
@@ -585,24 +843,32 @@ function setupDevelopmentRequestForm() {
       }
 
       const title =
-        document.getElementById(
-          "requestTitle"
-        )?.value.trim() || "";
+        document
+          .getElementById(
+            "requestTitle"
+          )
+          ?.value.trim() || "";
 
       const address =
-        document.getElementById(
-          "requestAddress"
-        )?.value.trim() || "";
+        document
+          .getElementById(
+            "requestAddress"
+          )
+          ?.value.trim() || "";
 
       const developer =
-        document.getElementById(
-          "requestDeveloper"
-        )?.value.trim() || "";
+        document
+          .getElementById(
+            "requestDeveloper"
+          )
+          ?.value.trim() || "";
 
       const projectType =
-        document.getElementById(
-          "requestProjectType"
-        )?.value.trim() || "";
+        document
+          .getElementById(
+            "requestProjectType"
+          )
+          ?.value.trim() || "";
 
       const units =
         document.getElementById(
@@ -615,9 +881,11 @@ function setupDevelopmentRequestForm() {
         )?.value || "";
 
       const description =
-        document.getElementById(
-          "requestDescription"
-        )?.value.trim() || "";
+        document
+          .getElementById(
+            "requestDescription"
+          )
+          ?.value.trim() || "";
 
       if (!title) {
         if (message) {
@@ -635,13 +903,18 @@ function setupDevelopmentRequestForm() {
 
       const { error } =
         await supabase
-          .from("development_requests")
+          .from(
+            "development_requests"
+          )
           .insert({
             submitted_by: user.id,
             title,
-            address: address || null,
-            description: description || null,
-            developer: developer || null,
+            address:
+              address || null,
+            description:
+              description || null,
+            developer:
+              developer || null,
             project_type:
               projectType || null,
             units: units
@@ -677,108 +950,6 @@ function setupDevelopmentRequestForm() {
   );
 }
 
-function setupDevelopmentSearch() {
-  const searchInput =
-    document.getElementById(
-      "developmentSearch"
-    );
-
-  const statusFilter =
-    document.getElementById(
-      "developmentStatusFilter"
-    );
-
-  const typeFilter =
-    document.getElementById(
-      "developmentTypeFilter"
-    );
-
-  const developmentList =
-    document.getElementById(
-      "developmentList"
-    );
-
-  if (!developmentList) {
-    return;
-  }
-
-  const filterDevelopments = () => {
-    const search =
-      searchInput?.value
-        .trim()
-        .toLowerCase() || "";
-
-    const status =
-      statusFilter?.value
-        .trim()
-        .toLowerCase() || "";
-
-    const type =
-      typeFilter?.value
-        .trim()
-        .toLowerCase() || "";
-
-    const cards =
-      developmentList.querySelectorAll(
-        ".development-card"
-      );
-
-    cards.forEach(card => {
-      const text =
-        card.textContent.toLowerCase();
-
-      const matchesSearch =
-        !search ||
-        text.includes(search);
-
-      const statusLabel =
-        card
-          .querySelector(
-            ".development-status-label"
-          )
-          ?.textContent
-          .trim()
-          .toLowerCase() || "";
-
-      const matchesStatus =
-        !status ||
-        statusLabel.includes(status);
-
-      const matchesType =
-        !type ||
-        text.includes(type);
-
-      card.style.display =
-        matchesSearch &&
-        matchesStatus &&
-        matchesType
-          ? ""
-          : "none";
-    });
-  };
-
-  if (searchInput) {
-    searchInput.addEventListener(
-      "input",
-      filterDevelopments
-    );
-  }
-
-  if (statusFilter) {
-    statusFilter.addEventListener(
-      "change",
-      filterDevelopments
-    );
-  }
-
-  if (typeFilter) {
-    typeFilter.addEventListener(
-      "change",
-      filterDevelopments
-    );
-  }
-}
-
 async function initializeApp() {
   setupAuthModal();
   setupDevelopmentRequestForm();
@@ -801,6 +972,8 @@ if (
   initializeApp();
 }
 
-supabase.auth.onAuthStateChange(() => {
-  updateNavigation();
-});
+supabase.auth.onAuthStateChange(
+  () => {
+    updateNavigation();
+  }
+);
