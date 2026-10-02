@@ -206,10 +206,6 @@ async function handleAuthSubmit(event) {
         : "Logging In...";
   }
 
-  if (authMessage) {
-    authMessage.textContent = "";
-  }
-
   try {
     if (authMode === "signup") {
       const { error } = await supabase.auth.signUp({
@@ -303,14 +299,12 @@ async function updateNavigation() {
       loginLink.textContent = "Log In";
       loginLink.href = "#";
       loginLink.classList.remove("button");
-      loginLink.style.display = "";
     }
 
     if (signupLink) {
       signupLink.textContent = "Create Account";
       signupLink.href = "#";
       signupLink.classList.add("button");
-      signupLink.style.display = "";
     }
 
     return;
@@ -320,19 +314,18 @@ async function updateNavigation() {
     loginLink.textContent = "Account";
     loginLink.href = "account.html";
     loginLink.classList.remove("button");
-    loginLink.style.display = "";
   }
 
   if (signupLink) {
     signupLink.textContent = "Log Out";
     signupLink.href = "#";
     signupLink.classList.remove("button");
-    signupLink.style.display = "";
 
     signupLink.onclick = async event => {
       event.preventDefault();
 
-      const { error } = await supabase.auth.signOut();
+      const { error } =
+        await supabase.auth.signOut();
 
       if (error) {
         console.error("Logout error:", error);
@@ -351,9 +344,6 @@ async function loadDevelopments() {
   if (!developmentList) {
     return;
   }
-
-  developmentList.innerHTML =
-    "<p>Loading developments...</p>";
 
   const {
     data: developments,
@@ -433,31 +423,6 @@ async function loadDevelopments() {
         `
         : "";
 
-      const statusHtml = development.status
-        ? `
-          <div class="development-status-banner ${getStatusClass(
-            development.status
-          )}">
-            <span class="development-status-label">
-              ${escapeHtml(development.status)}
-            </span>
-
-            ${
-              development.completion_year
-                ? `
-                  <span class="development-completion">
-                    Expected completion:
-                    ${escapeHtml(
-                      development.completion_year
-                    )}
-                  </span>
-                `
-                : ""
-            }
-          </div>
-        `
-        : "";
-
       return `
         <article class="development-card">
 
@@ -465,7 +430,34 @@ async function loadDevelopments() {
 
           <div class="development-card-content">
 
-            ${statusHtml}
+            ${
+              development.status
+                ? `
+                  <div class="development-status-banner ${getStatusClass(
+                    development.status
+                  )}">
+                    <span class="development-status-label">
+                      ${escapeHtml(
+                        development.status
+                      )}
+                    </span>
+
+                    ${
+                      development.completion_year
+                        ? `
+                          <span class="development-completion">
+                            Expected completion:
+                            ${escapeHtml(
+                              development.completion_year
+                            )}
+                          </span>
+                        `
+                        : ""
+                    }
+                  </div>
+                `
+                : ""
+            }
 
             <h3>
               <a
@@ -559,126 +551,152 @@ async function loadDevelopments() {
 }
 
 function setupDevelopmentRequestForm() {
-  const form = document.getElementById(
-    "developmentRequestForm"
-  );
+  const form =
+    document.getElementById(
+      "developmentRequestForm"
+    );
 
   if (!form) {
     return;
   }
 
-  const message = document.getElementById(
-    "developmentRequestMessage"
+  const message =
+    document.getElementById(
+      "developmentRequestMessage"
+    );
+
+  form.addEventListener(
+    "submit",
+    async event => {
+      event.preventDefault();
+
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        if (message) {
+          message.textContent =
+            "You must be logged in to submit a development.";
+        }
+
+        openAuthModal("login");
+        return;
+      }
+
+      const title =
+        document.getElementById(
+          "requestTitle"
+        )?.value.trim() || "";
+
+      const address =
+        document.getElementById(
+          "requestAddress"
+        )?.value.trim() || "";
+
+      const developer =
+        document.getElementById(
+          "requestDeveloper"
+        )?.value.trim() || "";
+
+      const projectType =
+        document.getElementById(
+          "requestProjectType"
+        )?.value.trim() || "";
+
+      const units =
+        document.getElementById(
+          "requestUnits"
+        )?.value || "";
+
+      const storeys =
+        document.getElementById(
+          "requestStoreys"
+        )?.value || "";
+
+      const description =
+        document.getElementById(
+          "requestDescription"
+        )?.value.trim() || "";
+
+      if (!title) {
+        if (message) {
+          message.textContent =
+            "Please enter a development title.";
+        }
+
+        return;
+      }
+
+      if (message) {
+        message.textContent =
+          "Submitting development request...";
+      }
+
+      const { error } =
+        await supabase
+          .from("development_requests")
+          .insert({
+            submitted_by: user.id,
+            title,
+            address: address || null,
+            description: description || null,
+            developer: developer || null,
+            project_type:
+              projectType || null,
+            units: units
+              ? Number(units)
+              : null,
+            storeys: storeys
+              ? Number(storeys)
+              : null
+          });
+
+      if (error) {
+        console.error(
+          "Development request error:",
+          error
+        );
+
+        if (message) {
+          message.textContent =
+            error.message ||
+            "Unable to submit development request.";
+        }
+
+        return;
+      }
+
+      form.reset();
+
+      if (message) {
+        message.textContent =
+          "Development request submitted successfully.";
+      }
+    }
   );
-
-  form.addEventListener("submit", async event => {
-    event.preventDefault();
-
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      if (message) {
-        message.textContent =
-          "You must be logged in to submit a development.";
-      }
-
-      openAuthModal("login");
-      return;
-    }
-
-    const title =
-      document.getElementById("requestTitle")?.value.trim() ||
-      "";
-
-    const address =
-      document.getElementById("requestAddress")?.value.trim() ||
-      "";
-
-    const developer =
-      document.getElementById("requestDeveloper")?.value.trim() ||
-      "";
-
-    const projectType =
-      document
-        .getElementById("requestProjectType")
-        ?.value.trim() || "";
-
-    const units =
-      document.getElementById("requestUnits")?.value || "";
-
-    const storeys =
-      document.getElementById("requestStoreys")?.value || "";
-
-    const description =
-      document
-        .getElementById("requestDescription")
-        ?.value.trim() || "";
-
-    if (!title) {
-      if (message) {
-        message.textContent =
-          "Please enter a development title.";
-      }
-
-      return;
-    }
-
-    if (message) {
-      message.textContent =
-        "Submitting development request...";
-    }
-
-    const { error } = await supabase
-      .from("development_requests")
-      .insert({
-        submitted_by: user.id,
-        title,
-        address: address || null,
-        description: description || null,
-        developer: developer || null,
-        project_type: projectType || null,
-        units: units ? Number(units) : null,
-        storeys: storeys ? Number(storeys) : null
-      });
-
-    if (error) {
-      console.error(
-        "Development request error:",
-        error
-      );
-
-      if (message) {
-        message.textContent =
-          error.message ||
-          "Unable to submit development request.";
-      }
-
-      return;
-    }
-
-    form.reset();
-
-    if (message) {
-      message.textContent =
-        "Development request submitted successfully.";
-    }
-  });
 }
 
 function setupDevelopmentSearch() {
   const searchInput =
-    document.getElementById("developmentSearch");
+    document.getElementById(
+      "developmentSearch"
+    );
 
   const statusFilter =
-    document.getElementById("developmentStatusFilter");
+    document.getElementById(
+      "developmentStatusFilter"
+    );
 
   const typeFilter =
-    document.getElementById("developmentTypeFilter");
+    document.getElementById(
+      "developmentTypeFilter"
+    );
 
   const developmentList =
-    document.getElementById("developmentList");
+    document.getElementById(
+      "developmentList"
+    );
 
   if (!developmentList) {
     return;
@@ -686,13 +704,19 @@ function setupDevelopmentSearch() {
 
   const filterDevelopments = () => {
     const search =
-      searchInput?.value.trim().toLowerCase() || "";
+      searchInput?.value
+        .trim()
+        .toLowerCase() || "";
 
     const status =
-      statusFilter?.value.trim().toLowerCase() || "";
+      statusFilter?.value
+        .trim()
+        .toLowerCase() || "";
 
     const type =
-      typeFilter?.value.trim().toLowerCase() || "";
+      typeFilter?.value
+        .trim()
+        .toLowerCase() || "";
 
     const cards =
       developmentList.querySelectorAll(
@@ -704,7 +728,8 @@ function setupDevelopmentSearch() {
         card.textContent.toLowerCase();
 
       const matchesSearch =
-        !search || text.includes(search);
+        !search ||
+        text.includes(search);
 
       const statusLabel =
         card
@@ -764,7 +789,10 @@ async function initializeApp() {
   setupDevelopmentSearch();
 }
 
-if (document.readyState === "loading") {
+if (
+  document.readyState ===
+  "loading"
+) {
   document.addEventListener(
     "DOMContentLoaded",
     initializeApp
