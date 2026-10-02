@@ -1,253 +1,226 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 const SUPABASE_URL = "https://diljkqsrqdktzyumrqkg.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_JjzaLH_H48oLIvuRz9F5jg_yyC5xxII";
+const SUPABASE_KEY = "sb_publishable_JjzaLH_H48oLIvuRz9F5jg_yyC5xxII";
 
 const supabase = createClient(
   SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
+  SUPABASE_KEY
 );
 
-async function loadOwnerDashboard() {
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
+const message = document.getElementById("ownerMessage");
+const accountMessage = document.getElementById("ownerAccountMessage");
+const userList = document.getElementById("userList");
+const requestList = document.getElementById("developmentRequestList");
+const requestMessage = document.getElementById("developmentRequestMessage");
+const createDevelopmentForm = document.getElementById("createDevelopmentForm");
+const createDevelopmentMessage = document.getElementById("createDevelopmentMessage");
+const officialDevelopmentList = document.getElementById("officialDevelopmentList");
+const officialDevelopmentMessage = document.getElementById("officialDevelopmentMessage");
 
-  if (!user) {
-    window.location.href = "index.html";
-    return;
+function escapeHtml(value) {
+  if (value === null || value === undefined) {
+    return "";
   }
 
-  const { data: roleData, error: roleError } = await supabase
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function getStatusClass(status) {
+  if (!status) {
+    return "status-default";
+  }
+
+  const normalized = String(status)
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-");
+
+  if (normalized.includes("concept")) {
+    return "status-concept";
+  }
+
+  if (normalized.includes("proposed")) {
+    return "status-proposed";
+  }
+
+  if (normalized.includes("approved")) {
+    return "status-approved";
+  }
+
+  if (
+    normalized.includes("construction") ||
+    normalized.includes("under-construction")
+  ) {
+    return "status-construction";
+  }
+
+  if (normalized.includes("completed")) {
+    return "status-completed";
+  }
+
+  return "status-default";
+}
+
+async function getCurrentUser() {
+  const {
+    data: { user },
+    error
+  } = await supabase.auth.getUser();
+
+  if (error) {
+    console.error("Unable to get current user:", error);
+    return null;
+  }
+
+  return user;
+}
+
+async function checkOwner(user) {
+  if (!user) {
+    window.location.href = "index.html";
+    return false;
+  }
+
+  const {
+    data: role,
+    error
+  } = await supabase
     .from("user_roles")
     .select("role")
     .eq("user_id", user.id)
-    .maybeSingle();
+    .single();
 
-  if (roleError || roleData?.role !== "owner") {
+  if (error || !role || role.role !== "owner") {
     window.location.href = "index.html";
+    return false;
+  }
+
+  return true;
+}
+
+async function loadOwnerProfile(user) {
+  if (!accountMessage) {
     return;
   }
 
-  const { data: profile } = await supabase
+  const {
+    data: profile,
+    error
+  } = await supabase
     .from("profiles")
     .select("display_name, avatar_url, is_verified")
     .eq("id", user.id)
-    .maybeSingle();
+    .single();
 
-  const dashboardHero = document.querySelector(".hero");
-
-  if (dashboardHero) {
-    dashboardHero.innerHTML = `
-      <p class="eyebrow">ADMINISTRATION</p>
-
-      <h1>Owner Dashboard</h1>
-
-      <p>
-        Welcome, ${escapeHtml(
-          profile?.display_name || user.email || "Owner"
-        )}.
-      </p>
-
-      <p>
-        You are signed in as the Owner of Kelowna Developments.
-      </p>
-    `;
+  if (error) {
+    console.error("Unable to load owner profile:", error);
+    accountMessage.textContent =
+      "Unable to load your account information.";
+    return;
   }
 
-  await loadUsers();
+  accountMessage.innerHTML = `
+    <strong>${escapeHtml(
+      profile?.display_name || user.email || "Owner"
+    )}</strong>
+    ${
+      profile?.is_verified
+        ? `<span class="verified-badge">Verified</span>`
+        : ""
+    }
+  `;
 }
 
 async function loadUsers() {
-  const userList = document.getElementById("userList");
-  const userMessage = document.getElementById("userMessage");
+  if (!userList) {
+    return;
+  }
 
-  if (!userList) return;
+  userList.innerHTML = "<p>Loading users...</p>";
 
-  const { data: profiles, error } = await supabase
+  const {
+    data: users,
+    error
+  } = await supabase
     .from("profiles")
     .select(`
       id,
       display_name,
       avatar_url,
-      bio,
       is_verified,
       is_banned,
       created_at
     `)
-    .order("created_at", { ascending: false });
+    .order("created_at", {
+      ascending: false
+    });
 
   if (error) {
-    console.error(error);
-
-    if (userMessage) {
-      userMessage.textContent =
-        "Could not load users. Check the browser console for details.";
-    }
-
+    console.error("Unable to load users:", error);
+    userList.innerHTML =
+      "<p>Unable to load users.</p>";
     return;
   }
 
-  if (userMessage) {
-    userMessage.textContent =
-      `${profiles.length} account${profiles.length === 1 ? "" : "s"} found.`;
-  }
-
-  if (profiles.length === 0) {
-    userList.innerHTML = `
-      <p>No users have registered yet.</p>
-    `;
-
+  if (!users || users.length === 0) {
+    userList.innerHTML =
+      "<p>No users found.</p>";
     return;
   }
 
-  userList.innerHTML = profiles
-    .map(
-      (profile) => `
-        <div class="user-card">
-
-          <div class="user-card-info">
+  userList.innerHTML = users
+    .map(user => {
+      return `
+        <div class="dashboard-item">
+          <div>
+            <strong>
+              ${escapeHtml(
+                user.display_name || "Unnamed User"
+              )}
+            </strong>
 
             ${
-              profile.avatar_url
-                ? `
-                  <img
-                    src="${escapeHtml(profile.avatar_url)}"
-                    alt=""
-                    class="user-avatar"
-                  >
-                `
-                : `
-                  <div class="user-avatar user-avatar-placeholder">
-                    ?
-                  </div>
-                `
+              user.is_verified
+                ? `<span class="verified-badge">Verified</span>`
+                : ""
             }
 
-            <div>
-              <h3>
-                ${escapeHtml(profile.display_name || "Unnamed User")}
-              </h3>
+            ${
+              user.is_banned
+                ? `<span class="banned-badge">Banned</span>`
+                : ""
+            }
 
-              <p>
-                Joined:
-                ${new Date(profile.created_at).toLocaleDateString()}
-              </p>
-
-              <p>
-                ${
-                  profile.is_verified
-                    ? "✓ Verified"
-                    : "Not verified"
-                }
-
-                ·
-
-                ${
-                  profile.is_banned
-                    ? "🚫 Banned"
-                    : "Active"
-                }
-              </p>
-
-              <div class="user-actions">
-
-                ${
-                  profile.is_verified
-                    ? `
-                      <button
-                        type="button"
-                        class="secondary verify-button"
-                        data-user-id="${escapeHtml(profile.id)}"
-                        data-action="unverify"
-                      >
-                        Unverify
-                      </button>
-                    `
-                    : `
-                      <button
-                        type="button"
-                        class="button verify-button"
-                        data-user-id="${escapeHtml(profile.id)}"
-                        data-action="verify"
-                      >
-                        Verify
-                      </button>
-                    `
-                }
-
-              </div>
-            </div>
-
+            <small>
+              Joined ${new Date(
+                user.created_at
+              ).toLocaleDateString()}
+            </small>
           </div>
-
         </div>
-      `
-    )
-    .join("");
-
-  document.querySelectorAll(".verify-button").forEach((button) => {
-    button.addEventListener("click", () => {
-      updateVerification(
-        button.dataset.userId,
-        button.dataset.action === "verify"
-      );
-    });
-  });
-}
-
-async function updateVerification(userId, shouldVerify) {
-  const action = shouldVerify ? "verify" : "unverify";
-
-  const confirmed = window.confirm(
-    `Are you sure you want to ${action} this user?`
-  );
-
-  if (!confirmed) return;
-
-  const { error } = await supabase
-    .from("profiles")
-    .update({
-      is_verified: shouldVerify
+      `;
     })
-    .eq("id", userId);
-
-  if (error) {
-    console.error(error);
-
-    alert(
-      `Could not ${action} this user: ${error.message}`
-    );
-
-    return;
-  }
-
-  await loadUsers();
+    .join("");
 }
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-loadOwnerDashboard();
 
 async function loadDevelopmentRequests() {
-  const message = document.getElementById("developmentRequestMessage");
-  const list = document.getElementById("developmentRequestList");
-
-  if (!message || !list) {
+  if (!requestList) {
     return;
   }
 
-  message.textContent = "Loading development requests...";
-  list.innerHTML = "";
+  requestList.innerHTML =
+    "<p>Loading development requests...</p>";
 
-  const { data, error } = await supabase
+  const {
+    data: requests,
+    error
+  } = await supabase
     .from("development_requests")
     .select(`
       id,
@@ -266,204 +239,216 @@ async function loadDevelopmentRequests() {
         avatar_url
       )
     `)
-    .order("created_at", { ascending: false });
+    .order("created_at", {
+      ascending: false
+    });
 
   if (error) {
-    console.error(error);
-    message.textContent = "Unable to load development requests.";
+    console.error(
+      "Unable to load development requests:",
+      error
+    );
+
+    requestList.innerHTML =
+      "<p>Unable to load development requests.</p>";
+
     return;
   }
 
-  if (!data || data.length === 0) {
-    message.textContent = "No development requests have been submitted.";
+  if (!requests || requests.length === 0) {
+    requestList.innerHTML =
+      "<p>No development requests found.</p>";
+
     return;
   }
 
-  message.textContent = "";
+  requestList.innerHTML = requests
+    .map(request => {
+      const profile =
+        request.profiles || {};
 
-  data.forEach((request) => {
-    const card = document.createElement("div");
-    card.className = "dashboard-card";
+      return `
+        <article class="dashboard-card">
 
-    const submittedBy =
-      request.profiles?.display_name || "Unknown user";
+          <div class="dashboard-card-header">
+            <div>
+              <h3>
+                ${escapeHtml(request.title)}
+              </h3>
 
-    const date = new Date(request.created_at).toLocaleDateString();
+              <p>
+                Submitted by
+                <strong>
+                  ${escapeHtml(
+                    profile.display_name ||
+                    "Unknown User"
+                  )}
+                </strong>
+              </p>
+            </div>
 
-    card.innerHTML = `
-      <h3>${request.title}</h3>
+            <span class="request-status">
+              ${escapeHtml(
+                request.status || "pending"
+              )}
+            </span>
+          </div>
 
-      <p>
-        <strong>Submitted by:</strong>
-        ${submittedBy}
-      </p>
+          ${
+            request.address
+              ? `
+                <p>
+                  <strong>Address:</strong>
+                  ${escapeHtml(request.address)}
+                </p>
+              `
+              : ""
+          }
 
-      <p>
-        <strong>Submitted:</strong>
-        ${date}
-      </p>
+          ${
+            request.developer
+              ? `
+                <p>
+                  <strong>Developer:</strong>
+                  ${escapeHtml(request.developer)}
+                </p>
+              `
+              : ""
+          }
 
-      <p>
-        <strong>Status:</strong>
-        ${request.status}
-      </p>
+          ${
+            request.project_type
+              ? `
+                <p>
+                  <strong>Project type:</strong>
+                  ${escapeHtml(
+                    request.project_type
+                  )}
+                </p>
+              `
+              : ""
+          }
 
-      ${
-        request.address
-          ? `<p><strong>Address:</strong> ${request.address}</p>`
-          : ""
-      }
+          ${
+            request.units !== null &&
+            request.units !== undefined
+              ? `
+                <p>
+                  <strong>Units:</strong>
+                  ${escapeHtml(request.units)}
+                </p>
+              `
+              : ""
+          }
 
-      ${
-        request.developer
-          ? `<p><strong>Developer:</strong> ${request.developer}</p>`
-          : ""
-      }
+          ${
+            request.storeys !== null &&
+            request.storeys !== undefined
+              ? `
+                <p>
+                  <strong>Storeys:</strong>
+                  ${escapeHtml(request.storeys)}
+                </p>
+              `
+              : ""
+          }
 
-      ${
-        request.project_type
-          ? `<p><strong>Project Type:</strong> ${request.project_type}</p>`
-          : ""
-      }
+          ${
+            request.description
+              ? `
+                <div class="dashboard-description">
+                  <strong>Description</strong>
+                  <p>
+                    ${escapeHtml(
+                      request.description
+                    )}
+                  </p>
+                </div>
+              `
+              : ""
+          }
 
-      ${
-        request.units !== null
-          ? `<p><strong>Units:</strong> ${request.units}</p>`
-          : ""
-      }
+          <div class="development-actions">
+            <button
+              type="button"
+              class="button delete-request-button"
+              data-id="${request.id}"
+            >
+              Delete Request
+            </button>
+          </div>
 
-      ${
-        request.storeys !== null
-          ? `<p><strong>Storeys:</strong> ${request.storeys}</p>`
-          : ""
-      }
+        </article>
+      `;
+    })
+    .join("");
 
-      ${
-  request.description
-    ? `<p><strong>Description:</strong> ${request.description}</p>`
-    : ""
-}
+  document
+    .querySelectorAll(".delete-request-button")
+    .forEach(button => {
+      button.addEventListener("click", async () => {
+        const requestId = button.dataset.id;
 
-<button
-  class="button delete-request-button"
-  data-request-id="${request.id}"
-  type="button"
->
-  Delete Request
-</button>
-`;
+        if (!requestId) {
+          return;
+        }
 
-    list.appendChild(card);
-  });
-}
+        const confirmed = window.confirm(
+          "Are you sure you want to permanently delete this development request?"
+        );
 
-loadDevelopmentRequests();
+        if (!confirmed) {
+          return;
+        }
 
-document.addEventListener("click", async (event) => {
-  const button = event.target.closest(".delete-request-button");
+        button.disabled = true;
+        button.textContent = "Deleting...";
 
-  if (!button) {
-    return;
-  }
+        const { error } = await supabase
+          .from("development_requests")
+          .delete()
+          .eq("id", requestId);
 
-  const requestId = button.dataset.requestId;
+        if (error) {
+          console.error(
+            "Unable to delete development request:",
+            error
+          );
 
-  const confirmed = confirm(
-    "Are you sure you want to permanently delete this development request?"
-  );
+          button.disabled = false;
+          button.textContent = "Delete Request";
 
-  if (!confirmed) {
-    return;
-  }
+          if (requestMessage) {
+            requestMessage.textContent =
+              error.message ||
+              "Unable to delete the request.";
+          }
 
-  button.disabled = true;
-  button.textContent = "Deleting...";
+          return;
+        }
 
-  const { error } = await supabase
-    .from("development_requests")
-    .delete()
-    .eq("id", requestId);
+        if (requestMessage) {
+          requestMessage.textContent =
+            "Development request deleted.";
+        }
 
-  if (error) {
-    console.error(error);
-    alert("Unable to delete the development request.");
-    button.disabled = false;
-    button.textContent = "Delete Request";
-    return;
-  }
-
-  loadDevelopmentRequests();
-});
-
-const createDevelopmentForm = document.getElementById("createDevelopmentForm");
-
-if (createDevelopmentForm) {
-  createDevelopmentForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const message = document.getElementById("createDevelopmentMessage");
-
-    message.textContent = "Creating development...";
-
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      message.textContent = "You must be logged in.";
-      return;
-    }
-
-    const title = document.getElementById("developmentTitle").value.trim();
-    const address = document.getElementById("developmentAddress").value.trim();
-    const developer = document.getElementById("developmentDeveloper").value.trim();
-    const projectType = document.getElementById("developmentProjectType").value;
-    const status = document.getElementById("developmentStatus").value;
-    const unitsValue = document.getElementById("developmentUnits").value;
-    const storeysValue = document.getElementById("developmentStoreys").value;
-    const description = document.getElementById("developmentDescription").value.trim();
-
-    const { error } = await supabase
-      .from("developments")
-      .insert({
-        title: title,
-        address: address || null,
-        description: description || null,
-        developer: developer || null,
-        project_type: projectType || null,
-        status: status,
-        units: unitsValue ? Number(unitsValue) : null,
-        storeys: storeysValue ? Number(storeysValue) : null,
-        submitted_by: user.id,
-        approved_by: user.id,
-        is_approved: true,
-        approved_at: new Date().toISOString()
+        await loadDevelopmentRequests();
       });
-
-    if (error) {
-      console.error(error);
-      message.textContent = "There was a problem creating the development.";
-      return;
-    }
-
-    createDevelopmentForm.reset();
-
-    message.textContent =
-      "Development created successfully.";
-    
-    loadDevelopmentRequests();
-  });
+    });
 }
 
 async function loadOfficialDevelopments() {
-  const list = document.getElementById("officialDevelopmentList");
-  const message = document.getElementById("officialDevelopmentMessage");
-
-  if (!list || !message) {
+  if (!officialDevelopmentList) {
     return;
   }
 
-  const { data, error } = await supabase
+  officialDevelopmentList.innerHTML =
+    "<p>Loading official developments...</p>";
+
+  const {
+    data: developments,
+    error
+  } = await supabase
     .from("developments")
     .select(`
       id,
@@ -473,145 +458,433 @@ async function loadOfficialDevelopments() {
       developer,
       project_type,
       status,
+      completion_year,
       units,
       storeys,
-      created_at
+      created_at,
+      development_images (
+        id,
+        image_url,
+        file_name,
+        created_at
+      )
     `)
     .eq("is_approved", true)
-    .order("created_at", { ascending: false });
+    .order("created_at", {
+      ascending: false
+    });
 
   if (error) {
-    console.error(error);
-    message.textContent = "Unable to load official developments.";
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    message.textContent = "No official developments have been created yet.";
-    list.innerHTML = "";
-    return;
-  }
-
-  message.textContent = "";
-
-  list.innerHTML = data.map((development) => `
-    <div class="development-card">
-      <h3>${escapeHtml(development.title)}</h3>
-
-      ${
-        development.address
-          ? `<p><strong>Address:</strong> ${escapeHtml(development.address)}</p>`
-          : ""
-      }
-
-      ${
-        development.developer
-          ? `<p><strong>Developer:</strong> ${escapeHtml(development.developer)}</p>`
-          : ""
-      }
-
-      ${
-        development.status
-          ? `<p><strong>Status:</strong> ${escapeHtml(development.status)}</p>`
-          : ""
-      }
-
-      ${
-        development.project_type
-          ? `<p><strong>Project Type:</strong> ${escapeHtml(development.project_type)}</p>`
-          : ""
-      }
-
-      <p>
-        <strong>Units:</strong>
-        ${development.units ?? "N/A"}
-      </p>
-
-      <p>
-        <strong>Storeys:</strong>
-        ${development.storeys ?? "N/A"}
-      </p>
-
-     <div class="development-actions">
-  <a
-    href="development.html?id=${development.id}"
-    class="button"
-  >
-    View Development
-  </a>
-
-  <button
-    type="button"
-    class="button edit-development-button"
-    data-id="${development.id}"
-  >
-    Edit
-  </button>
-
-  <button
-    type="button"
-    class="button delete-development-button"
-    data-id="${development.id}"
-  >
-    Delete
-  </button>
-</div>
-    </div>
-  `).join("");
-}
-
-document.addEventListener("click", async (event) => {
-  const editButton = event.target.closest(".edit-development-button");
-
-  if (editButton) {
-    const developmentId = editButton.dataset.id;
-
-    window.location.href =
-      `edit-development.html?id=${developmentId}`;
-
-    return;
-  }
-
-  const deleteButton = event.target.closest(
-    ".delete-development-button"
-  );
-
-  if (!deleteButton) {
-    return;
-  }
-
-  const developmentId = deleteButton.dataset.id;
-
-  const confirmed = confirm(
-    "Are you sure you want to permanently delete this development?\n\nThis will also remove its discussions and attachments."
-  );
-
-  if (!confirmed) {
-    return;
-  }
-
-  deleteButton.disabled = true;
-  deleteButton.textContent = "Deleting...";
-
-  const { error } = await supabase
-    .from("developments")
-    .delete()
-    .eq("id", developmentId);
-
-  if (error) {
-    console.error(error);
-
-    alert(
-      "There was a problem deleting this development."
+    console.error(
+      "Unable to load official developments:",
+      error
     );
 
-    deleteButton.disabled = false;
-    deleteButton.textContent = "Delete";
+    officialDevelopmentList.innerHTML =
+      "<p>Unable to load official developments.</p>";
 
     return;
   }
 
-  await loadOfficialDevelopments();
-});
+  if (!developments || developments.length === 0) {
+    officialDevelopmentList.innerHTML =
+      "<p>No official developments have been created yet.</p>";
 
-loadOfficialDevelopments();
+    return;
+  }
+
+  officialDevelopmentList.innerHTML = developments
+    .map(development => {
+      const images =
+        development.development_images || [];
+
+      const firstImage = images.length
+        ? [...images].sort(
+            (a, b) =>
+              new Date(a.created_at) -
+              new Date(b.created_at)
+          )[0]
+        : null;
+
+      const imageHtml = firstImage
+        ? `
+          <a
+            href="development.html?id=${development.id}"
+            class="development-card-image-link"
+          >
+            <img
+              src="${escapeHtml(firstImage.image_url)}"
+              alt="${escapeHtml(
+                firstImage.file_name ||
+                development.title
+              )}"
+              class="development-card-image"
+            >
+          </a>
+        `
+        : "";
+
+      return `
+        <article class="development-card">
+
+          ${imageHtml}
+
+          <div class="development-card-content">
+
+            ${
+              development.status
+                ? `
+                  <div class="development-status-banner ${getStatusClass(
+                    development.status
+                  )}">
+                    <span class="development-status-label">
+                      ${escapeHtml(
+                        development.status
+                      )}
+                    </span>
+
+                    ${
+                      development.completion_year
+                        ? `
+                          <span class="development-completion">
+                            Expected completion:
+                            ${escapeHtml(
+                              development.completion_year
+                            )}
+                          </span>
+                        `
+                        : ""
+                    }
+                  </div>
+                `
+                : ""
+            }
+
+            <h3>
+              ${escapeHtml(development.title)}
+            </h3>
+
+            ${
+              development.address
+                ? `
+                  <p>
+                    <strong>Address:</strong>
+                    ${escapeHtml(
+                      development.address
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+            ${
+              development.developer
+                ? `
+                  <p>
+                    <strong>Developer:</strong>
+                    ${escapeHtml(
+                      development.developer
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+            ${
+              development.project_type
+                ? `
+                  <p>
+                    <strong>Project type:</strong>
+                    ${escapeHtml(
+                      development.project_type
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+            ${
+              development.units !== null &&
+              development.units !== undefined
+                ? `
+                  <p>
+                    <strong>Units:</strong>
+                    ${escapeHtml(
+                      development.units
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+            ${
+              development.storeys !== null &&
+              development.storeys !== undefined
+                ? `
+                  <p>
+                    <strong>Storeys:</strong>
+                    ${escapeHtml(
+                      development.storeys
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+            <div class="development-actions">
+
+              <a
+                href="development.html?id=${development.id}"
+                class="button"
+              >
+                View Development
+              </a>
+
+              <button
+                type="button"
+                class="button edit-development-button"
+                data-id="${development.id}"
+              >
+                Edit
+              </button>
+
+              <button
+                type="button"
+                class="button delete-development-button"
+                data-id="${development.id}"
+              >
+                Delete
+              </button>
+
+            </div>
+
+          </div>
+
+        </article>
+      `;
+    })
+    .join("");
+
+  setupOfficialDevelopmentButtons();
+}
+
+function setupOfficialDevelopmentButtons() {
+  document
+    .querySelectorAll(".edit-development-button")
+    .forEach(button => {
+      button.addEventListener("click", () => {
+        const developmentId =
+          button.dataset.id;
+
+        if (!developmentId) {
+          return;
+        }
+
+        window.location.href =
+          `edit-development.html?id=${developmentId}`;
+      });
+    });
+
+  document
+    .querySelectorAll(".delete-development-button")
+    .forEach(button => {
+      button.addEventListener("click", async () => {
+        const developmentId =
+          button.dataset.id;
+
+        if (!developmentId) {
+          return;
+        }
+
+        const confirmed = window.confirm(
+          "Are you sure you want to permanently delete this development? This will also delete its discussions and attachments."
+        );
+
+        if (!confirmed) {
+          return;
+        }
+
+        button.disabled = true;
+        button.textContent = "Deleting...";
+
+        const { error } = await supabase
+          .from("developments")
+          .delete()
+          .eq("id", developmentId);
+
+        if (error) {
+          console.error(
+            "Unable to delete development:",
+            error
+          );
+
+          button.disabled = false;
+          button.textContent = "Delete";
+
+          if (officialDevelopmentMessage) {
+            officialDevelopmentMessage.textContent =
+              error.message ||
+              "Unable to delete development.";
+          }
+
+          return;
+        }
+
+        if (officialDevelopmentMessage) {
+          officialDevelopmentMessage.textContent =
+            "Development deleted successfully.";
+        }
+
+        await loadOfficialDevelopments();
+      });
+    });
+}
+
+function setupCreateDevelopmentForm() {
+  if (!createDevelopmentForm) {
+    return;
+  }
+
+  createDevelopmentForm.addEventListener(
+    "submit",
+    async event => {
+      event.preventDefault();
+
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        window.location.href = "index.html";
+        return;
+      }
+
+      const title =
+        document.getElementById("developmentTitle")
+          ?.value.trim() || "";
+
+      const address =
+        document.getElementById("developmentAddress")
+          ?.value.trim() || "";
+
+      const developer =
+        document.getElementById("developmentDeveloper")
+          ?.value.trim() || "";
+
+      const projectType =
+        document.getElementById("developmentProjectType")
+          ?.value.trim() || "";
+
+      const status =
+        document.getElementById("developmentStatus")
+          ?.value.trim() || "";
+
+      const completionYear =
+        document.getElementById(
+          "developmentCompletionYear"
+        )?.value || "";
+
+      const units =
+        document.getElementById("developmentUnits")
+          ?.value || "";
+
+      const storeys =
+        document.getElementById("developmentStoreys")
+          ?.value || "";
+
+      const description =
+        document.getElementById(
+          "developmentDescription"
+        )?.value.trim() || "";
+
+      if (!title) {
+        if (createDevelopmentMessage) {
+          createDevelopmentMessage.textContent =
+            "Please enter a development title.";
+        }
+
+        return;
+      }
+
+      if (createDevelopmentMessage) {
+        createDevelopmentMessage.textContent =
+          "Creating development...";
+      }
+
+      const {
+        error
+      } = await supabase
+        .from("developments")
+        .insert({
+          title,
+          address: address || null,
+          description: description || null,
+          developer: developer || null,
+          project_type: projectType || null,
+          status: status || null,
+          completion_year: completionYear
+            ? Number(completionYear)
+            : null,
+          units: units
+            ? Number(units)
+            : null,
+          storeys: storeys
+            ? Number(storeys)
+            : null,
+          submitted_by: user.id,
+          approved_by: user.id,
+          is_approved: true,
+          approved_at:
+            new Date().toISOString()
+        });
+
+      if (error) {
+        console.error(
+          "Unable to create development:",
+          error
+        );
+
+        if (createDevelopmentMessage) {
+          createDevelopmentMessage.textContent =
+            error.message ||
+            "Unable to create development.";
+        }
+
+        return;
+      }
+
+      createDevelopmentForm.reset();
+
+      if (createDevelopmentMessage) {
+        createDevelopmentMessage.textContent =
+          "Development created successfully.";
+      }
+
+      await loadOfficialDevelopments();
+    }
+  );
+}
+
+async function initializeOwnerDashboard() {
+  const user = await getCurrentUser();
+
+  const isOwner = await checkOwner(user);
+
+  if (!isOwner) {
+    return;
+  }
+
+  if (message) {
+    message.textContent =
+      "Owner access confirmed.";
+  }
+
+  await loadOwnerProfile(user);
+  await loadUsers();
+  await loadDevelopmentRequests();
+  await loadOfficialDevelopments();
+
+  setupCreateDevelopmentForm();
+}
+
+initializeOwnerDashboard();
