@@ -3,74 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Development | Kelowna Developments</title>
-  <link rel="stylesheet" href="/styles.css">
+
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
-<header class="site-header">
-  <div class="container header-inner">
-    <a href="index.html" class="site-logo">Kelowna Developments</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="site-logo">
+        <span>Kelowna</span>
+        <strong>Developments</strong>
+      </a>
 
-    <nav class="site-nav">
-      <a href="index.html">Home</a>
-      <a href="developments.html">Developments</a>
-      <a href="submit-development.html">Submit Development</a>
-    </nav>
-  </div>
-</header>
-
-<main>
-
-  <section class="hero">
-    <div class="container">
-      <p class="eyebrow">KELOWNA • BRITISH COLUMBIA</p>
-      <h1 id="developmentTitle">Development</h1>
-      <p id="developmentAddress">Loading...</p>
+      <nav class="site-nav">
+        <a href="index.html">Home</a>
+        <a href="developments.html">Developments</a>
+        <a href="submit-development.html">Submit Development</a>
+      </nav>
     </div>
-  </section>
+  </header>
 
-  <section class="container development-layout">
+  <main class="container development-layout">
 
+    <!-- Official preset development photos -->
+    <section class="development-featured-photos">
+      <div id="developmentPresetGallery">
+        <p>Loading development photos...</p>
+      </div>
+    </section>
+
+    <!-- Main development content -->
     <div class="development-main">
 
-      <div id="developmentMessage" class="development-message">
-        Loading development...
-      </div>
+      <section class="development-hero-content">
 
-      <div id="developmentContent" style="display: none;">
+        <p class="eyebrow">
+          KELOWNA • BRITISH COLUMBIA
+        </p>
 
-        <section class="dashboard-section">
-          <h2 id="developmentName">Development</h2>
-          <div id="developmentDetails"></div>
-        </section>
+        <h1 id="developmentTitle">
+          Development
+        </h1>
 
-        <section class="dashboard-section">
-          <h2>Description</h2>
+        <p id="developmentAddress">
+          Loading...
+        </p>
 
-          <p id="developmentDescription">
-            Loading description...
-          </p>
-        </section>
+      </section>
 
-        <section class="dashboard-section">
+      <section class="development-card">
 
-          <h2>Discussion</h2>
+        <h2 id="developmentName">
+          Development
+        </h2>
 
-          <div id="discussionList">
-            <p>Loading discussions...</p>
+        <div id="developmentDetails" class="development-details">
+          Loading development information...
+        </div>
+
+        <div class="development-description">
+          <h2>About This Development</h2>
+
+          <div id="developmentDescription">
+            Loading...
           </div>
+        </div>
 
-          <div
-            id="discussionFormContainer"
-            class="discussion-form-container"
-            style="display: none;"
-          >
+      </section>
 
-            <h3>Join the Discussion</h3>
+      <!-- Discussions -->
+      <section class="development-card discussion-section">
 
-            <form id="discussionForm">
+        <h2>Discussion</h2>
+
+        <div id="discussionList">
+          Loading discussions...
+        </div>
+
+        <div id="discussionFormContainer">
+
+          <form id="discussionForm">
+
+            <div class="form-group">
+              <label for="discussionContent">
+                Join the discussion
+              </label>
 
               <textarea
                 id="discussionContent"
@@ -79,101 +99,99 @@
                 placeholder="Share your thoughts about this development..."
                 required
               ></textarea>
+            </div>
 
-              <div class="discussion-upload">
+            <div class="form-group">
 
-                <label for="discussionFiles">
-                  Attach files or images
-                </label>
+              <label for="discussionFiles">
+                Add Photos or Files
+              </label>
 
-                <input
-                  type="file"
-                  id="discussionFiles"
-                  multiple
-                  accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,text/plain,.doc,.docx,.xls,.xlsx,.zip"
-                >
-
-                <p class="upload-help">
-                  Images, PDFs and common documents. Maximum 10 MB per file.
-                </p>
-
-                <div id="selectedFiles"></div>
-
-              </div>
-
-              <button
-                type="submit"
-                class="button"
-                id="discussionSubmitButton"
+              <input
+                type="file"
+                id="discussionFiles"
+                multiple
+                accept="
+                  image/jpeg,
+                  image/png,
+                  image/webp,
+                  image/gif,
+                  application/pdf,
+                  text/plain,
+                  .doc,
+                  .docx,
+                  .xls,
+                  .xlsx,
+                  .zip
+                "
               >
-                Post Discussion
-              </button>
 
-              <p
-                id="discussionFormMessage"
-                class="discussion-form-message"
-              ></p>
+              <small>
+                Images, PDFs and common documents. Maximum 10 MB per file.
+              </small>
 
-            </form>
+              <div id="selectedFiles"></div>
 
-          </div>
+            </div>
 
-          <div
-            id="discussionLoginMessage"
-            class="discussion-login-message"
-            style="display: none;"
-          >
-            <p>
-              Log in to join the discussion.
-            </p>
-          </div>
+            <button
+              type="submit"
+              class="button"
+            >
+              Post Discussion
+            </button>
 
-        </section>
+            <div id="discussionFormMessage"></div>
 
-      </div>
+          </form>
 
-    </div>
-
-    <aside class="development-sidebar">
-
-      <section class="dashboard-section">
-
-        <h2>Images</h2>
-
-        <div id="imageGallery">
-          <p>
-            Images uploaded in discussions will appear here.
-          </p>
         </div>
 
       </section>
 
-      <section class="dashboard-section">
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="development-sidebar">
+
+      <section class="development-sidebar-card">
+
+        <h2>Images</h2>
+
+        <div id="imageGallery">
+          Loading images...
+        </div>
+
+      </section>
+
+      <section class="development-sidebar-card">
 
         <h2>Files</h2>
 
         <div id="fileList">
-          <p>
-            Files uploaded in discussions will appear here.
-          </p>
+          Loading files...
         </div>
 
       </section>
 
     </aside>
 
-  </section>
+  </main>
 
-</main>
+  <footer class="site-footer">
 
-<footer class="site-footer">
-  <div class="container">
-    © 2026 Kelowna Developments. All Rights Reserved.
-  </div>
-</footer>
+    <div class="container">
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/development.js"></script>
+      <p>
+        © 2026 Kelowna Developments. All Rights Reserved.
+      </p>
+
+    </div>
+
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/development.js"></script>
 
 </body>
 </html>
