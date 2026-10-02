@@ -15,14 +15,6 @@ const heroSignup = document.getElementById("heroSignup");
 const authModal = document.getElementById("authModal");
 const closeModal = document.getElementById("closeModal");
 const authContent = document.getElementById("authContent");
-const authForm = document.getElementById("authForm");
-const nameField = document.getElementById("nameField");
-const emailInput = document.getElementById("email");
-const passwordInput = document.getElementById("password");
-const authMessage = document.getElementById("authMessage");
-const switchAuth = document.getElementById("switchAuth");
-
-const developmentList = document.getElementById("developmentList");
 
 let currentUser = null;
 let isLoginMode = true;
@@ -34,6 +26,35 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function getStatusClass(status) {
+  const normalized =
+    String(status || "")
+      .toLowerCase()
+      .replace(/\s+/g, "-");
+
+  if (normalized === "concept") {
+    return "status-concept";
+  }
+
+  if (normalized === "proposed") {
+    return "status-proposed";
+  }
+
+  if (normalized === "approved") {
+    return "status-approved";
+  }
+
+  if (normalized === "under-construction") {
+    return "status-construction";
+  }
+
+  if (normalized === "completed") {
+    return "status-completed";
+  }
+
+  return "status-default";
 }
 
 function openAuthModal(login = true) {
@@ -119,45 +140,64 @@ function closeAuthModal() {
 async function handleAuth(event) {
   event.preventDefault();
 
-  const email = document.getElementById("email")?.value.trim();
-  const password = document.getElementById("password")?.value;
+  const email =
+    document.getElementById("email")?.value.trim();
+
+  const password =
+    document.getElementById("password")?.value;
+
   const displayName =
     document.getElementById("displayName")?.value.trim() || "";
 
-  const message = document.getElementById("authMessage");
+  const message =
+    document.getElementById("authMessage");
 
   if (!email || !password) {
-    if (message) message.textContent = "Please enter your email and password.";
+    if (message) {
+      message.textContent =
+        "Please enter your email and password.";
+    }
+
     return;
   }
 
-  if (message) message.textContent = "Please wait...";
+  if (message) {
+    message.textContent = "Please wait...";
+  }
 
   if (isLoginMode) {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+    const { error } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
     if (error) {
-      if (message) message.textContent = error.message;
+      if (message) {
+        message.textContent = error.message;
+      }
+
       return;
     }
 
     closeAuthModal();
   } else {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          display_name: displayName
+    const { data, error } =
+      await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            display_name: displayName
+          }
         }
-      }
-    });
+      });
 
     if (error) {
-      if (message) message.textContent = error.message;
+      if (message) {
+        message.textContent = error.message;
+      }
+
       return;
     }
 
@@ -186,6 +226,7 @@ async function updateNavigation() {
   if (user) {
     if (loginLink) {
       loginLink.textContent = "Account";
+
       loginLink.onclick = (event) => {
         event.preventDefault();
         showAccount();
@@ -195,6 +236,7 @@ async function updateNavigation() {
     if (signupLink) {
       signupLink.textContent = "Log Out";
       signupLink.classList.remove("button");
+
       signupLink.onclick = async (event) => {
         event.preventDefault();
         await logout();
@@ -207,6 +249,7 @@ async function updateNavigation() {
   } else {
     if (loginLink) {
       loginLink.textContent = "Log In";
+
       loginLink.onclick = (event) => {
         event.preventDefault();
         openAuthModal(true);
@@ -216,6 +259,7 @@ async function updateNavigation() {
     if (signupLink) {
       signupLink.textContent = "Create Account";
       signupLink.classList.add("button");
+
       signupLink.onclick = (event) => {
         event.preventDefault();
         openAuthModal(false);
@@ -224,6 +268,7 @@ async function updateNavigation() {
 
     if (heroSignup) {
       heroSignup.style.display = "inline-flex";
+
       heroSignup.onclick = (event) => {
         event.preventDefault();
         openAuthModal(false);
@@ -235,19 +280,24 @@ async function updateNavigation() {
 async function showAccount() {
   if (!currentUser) return;
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name, avatar_url, bio, is_verified")
-    .eq("id", currentUser.id)
-    .maybeSingle();
+  const { data: profile } =
+    await supabase
+      .from("profiles")
+      .select(
+        "display_name, avatar_url, bio, is_verified"
+      )
+      .eq("id", currentUser.id)
+      .maybeSingle();
 
-  const { data: roleData } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", currentUser.id)
-    .maybeSingle();
+  const { data: roleData } =
+    await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", currentUser.id)
+      .maybeSingle();
 
-  const role = roleData?.role || "user";
+  const role =
+    roleData?.role || "user";
 
   const roleName =
     role === "owner"
@@ -256,9 +306,10 @@ async function showAccount() {
         ? "Moderator"
         : "User";
 
-  const verificationStatus = profile?.is_verified
-    ? "Verified"
-    : "Not yet verified";
+  const verificationStatus =
+    profile?.is_verified
+      ? "Verified"
+      : "Not yet verified";
 
   if (authModal) {
     authModal.style.display = "flex";
@@ -291,23 +342,35 @@ async function showAccount() {
 
         <p>
           <strong>Account Created</strong><br>
-          ${new Date(currentUser.created_at).toLocaleDateString()}
+          ${new Date(
+            currentUser.created_at
+          ).toLocaleDateString()}
         </p>
       </div>
 
-      <button type="button" id="closeAccount" class="button full-width">
+      <button
+        type="button"
+        id="closeAccount"
+        class="button full-width"
+      >
         Close
       </button>
     `;
 
     document
       .getElementById("closeAccount")
-      ?.addEventListener("click", closeAuthModal);
+      ?.addEventListener(
+        "click",
+        closeAuthModal
+      );
   }
 }
 
 async function loadDevelopments() {
-  const developmentList = document.getElementById("developmentList");
+  const developmentList =
+    document.getElementById(
+      "developmentList"
+    );
 
   if (!developmentList) {
     return;
@@ -315,84 +378,148 @@ async function loadDevelopments() {
 
   developmentList.innerHTML = "";
 
-  const { data, error } = await supabase
-    .from("developments")
-    .select(`
-      id,
-      title,
-      address,
-      description,
-      developer,
-      project_type,
-      status,
-      units,
-      storeys
-    `)
-    .eq("is_approved", true)
-    .order("created_at", { ascending: false })
-    .limit(3);
+  const { data, error } =
+    await supabase
+      .from("developments")
+      .select(`
+        id,
+        title,
+        address,
+        description,
+        developer,
+        project_type,
+        status,
+        completion_year,
+        units,
+        storeys
+      `)
+      .eq("is_approved", true)
+      .order("created_at", {
+        ascending: false
+      })
+      .limit(3);
 
   if (error) {
     console.error(error);
+
     developmentList.innerHTML =
       "<p>Unable to load developments.</p>";
+
     return;
   }
 
   if (!data || data.length === 0) {
     developmentList.innerHTML =
       "<p>No developments have been published yet.</p>";
+
     return;
   }
 
   data.forEach((development) => {
-    const card = document.createElement("a");
+    const card =
+      document.createElement("a");
 
-    card.className = "development-card";
-    card.href = `development.html?id=${development.id}`;
+    card.className =
+      "development-card";
+
+    card.href =
+      `development.html?id=${development.id}`;
+
+    const statusBanner =
+      development.status
+        ? `
+          <div class="development-status-banner ${getStatusClass(
+            development.status
+          )}">
+            <span class="development-status-label">
+              ${escapeHtml(development.status)}
+            </span>
+
+            ${
+              development.completion_year
+                ? `
+                  <span class="development-completion">
+                    Expected completion:
+                    ${escapeHtml(
+                      development.completion_year
+                    )}
+                  </span>
+                `
+                : ""
+            }
+          </div>
+        `
+        : "";
 
     card.innerHTML = `
-      <h3>${development.title}</h3>
+      ${statusBanner}
+
+      <h3>
+        ${escapeHtml(development.title)}
+      </h3>
 
       ${
         development.address
-          ? `<p><strong>Address:</strong> ${development.address}</p>`
+          ? `
+            <p>
+              <strong>Address:</strong>
+              ${escapeHtml(development.address)}
+            </p>
+          `
           : ""
       }
 
       ${
         development.developer
-          ? `<p><strong>Developer:</strong> ${development.developer}</p>`
+          ? `
+            <p>
+              <strong>Developer:</strong>
+              ${escapeHtml(development.developer)}
+            </p>
+          `
           : ""
       }
 
       ${
         development.project_type
-          ? `<p><strong>Project Type:</strong> ${development.project_type}</p>`
-          : ""
-      }
-
-      ${
-        development.status
-          ? `<p><strong>Status:</strong> ${development.status}</p>`
+          ? `
+            <p>
+              <strong>Project Type:</strong>
+              ${escapeHtml(development.project_type)}
+            </p>
+          `
           : ""
       }
 
       ${
         development.units !== null
-          ? `<p><strong>Units:</strong> ${development.units}</p>`
+          ? `
+            <p>
+              <strong>Units:</strong>
+              ${escapeHtml(development.units)}
+            </p>
+          `
           : ""
       }
 
       ${
         development.storeys !== null
-          ? `<p><strong>Storeys:</strong> ${development.storeys}</p>`
+          ? `
+            <p>
+              <strong>Storeys:</strong>
+              ${escapeHtml(development.storeys)}
+            </p>
+          `
           : ""
       }
 
       ${
         development.description
-          ? `<p>${development.description}</p>`
+          ? `
+            <p>
+              ${escapeHtml(development.description)}
+            </p>
+          `
           : ""
       }
 
@@ -405,19 +532,27 @@ async function loadDevelopments() {
   });
 }
 
+closeModal?.addEventListener(
+  "click",
+  closeAuthModal
+);
 
-closeModal?.addEventListener("click", closeAuthModal);
-
-authModal?.addEventListener("click", (event) => {
-  if (event.target === authModal) {
-    closeAuthModal();
+authModal?.addEventListener(
+  "click",
+  (event) => {
+    if (event.target === authModal) {
+      closeAuthModal();
+    }
   }
-});
+);
 
-heroSignup?.addEventListener("click", (event) => {
-  event.preventDefault();
-  openAuthModal(false);
-});
+heroSignup?.addEventListener(
+  "click",
+  (event) => {
+    event.preventDefault();
+    openAuthModal(false);
+  }
+);
 
 supabase.auth.onAuthStateChange(() => {
   updateNavigation();
@@ -430,55 +565,113 @@ async function initializeApp() {
 
 initializeApp();
 
-const developmentRequestForm = document.getElementById("developmentRequestForm");
+const developmentRequestForm =
+  document.getElementById(
+    "developmentRequestForm"
+  );
 
 if (developmentRequestForm) {
-  developmentRequestForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
+  developmentRequestForm.addEventListener(
+    "submit",
+    async (event) => {
+      event.preventDefault();
 
-    const message = document.getElementById("developmentRequestMessage");
+      const message =
+        document.getElementById(
+          "developmentRequestMessage"
+        );
 
-    message.textContent = "Submitting...";
+      message.textContent =
+        "Submitting...";
 
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
+      const {
+        data: { user }
+      } =
+        await supabase.auth.getUser();
 
-    if (!user) {
-      message.textContent = "You must be logged in to submit a development request.";
-      return;
+      if (!user) {
+        message.textContent =
+          "You must be logged in to submit a development request.";
+
+        return;
+      }
+
+      const title =
+        document
+          .getElementById("requestTitle")
+          .value
+          .trim();
+
+      const address =
+        document
+          .getElementById("requestAddress")
+          .value
+          .trim();
+
+      const developer =
+        document
+          .getElementById("requestDeveloper")
+          .value
+          .trim();
+
+      const projectType =
+        document
+          .getElementById("requestProjectType")
+          .value;
+
+      const unitsValue =
+        document
+          .getElementById("requestUnits")
+          .value;
+
+      const storeysValue =
+        document
+          .getElementById("requestStoreys")
+          .value;
+
+      const description =
+        document
+          .getElementById("requestDescription")
+          .value
+          .trim();
+
+      const { error } =
+        await supabase
+          .from("development_requests")
+          .insert({
+            submitted_by: user.id,
+            title: title,
+            address:
+              address || null,
+            description:
+              description || null,
+            developer:
+              developer || null,
+            project_type:
+              projectType || null,
+            units:
+              unitsValue
+                ? Number(unitsValue)
+                : null,
+            storeys:
+              storeysValue
+                ? Number(storeysValue)
+                : null
+          });
+
+      if (error) {
+        console.error(error);
+
+        message.textContent =
+          "There was a problem submitting your request.";
+
+        return;
+      }
+
+      developmentRequestForm.reset();
+
+      message.textContent =
+        "Your development request has been submitted successfully.";
     }
-
-    const title = document.getElementById("requestTitle").value.trim();
-    const address = document.getElementById("requestAddress").value.trim();
-    const developer = document.getElementById("requestDeveloper").value.trim();
-    const projectType = document.getElementById("requestProjectType").value;
-    const unitsValue = document.getElementById("requestUnits").value;
-    const storeysValue = document.getElementById("requestStoreys").value;
-    const description = document.getElementById("requestDescription").value.trim();
-
-    const { error } = await supabase
-      .from("development_requests")
-      .insert({
-        submitted_by: user.id,
-        title: title,
-        address: address || null,
-        description: description || null,
-        developer: developer || null,
-        project_type: projectType || null,
-        units: unitsValue ? Number(unitsValue) : null,
-        storeys: storeysValue ? Number(storeysValue) : null
-      });
-
-    if (error) {
-      console.error(error);
-      message.textContent = "There was a problem submitting your request.";
-      return;
-    }
-
-    developmentRequestForm.reset();
-
-    message.textContent =
-      "Your development request has been submitted successfully.";
-  });
+  );
 }
