@@ -8,18 +8,44 @@ const supabase = createClient(
   SUPABASE_KEY
 );
 
-const message = document.getElementById("ownerMessage");
-const accountMessage = document.getElementById("ownerAccountMessage");
-const userList = document.getElementById("userList");
-const requestList = document.getElementById("developmentRequestList");
-const requestMessage = document.getElementById("developmentRequestMessage");
-const createDevelopmentForm = document.getElementById("createDevelopmentForm");
-const createDevelopmentMessage = document.getElementById("createDevelopmentMessage");
-const officialDevelopmentList = document.getElementById("officialDevelopmentList");
-const officialDevelopmentMessage = document.getElementById("officialDevelopmentMessage");
+const userList =
+  document.getElementById("userList");
+
+const requestList =
+  document.getElementById(
+    "developmentRequestList"
+  );
+
+const requestMessage =
+  document.getElementById(
+    "developmentRequestMessage"
+  );
+
+const createDevelopmentForm =
+  document.getElementById(
+    "createDevelopmentForm"
+  );
+
+const createDevelopmentMessage =
+  document.getElementById(
+    "createDevelopmentMessage"
+  );
+
+const officialDevelopmentList =
+  document.getElementById(
+    "officialDevelopmentList"
+  );
+
+const officialDevelopmentMessage =
+  document.getElementById(
+    "officialDevelopmentMessage"
+  );
 
 function escapeHtml(value) {
-  if (value === null || value === undefined) {
+  if (
+    value === null ||
+    value === undefined
+  ) {
     return "";
   }
 
@@ -49,15 +75,15 @@ function getStatusClass(status) {
     return "status-proposed";
   }
 
-  if (normalized.includes("approved")) {
-    return "status-approved";
-  }
-
   if (
     normalized.includes("construction") ||
     normalized.includes("under-construction")
   ) {
     return "status-construction";
+  }
+
+  if (normalized.includes("approved")) {
+    return "status-approved";
   }
 
   if (normalized.includes("completed")) {
@@ -67,6 +93,23 @@ function getStatusClass(status) {
   return "status-default";
 }
 
+function setOwnerLoadingText(text) {
+  const elements =
+    document.querySelectorAll(
+      "*"
+    );
+
+  elements.forEach(element => {
+    if (
+      element.children.length === 0 &&
+      element.textContent.trim() ===
+        "Loading your account..."
+    ) {
+      element.textContent = text;
+    }
+  });
+}
+
 async function getCurrentUser() {
   const {
     data: { user },
@@ -74,7 +117,11 @@ async function getCurrentUser() {
   } = await supabase.auth.getUser();
 
   if (error) {
-    console.error("Unable to get current user:", error);
+    console.error(
+      "Unable to get current user:",
+      error
+    );
+
     return null;
   }
 
@@ -83,7 +130,9 @@ async function getCurrentUser() {
 
 async function checkOwner(user) {
   if (!user) {
-    window.location.href = "index.html";
+    window.location.href =
+      "index.html";
+
     return false;
   }
 
@@ -96,17 +145,29 @@ async function checkOwner(user) {
     .eq("user_id", user.id)
     .single();
 
-  if (error || !role || role.role !== "owner") {
-    window.location.href = "index.html";
+  if (
+    error ||
+    !role ||
+    role.role !== "owner"
+  ) {
+    window.location.href =
+      "index.html";
+
     return false;
   }
 
   return true;
 }
 
-async function loadOwnerProfile(user) {
-  if (!accountMessage) {
-    return;
+async function loadOwnerAccount(user) {
+  const accountText =
+    document.querySelector(
+      ".dashboard-hero p"
+    );
+
+  if (accountText) {
+    accountText.textContent =
+      "Loading your account...";
   }
 
   const {
@@ -114,35 +175,53 @@ async function loadOwnerProfile(user) {
     error
   } = await supabase
     .from("profiles")
-    .select("display_name, avatar_url, is_verified")
+    .select(`
+      display_name,
+      avatar_url,
+      is_verified
+    `)
     .eq("id", user.id)
     .single();
 
   if (error) {
-    console.error("Unable to load owner profile:", error);
-    accountMessage.textContent =
-      "Unable to load your account information.";
+    console.error(
+      "Unable to load owner profile:",
+      error
+    );
+
+    setOwnerLoadingText(
+      "Unable to load your account."
+    );
+
     return;
   }
 
-  accountMessage.innerHTML = `
-    <strong>${escapeHtml(
-      profile?.display_name || user.email || "Owner"
-    )}</strong>
-    ${
-      profile?.is_verified
-        ? `<span class="verified-badge">Verified</span>`
-        : ""
-    }
-  `;
+  if (accountText) {
+    accountText.innerHTML = `
+      Signed in as
+      <strong>
+        ${escapeHtml(
+          profile?.display_name ||
+          user.email ||
+          "Owner"
+        )}
+      </strong>
+    `;
+  } else {
+    setOwnerLoadingText(
+      `Signed in as ${
+        profile?.display_name ||
+        user.email ||
+        "Owner"
+      }`
+    );
+  }
 }
 
 async function loadUsers() {
   if (!userList) {
     return;
   }
-
-  userList.innerHTML = "<p>Loading users...</p>";
 
   const {
     data: users,
@@ -155,6 +234,7 @@ async function loadUsers() {
       avatar_url,
       is_verified,
       is_banned,
+      ban_reason,
       created_at
     `)
     .order("created_at", {
@@ -162,60 +242,185 @@ async function loadUsers() {
     });
 
   if (error) {
-    console.error("Unable to load users:", error);
-    userList.innerHTML =
-      "<p>Unable to load users.</p>";
+    console.error(
+      "Unable to load users:",
+      error
+    );
+
+    userList.innerHTML = `
+      <p>
+        Unable to load users.
+      </p>
+    `;
+
     return;
   }
 
-  if (!users || users.length === 0) {
-    userList.innerHTML =
-      "<p>No users found.</p>";
+  if (
+    !users ||
+    users.length === 0
+  ) {
+    userList.innerHTML = `
+      <p>
+        No users found.
+      </p>
+    `;
+
     return;
   }
 
   userList.innerHTML = users
     .map(user => {
       return `
-        <div class="dashboard-item">
-          <div>
-            <strong>
-              ${escapeHtml(
-                user.display_name || "Unnamed User"
-              )}
-            </strong>
+        <div class="dashboard-item user-dashboard-item">
+
+          <div class="user-dashboard-info">
 
             ${
-              user.is_verified
-                ? `<span class="verified-badge">Verified</span>`
+              user.avatar_url
+                ? `
+                  <img
+                    src="${escapeHtml(
+                      user.avatar_url
+                    )}"
+                    alt=""
+                    class="user-avatar"
+                  >
+                `
                 : ""
             }
 
-            ${
-              user.is_banned
-                ? `<span class="banned-badge">Banned</span>`
-                : ""
-            }
+            <div>
 
-            <small>
-              Joined ${new Date(
-                user.created_at
-              ).toLocaleDateString()}
-            </small>
+              <strong>
+                ${escapeHtml(
+                  user.display_name ||
+                  "Unnamed User"
+                )}
+              </strong>
+
+              ${
+                user.is_verified
+                  ? `
+                    <span class="verified-badge">
+                      Verified
+                    </span>
+                  `
+                  : `
+                    <span class="unverified-badge">
+                      Unverified
+                    </span>
+                  `
+              }
+
+              ${
+                user.is_banned
+                  ? `
+                    <span class="banned-badge">
+                      Banned
+                    </span>
+                  `
+                  : ""
+              }
+
+              <small>
+                Joined
+                ${new Date(
+                  user.created_at
+                ).toLocaleDateString()}
+              </small>
+
+            </div>
+
           </div>
+
+          <div class="user-dashboard-actions">
+
+            <button
+              type="button"
+              class="button verify-user-button"
+              data-user-id="${user.id}"
+              data-verified="${
+                user.is_verified
+                  ? "true"
+                  : "false"
+              }"
+            >
+              ${
+                user.is_verified
+                  ? "Unverify"
+                  : "Verify"
+              }
+            </button>
+
+          </div>
+
         </div>
       `;
     })
     .join("");
+
+  document
+    .querySelectorAll(
+      ".verify-user-button"
+    )
+    .forEach(button => {
+      button.addEventListener(
+        "click",
+        async () => {
+          const userId =
+            button.dataset.userId;
+
+          const currentlyVerified =
+            button.dataset.verified ===
+            "true";
+
+          if (!userId) {
+            return;
+          }
+
+          button.disabled = true;
+          button.textContent =
+            "Saving...";
+
+          const {
+            error
+          } = await supabase
+            .from("profiles")
+            .update({
+              is_verified:
+                !currentlyVerified
+            })
+            .eq(
+              "id",
+              userId
+            );
+
+          if (error) {
+            console.error(
+              "Unable to update verification:",
+              error
+            );
+
+            button.disabled = false;
+            button.textContent =
+              currentlyVerified
+                ? "Unverify"
+                : "Verify";
+
+            return;
+          }
+
+          await loadUsers();
+        }
+      );
+    });
 }
 
 async function loadDevelopmentRequests() {
   if (!requestList) {
     return;
   }
-
-  requestList.innerHTML =
-    "<p>Loading development requests...</p>";
 
   const {
     data: requests,
@@ -255,7 +460,10 @@ async function loadDevelopmentRequests() {
     return;
   }
 
-  if (!requests || requests.length === 0) {
+  if (
+    !requests ||
+    requests.length === 0
+  ) {
     requestList.innerHTML =
       "<p>No development requests found.</p>";
 
@@ -271,9 +479,13 @@ async function loadDevelopmentRequests() {
         <article class="dashboard-card">
 
           <div class="dashboard-card-header">
+
             <div>
+
               <h3>
-                ${escapeHtml(request.title)}
+                ${escapeHtml(
+                  request.title
+                )}
               </h3>
 
               <p>
@@ -285,13 +497,16 @@ async function loadDevelopmentRequests() {
                   )}
                 </strong>
               </p>
+
             </div>
 
             <span class="request-status">
               ${escapeHtml(
-                request.status || "pending"
+                request.status ||
+                "pending"
               )}
             </span>
+
           </div>
 
           ${
@@ -299,7 +514,9 @@ async function loadDevelopmentRequests() {
               ? `
                 <p>
                   <strong>Address:</strong>
-                  ${escapeHtml(request.address)}
+                  ${escapeHtml(
+                    request.address
+                  )}
                 </p>
               `
               : ""
@@ -310,7 +527,9 @@ async function loadDevelopmentRequests() {
               ? `
                 <p>
                   <strong>Developer:</strong>
-                  ${escapeHtml(request.developer)}
+                  ${escapeHtml(
+                    request.developer
+                  )}
                 </p>
               `
               : ""
@@ -335,7 +554,9 @@ async function loadDevelopmentRequests() {
               ? `
                 <p>
                   <strong>Units:</strong>
-                  ${escapeHtml(request.units)}
+                  ${escapeHtml(
+                    request.units
+                  )}
                 </p>
               `
               : ""
@@ -347,7 +568,9 @@ async function loadDevelopmentRequests() {
               ? `
                 <p>
                   <strong>Storeys:</strong>
-                  ${escapeHtml(request.storeys)}
+                  ${escapeHtml(
+                    request.storeys
+                  )}
                 </p>
               `
               : ""
@@ -369,6 +592,7 @@ async function loadDevelopmentRequests() {
           }
 
           <div class="development-actions">
+
             <button
               type="button"
               class="button delete-request-button"
@@ -376,6 +600,7 @@ async function loadDevelopmentRequests() {
             >
               Delete Request
             </button>
+
           </div>
 
         </article>
@@ -384,56 +609,72 @@ async function loadDevelopmentRequests() {
     .join("");
 
   document
-    .querySelectorAll(".delete-request-button")
+    .querySelectorAll(
+      ".delete-request-button"
+    )
     .forEach(button => {
-      button.addEventListener("click", async () => {
-        const requestId = button.dataset.id;
+      button.addEventListener(
+        "click",
+        async () => {
+          const requestId =
+            button.dataset.id;
 
-        if (!requestId) {
-          return;
-        }
+          if (!requestId) {
+            return;
+          }
 
-        const confirmed = window.confirm(
-          "Are you sure you want to permanently delete this development request?"
-        );
+          const confirmed =
+            window.confirm(
+              "Are you sure you want to permanently delete this development request?"
+            );
 
-        if (!confirmed) {
-          return;
-        }
+          if (!confirmed) {
+            return;
+          }
 
-        button.disabled = true;
-        button.textContent = "Deleting...";
+          button.disabled = true;
+          button.textContent =
+            "Deleting...";
 
-        const { error } = await supabase
-          .from("development_requests")
-          .delete()
-          .eq("id", requestId);
-
-        if (error) {
-          console.error(
-            "Unable to delete development request:",
+          const {
             error
-          );
+          } = await supabase
+            .from(
+              "development_requests"
+            )
+            .delete()
+            .eq(
+              "id",
+              requestId
+            );
 
-          button.disabled = false;
-          button.textContent = "Delete Request";
+          if (error) {
+            console.error(
+              "Unable to delete request:",
+              error
+            );
+
+            button.disabled = false;
+            button.textContent =
+              "Delete Request";
+
+            if (requestMessage) {
+              requestMessage.textContent =
+                error.message ||
+                "Unable to delete the request.";
+            }
+
+            return;
+          }
 
           if (requestMessage) {
             requestMessage.textContent =
-              error.message ||
-              "Unable to delete the request.";
+              "Development request deleted.";
           }
 
-          return;
+          await loadDevelopmentRequests();
         }
-
-        if (requestMessage) {
-          requestMessage.textContent =
-            "Development request deleted.";
-        }
-
-        await loadDevelopmentRequests();
-      });
+      );
     });
 }
 
@@ -441,9 +682,6 @@ async function loadOfficialDevelopments() {
   if (!officialDevelopmentList) {
     return;
   }
-
-  officialDevelopmentList.innerHTML =
-    "<p>Loading official developments...</p>";
 
   const {
     data: developments,
@@ -454,7 +692,6 @@ async function loadOfficialDevelopments() {
       id,
       title,
       address,
-      description,
       developer,
       project_type,
       status,
@@ -469,10 +706,16 @@ async function loadOfficialDevelopments() {
         created_at
       )
     `)
-    .eq("is_approved", true)
-    .order("created_at", {
-      ascending: false
-    });
+    .eq(
+      "is_approved",
+      true
+    )
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
 
   if (error) {
     console.error(
@@ -486,257 +729,295 @@ async function loadOfficialDevelopments() {
     return;
   }
 
-  if (!developments || developments.length === 0) {
+  if (
+    !developments ||
+    developments.length === 0
+  ) {
     officialDevelopmentList.innerHTML =
       "<p>No official developments have been created yet.</p>";
 
     return;
   }
 
-  officialDevelopmentList.innerHTML = developments
-    .map(development => {
-      const images =
-        development.development_images || [];
+  officialDevelopmentList.innerHTML =
+    developments
+      .map(development => {
+        const images =
+          development.development_images ||
+          [];
 
-      const firstImage = images.length
-        ? [...images].sort(
-            (a, b) =>
-              new Date(a.created_at) -
-              new Date(b.created_at)
-          )[0]
-        : null;
+        const firstImage =
+          images.length
+            ? [...images].sort(
+                (a, b) =>
+                  new Date(
+                    a.created_at
+                  ) -
+                  new Date(
+                    b.created_at
+                  )
+              )[0]
+            : null;
 
-      const imageHtml = firstImage
-        ? `
-          <a
-            href="development.html?id=${development.id}"
-            class="development-card-image-link"
-          >
-            <img
-              src="${escapeHtml(firstImage.image_url)}"
-              alt="${escapeHtml(
-                firstImage.file_name ||
-                development.title
-              )}"
-              class="development-card-image"
-            >
-          </a>
-        `
-        : "";
-
-      return `
-        <article class="development-card">
-
-          ${imageHtml}
-
-          <div class="development-card-content">
+        return `
+          <article class="development-card">
 
             ${
-              development.status
+              firstImage
                 ? `
-                  <div class="development-status-banner ${getStatusClass(
-                    development.status
-                  )}">
-                    <span class="development-status-label">
+                  <a
+                    href="development.html?id=${development.id}"
+                    class="development-card-image-link"
+                  >
+                    <img
+                      src="${escapeHtml(
+                        firstImage.image_url
+                      )}"
+                      alt="${escapeHtml(
+                        firstImage.file_name ||
+                        development.title
+                      )}"
+                      class="development-card-image"
+                    >
+                  </a>
+                `
+                : ""
+            }
+
+            <div class="development-card-content">
+
+              ${
+                development.status
+                  ? `
+                    <div class="development-status-banner ${getStatusClass(
+                      development.status
+                    )}">
+
+                      <span class="development-status-label">
+                        ${escapeHtml(
+                          development.status
+                        )}
+                      </span>
+
+                      ${
+                        development.completion_year
+                          ? `
+                            <span class="development-completion">
+                              Expected completion:
+                              ${escapeHtml(
+                                development.completion_year
+                              )}
+                            </span>
+                          `
+                          : ""
+                      }
+
+                    </div>
+                  `
+                  : ""
+              }
+
+              <h3>
+                ${escapeHtml(
+                  development.title
+                )}
+              </h3>
+
+              ${
+                development.address
+                  ? `
+                    <p>
+                      <strong>Address:</strong>
                       ${escapeHtml(
-                        development.status
+                        development.address
                       )}
-                    </span>
+                    </p>
+                  `
+                  : ""
+              }
 
-                    ${
-                      development.completion_year
-                        ? `
-                          <span class="development-completion">
-                            Expected completion:
-                            ${escapeHtml(
-                              development.completion_year
-                            )}
-                          </span>
-                        `
-                        : ""
-                    }
-                  </div>
-                `
-                : ""
-            }
+              ${
+                development.developer
+                  ? `
+                    <p>
+                      <strong>Developer:</strong>
+                      ${escapeHtml(
+                        development.developer
+                      )}
+                    </p>
+                  `
+                  : ""
+              }
 
-            <h3>
-              ${escapeHtml(development.title)}
-            </h3>
+              ${
+                development.project_type
+                  ? `
+                    <p>
+                      <strong>Project type:</strong>
+                      ${escapeHtml(
+                        development.project_type
+                      )}
+                    </p>
+                  `
+                  : ""
+              }
 
-            ${
-              development.address
-                ? `
-                  <p>
-                    <strong>Address:</strong>
-                    ${escapeHtml(
-                      development.address
-                    )}
-                  </p>
-                `
-                : ""
-            }
+              ${
+                development.units !== null &&
+                development.units !== undefined
+                  ? `
+                    <p>
+                      <strong>Units:</strong>
+                      ${escapeHtml(
+                        development.units
+                      )}
+                    </p>
+                  `
+                  : ""
+              }
 
-            ${
-              development.developer
-                ? `
-                  <p>
-                    <strong>Developer:</strong>
-                    ${escapeHtml(
-                      development.developer
-                    )}
-                  </p>
-                `
-                : ""
-            }
+              ${
+                development.storeys !== null &&
+                development.storeys !== undefined
+                  ? `
+                    <p>
+                      <strong>Storeys:</strong>
+                      ${escapeHtml(
+                        development.storeys
+                      )}
+                    </p>
+                  `
+                  : ""
+              }
 
-            ${
-              development.project_type
-                ? `
-                  <p>
-                    <strong>Project type:</strong>
-                    ${escapeHtml(
-                      development.project_type
-                    )}
-                  </p>
-                `
-                : ""
-            }
+              <div class="development-actions">
 
-            ${
-              development.units !== null &&
-              development.units !== undefined
-                ? `
-                  <p>
-                    <strong>Units:</strong>
-                    ${escapeHtml(
-                      development.units
-                    )}
-                  </p>
-                `
-                : ""
-            }
+                <a
+                  href="development.html?id=${development.id}"
+                  class="button"
+                >
+                  View Development
+                </a>
 
-            ${
-              development.storeys !== null &&
-              development.storeys !== undefined
-                ? `
-                  <p>
-                    <strong>Storeys:</strong>
-                    ${escapeHtml(
-                      development.storeys
-                    )}
-                  </p>
-                `
-                : ""
-            }
+                <button
+                  type="button"
+                  class="button edit-development-button"
+                  data-id="${development.id}"
+                >
+                  Edit
+                </button>
 
-            <div class="development-actions">
+                <button
+                  type="button"
+                  class="button delete-development-button"
+                  data-id="${development.id}"
+                >
+                  Delete
+                </button>
 
-              <a
-                href="development.html?id=${development.id}"
-                class="button"
-              >
-                View Development
-              </a>
-
-              <button
-                type="button"
-                class="button edit-development-button"
-                data-id="${development.id}"
-              >
-                Edit
-              </button>
-
-              <button
-                type="button"
-                class="button delete-development-button"
-                data-id="${development.id}"
-              >
-                Delete
-              </button>
+              </div>
 
             </div>
 
-          </div>
-
-        </article>
-      `;
-    })
-    .join("");
+          </article>
+        `;
+      })
+      .join("");
 
   setupOfficialDevelopmentButtons();
 }
 
 function setupOfficialDevelopmentButtons() {
   document
-    .querySelectorAll(".edit-development-button")
+    .querySelectorAll(
+      ".edit-development-button"
+    )
     .forEach(button => {
-      button.addEventListener("click", () => {
-        const developmentId =
-          button.dataset.id;
+      button.addEventListener(
+        "click",
+        () => {
+          const developmentId =
+            button.dataset.id;
 
-        if (!developmentId) {
-          return;
+          if (!developmentId) {
+            return;
+          }
+
+          window.location.href =
+            `edit-development.html?id=${developmentId}`;
         }
-
-        window.location.href =
-          `edit-development.html?id=${developmentId}`;
-      });
+      );
     });
 
   document
-    .querySelectorAll(".delete-development-button")
+    .querySelectorAll(
+      ".delete-development-button"
+    )
     .forEach(button => {
-      button.addEventListener("click", async () => {
-        const developmentId =
-          button.dataset.id;
+      button.addEventListener(
+        "click",
+        async () => {
+          const developmentId =
+            button.dataset.id;
 
-        if (!developmentId) {
-          return;
-        }
-
-        const confirmed = window.confirm(
-          "Are you sure you want to permanently delete this development? This will also delete its discussions and attachments."
-        );
-
-        if (!confirmed) {
-          return;
-        }
-
-        button.disabled = true;
-        button.textContent = "Deleting...";
-
-        const { error } = await supabase
-          .from("developments")
-          .delete()
-          .eq("id", developmentId);
-
-        if (error) {
-          console.error(
-            "Unable to delete development:",
-            error
-          );
-
-          button.disabled = false;
-          button.textContent = "Delete";
-
-          if (officialDevelopmentMessage) {
-            officialDevelopmentMessage.textContent =
-              error.message ||
-              "Unable to delete development.";
+          if (!developmentId) {
+            return;
           }
 
-          return;
-        }
+          const confirmed =
+            window.confirm(
+              "Are you sure you want to permanently delete this development? This will also delete its discussions and attachments."
+            );
 
-        if (officialDevelopmentMessage) {
-          officialDevelopmentMessage.textContent =
-            "Development deleted successfully.";
-        }
+          if (!confirmed) {
+            return;
+          }
 
-        await loadOfficialDevelopments();
-      });
+          button.disabled = true;
+          button.textContent =
+            "Deleting...";
+
+          const {
+            error
+          } = await supabase
+            .from("developments")
+            .delete()
+            .eq(
+              "id",
+              developmentId
+            );
+
+          if (error) {
+            console.error(
+              "Unable to delete development:",
+              error
+            );
+
+            button.disabled = false;
+            button.textContent =
+              "Delete";
+
+            if (
+              officialDevelopmentMessage
+            ) {
+              officialDevelopmentMessage.textContent =
+                error.message ||
+                "Unable to delete development.";
+            }
+
+            return;
+          }
+
+          if (
+            officialDevelopmentMessage
+          ) {
+            officialDevelopmentMessage.textContent =
+              "Development deleted successfully.";
+          }
+
+          await loadOfficialDevelopments();
+        }
+      );
     });
 }
 
@@ -755,29 +1036,36 @@ function setupCreateDevelopmentForm() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        window.location.href = "index.html";
+        window.location.href =
+          "index.html";
+
         return;
       }
 
       const title =
-        document.getElementById("developmentTitle")
-          ?.value.trim() || "";
+        document.getElementById(
+          "developmentTitle"
+        )?.value.trim() || "";
 
       const address =
-        document.getElementById("developmentAddress")
-          ?.value.trim() || "";
+        document.getElementById(
+          "developmentAddress"
+        )?.value.trim() || "";
 
       const developer =
-        document.getElementById("developmentDeveloper")
-          ?.value.trim() || "";
+        document.getElementById(
+          "developmentDeveloper"
+        )?.value.trim() || "";
 
       const projectType =
-        document.getElementById("developmentProjectType")
-          ?.value.trim() || "";
+        document.getElementById(
+          "developmentProjectType"
+        )?.value.trim() || "";
 
       const status =
-        document.getElementById("developmentStatus")
-          ?.value.trim() || "";
+        document.getElementById(
+          "developmentStatus"
+        )?.value.trim() || "";
 
       const completionYear =
         document.getElementById(
@@ -785,12 +1073,14 @@ function setupCreateDevelopmentForm() {
         )?.value || "";
 
       const units =
-        document.getElementById("developmentUnits")
-          ?.value || "";
+        document.getElementById(
+          "developmentUnits"
+        )?.value || "";
 
       const storeys =
-        document.getElementById("developmentStoreys")
-          ?.value || "";
+        document.getElementById(
+          "developmentStoreys"
+        )?.value || "";
 
       const description =
         document.getElementById(
@@ -798,7 +1088,9 @@ function setupCreateDevelopmentForm() {
         )?.value.trim() || "";
 
       if (!title) {
-        if (createDevelopmentMessage) {
+        if (
+          createDevelopmentMessage
+        ) {
           createDevelopmentMessage.textContent =
             "Please enter a development title.";
         }
@@ -806,7 +1098,9 @@ function setupCreateDevelopmentForm() {
         return;
       }
 
-      if (createDevelopmentMessage) {
+      if (
+        createDevelopmentMessage
+      ) {
         createDevelopmentMessage.textContent =
           "Creating development...";
       }
@@ -817,23 +1111,36 @@ function setupCreateDevelopmentForm() {
         .from("developments")
         .insert({
           title,
-          address: address || null,
-          description: description || null,
-          developer: developer || null,
-          project_type: projectType || null,
-          status: status || null,
-          completion_year: completionYear
-            ? Number(completionYear)
-            : null,
-          units: units
-            ? Number(units)
-            : null,
-          storeys: storeys
-            ? Number(storeys)
-            : null,
-          submitted_by: user.id,
-          approved_by: user.id,
-          is_approved: true,
+          address:
+            address || null,
+          description:
+            description || null,
+          developer:
+            developer || null,
+          project_type:
+            projectType || null,
+          status:
+            status || null,
+          completion_year:
+            completionYear
+              ? Number(
+                  completionYear
+                )
+              : null,
+          units:
+            units
+              ? Number(units)
+              : null,
+          storeys:
+            storeys
+              ? Number(storeys)
+              : null,
+          submitted_by:
+            user.id,
+          approved_by:
+            user.id,
+          is_approved:
+            true,
           approved_at:
             new Date().toISOString()
         });
@@ -844,7 +1151,9 @@ function setupCreateDevelopmentForm() {
           error
         );
 
-        if (createDevelopmentMessage) {
+        if (
+          createDevelopmentMessage
+        ) {
           createDevelopmentMessage.textContent =
             error.message ||
             "Unable to create development.";
@@ -855,7 +1164,9 @@ function setupCreateDevelopmentForm() {
 
       createDevelopmentForm.reset();
 
-      if (createDevelopmentMessage) {
+      if (
+        createDevelopmentMessage
+      ) {
         createDevelopmentMessage.textContent =
           "Development created successfully.";
       }
@@ -866,20 +1177,17 @@ function setupCreateDevelopmentForm() {
 }
 
 async function initializeOwnerDashboard() {
-  const user = await getCurrentUser();
+  const user =
+    await getCurrentUser();
 
-  const isOwner = await checkOwner(user);
+  const isOwner =
+    await checkOwner(user);
 
   if (!isOwner) {
     return;
   }
 
-  if (message) {
-    message.textContent =
-      "Owner access confirmed.";
-  }
-
-  await loadOwnerProfile(user);
+  await loadOwnerAccount(user);
   await loadUsers();
   await loadDevelopmentRequests();
   await loadOfficialDevelopments();
