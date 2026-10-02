@@ -33,14 +33,17 @@ async function loadDevelopment() {
 
   const data = result.data;
 
-  document.getElementById("developmentTitle").textContent = data.title;
+  document.getElementById("developmentTitle").textContent =
+    data.title;
 
   document.getElementById("developmentAddress").textContent =
     data.address || "Kelowna, British Columbia";
 
-  document.getElementById("developmentName").textContent = data.title;
+  document.getElementById("developmentName").textContent =
+    data.title;
 
-  const details = document.getElementById("developmentDetails");
+  const details =
+    document.getElementById("developmentDetails");
 
   details.innerHTML = "";
 
@@ -87,9 +90,11 @@ async function loadDevelopment() {
   }
 
   document.getElementById("developmentDescription").textContent =
-    data.description || "No description has been provided yet.";
+    data.description ||
+    "No description has been provided yet.";
 
-  document.title = data.title + " | Kelowna Developments";
+  document.title =
+    data.title + " | Kelowna Developments";
 
   messageElement.style.display = "none";
   contentElement.style.display = "block";
@@ -99,17 +104,28 @@ async function loadDevelopment() {
 }
 
 async function loadDiscussions() {
-  const discussionList = document.getElementById("discussionList");
+  const discussionList =
+    document.getElementById("discussionList");
 
   if (!discussionList) {
     return;
   }
 
-  discussionList.innerHTML = "<p>Loading discussions...</p>";
+  discussionList.innerHTML =
+    "<p>Loading discussions...</p>";
 
   const result = await supabaseClient
     .from("discussions")
-    .select("*")
+    .select(`
+      id,
+      content,
+      created_at,
+      user_id,
+      profiles (
+        display_name,
+        avatar_url
+      )
+    `)
     .eq("development_id", developmentId)
     .order("created_at", {
       ascending: true
@@ -117,8 +133,10 @@ async function loadDiscussions() {
 
   if (result.error) {
     console.error(result.error);
+
     discussionList.innerHTML =
       "<p>Unable to load discussions.</p>";
+
     return;
   }
 
@@ -127,24 +145,58 @@ async function loadDiscussions() {
   if (!data || data.length === 0) {
     discussionList.innerHTML =
       "<p>No discussions yet.</p>";
+
     return;
   }
 
   discussionList.innerHTML = "";
 
   data.forEach(function (discussion) {
-    const card = document.createElement("div");
-    card.className = "discussion-card";
+    const card =
+      document.createElement("div");
 
-    const paragraph = document.createElement("p");
-    paragraph.textContent = discussion.content;
+    card.className =
+      "discussion-card";
 
-    const date = document.createElement("small");
+    const author =
+      document.createElement("div");
+
+    author.className =
+      "discussion-author";
+
+    const authorName =
+      document.createElement("strong");
+
+    const profile =
+      Array.isArray(discussion.profiles)
+        ? discussion.profiles[0]
+        : discussion.profiles;
+
+    authorName.textContent =
+      profile && profile.display_name
+        ? profile.display_name
+        : "User";
+
+    author.appendChild(authorName);
+
+    const date =
+      document.createElement("small");
+
     date.textContent =
-      new Date(discussion.created_at).toLocaleString();
+      new Date(
+        discussion.created_at
+      ).toLocaleString();
 
+    author.appendChild(date);
+
+    const paragraph =
+      document.createElement("p");
+
+    paragraph.textContent =
+      discussion.content;
+
+    card.appendChild(author);
     card.appendChild(paragraph);
-    card.appendChild(date);
 
     discussionList.appendChild(card);
   });
@@ -152,15 +204,25 @@ async function loadDiscussions() {
 
 async function setupDiscussionForm() {
   const formContainer =
-    document.getElementById("discussionFormContainer");
+    document.getElementById(
+      "discussionFormContainer"
+    );
 
   const loginMessage =
-    document.getElementById("discussionLoginMessage");
+    document.getElementById(
+      "discussionLoginMessage"
+    );
 
   const form =
-    document.getElementById("discussionForm");
+    document.getElementById(
+      "discussionForm"
+    );
 
-  if (!formContainer || !loginMessage || !form) {
+  if (
+    !formContainer ||
+    !loginMessage ||
+    !form
+  ) {
     return;
   }
 
@@ -171,95 +233,132 @@ async function setupDiscussionForm() {
     userResult.data.user;
 
   if (user) {
-    formContainer.style.display = "block";
-    loginMessage.style.display = "none";
+    formContainer.style.display =
+      "block";
+
+    loginMessage.style.display =
+      "none";
   } else {
-    formContainer.style.display = "none";
-    loginMessage.style.display = "block";
+    formContainer.style.display =
+      "none";
+
+    loginMessage.style.display =
+      "block";
+
     return;
   }
 
-  form.addEventListener("submit", async function (event) {
-    event.preventDefault();
+  form.addEventListener(
+    "submit",
+    async function (event) {
+      event.preventDefault();
 
-    const contentInput =
-      document.getElementById("discussionContent");
+      const contentInput =
+        document.getElementById(
+          "discussionContent"
+        );
 
-    const submitButton =
-      document.getElementById("discussionSubmitButton");
+      const submitButton =
+        document.getElementById(
+          "discussionSubmitButton"
+        );
 
-    const formMessage =
-      document.getElementById("discussionFormMessage");
+      const formMessage =
+        document.getElementById(
+          "discussionFormMessage"
+        );
 
-    const content =
-      contentInput.value.trim();
+      const content =
+        contentInput.value.trim();
 
-    if (!content) {
+      if (!content) {
+        formMessage.textContent =
+          "Please enter something before posting.";
+
+        return;
+      }
+
+      if (content.length > 5000) {
+        formMessage.textContent =
+          "Your discussion is too long.";
+
+        return;
+      }
+
+      submitButton.disabled =
+        true;
+
+      submitButton.textContent =
+        "Posting...";
+
       formMessage.textContent =
-        "Please enter something before posting.";
-      return;
-    }
+        "";
 
-    if (content.length > 5000) {
+      const currentUserResult =
+        await supabaseClient.auth.getUser();
+
+      const currentUser =
+        currentUserResult.data.user;
+
+      if (!currentUser) {
+        formMessage.textContent =
+          "You must be logged in to post a discussion.";
+
+        submitButton.disabled =
+          false;
+
+        submitButton.textContent =
+          "Post Discussion";
+
+        return;
+      }
+
+      const insertResult =
+        await supabaseClient
+          .from("discussions")
+          .insert({
+            development_id:
+              Number(developmentId),
+
+            user_id:
+              currentUser.id,
+
+            content:
+              content
+          });
+
+      if (insertResult.error) {
+        console.error(
+          insertResult.error
+        );
+
+        formMessage.textContent =
+          "There was a problem posting your discussion.";
+
+        submitButton.disabled =
+          false;
+
+        submitButton.textContent =
+          "Post Discussion";
+
+        return;
+      }
+
+      contentInput.value =
+        "";
+
       formMessage.textContent =
-        "Your discussion is too long.";
-      return;
-    }
+        "Discussion posted successfully.";
 
-    submitButton.disabled = true;
-    submitButton.textContent = "Posting...";
-    formMessage.textContent = "";
+      submitButton.disabled =
+        false;
 
-    const currentUserResult =
-      await supabaseClient.auth.getUser();
-
-    const currentUser =
-      currentUserResult.data.user;
-
-    if (!currentUser) {
-      formMessage.textContent =
-        "You must be logged in to post a discussion.";
-
-      submitButton.disabled = false;
       submitButton.textContent =
         "Post Discussion";
 
-      return;
+      await loadDiscussions();
     }
-
-    const insertResult =
-      await supabaseClient
-        .from("discussions")
-        .insert({
-          development_id: Number(developmentId),
-          user_id: currentUser.id,
-          content: content
-        });
-
-    if (insertResult.error) {
-      console.error(insertResult.error);
-
-      formMessage.textContent =
-        "There was a problem posting your discussion.";
-
-      submitButton.disabled = false;
-      submitButton.textContent =
-        "Post Discussion";
-
-      return;
-    }
-
-    contentInput.value = "";
-
-    formMessage.textContent =
-      "Discussion posted successfully.";
-
-    submitButton.disabled = false;
-    submitButton.textContent =
-      "Post Discussion";
-
-    await loadDiscussions();
-  });
+  );
 }
 
 function escapeHtml(value) {
