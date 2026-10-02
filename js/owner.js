@@ -2284,6 +2284,222 @@ async function loadRoles() {
     });
 }
 
+async function loadAuditLog() {
+  const auditLogList =
+    document.getElementById("auditLogList");
+
+  if (!auditLogList) {
+    return;
+  }
+
+  auditLogList.innerHTML =
+    "<p>Loading audit log...</p>";
+
+  const {
+    data: actions,
+    error
+  } = await supabase
+    .from("moderation_actions")
+    .select(`
+      id,
+      moderator_id,
+      action,
+      target_user_id,
+      development_id,
+      discussion_id,
+      attachment_id,
+      reason,
+      created_at
+    `)
+    .order("created_at", {
+      ascending: false
+    });
+
+  if (error) {
+    console.error(
+      "Unable to load audit log:",
+      error
+    );
+
+    auditLogList.innerHTML =
+      "<p>Unable to load audit log.</p>";
+
+    return;
+  }
+
+  if (
+    !actions ||
+    actions.length === 0
+  ) {
+    auditLogList.innerHTML =
+      "<p>No administrative activity has been recorded yet.</p>";
+
+    return;
+  }
+
+  const userIds = [
+    ...new Set(
+      actions
+        .flatMap(action => [
+          action.moderator_id,
+          action.target_user_id
+        ])
+        .filter(Boolean)
+    )
+  ];
+
+  let profiles = [];
+
+  if (userIds.length > 0) {
+    const {
+      data,
+      error: profilesError
+    } = await supabase
+      .from("profiles")
+      .select(`
+        id,
+        display_name
+      `)
+      .in("id", userIds);
+
+    if (!profilesError) {
+      profiles = data || [];
+    }
+  }
+
+  const profileMap =
+    new Map(
+      profiles.map(profile => [
+        profile.id,
+        profile.display_name ||
+          "Unknown User"
+      ])
+    );
+
+  auditLogList.innerHTML =
+    actions
+      .map(action => {
+
+        const moderatorName =
+          profileMap.get(
+            action.moderator_id
+          ) ||
+          "Unknown User";
+
+        const targetName =
+          action.target_user_id
+            ? (
+                profileMap.get(
+                  action.target_user_id
+                ) ||
+                "Unknown User"
+              )
+            : null;
+
+        const actionName =
+          action.action
+            .replaceAll("_", " ")
+            .replace(/\b\w/g, letter =>
+              letter.toUpperCase()
+            );
+
+        const date =
+          new Date(
+            action.created_at
+          ).toLocaleString();
+
+        return `
+          <article class="dashboard-card">
+
+            <h3>
+              ${escapeHtml(actionName)}
+            </h3>
+
+            <p>
+              <strong>By:</strong>
+              ${escapeHtml(moderatorName)}
+            </p>
+
+            ${
+              targetName
+                ? `
+                  <p>
+                    <strong>Target:</strong>
+                    ${escapeHtml(targetName)}
+                  </p>
+                `
+                : ""
+            }
+
+            ${
+              action.development_id
+                ? `
+                  <p>
+                    <strong>Development ID:</strong>
+                    ${escapeHtml(
+                      String(
+                        action.development_id
+                      )
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+            ${
+              action.discussion_id
+                ? `
+                  <p>
+                    <strong>Discussion ID:</strong>
+                    ${escapeHtml(
+                      String(
+                        action.discussion_id
+                      )
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+            ${
+              action.attachment_id
+                ? `
+                  <p>
+                    <strong>Attachment ID:</strong>
+                    ${escapeHtml(
+                      String(
+                        action.attachment_id
+                      )
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+            ${
+              action.reason
+                ? `
+                  <p>
+                    <strong>Reason:</strong>
+                    ${escapeHtml(
+                      action.reason
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+            <p>
+              <strong>Date:</strong>
+              ${escapeHtml(date)}
+            </p>
+
+          </article>
+        `;
+      })
+      .join("");
+}
+
 function setupCreateDevelopmentForm() {
   if (!createDevelopmentForm) {
     return;
