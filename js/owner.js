@@ -2435,10 +2435,11 @@ async function initializeOwnerDashboard() {
   await loadDevelopmentRequests();
   await loadOfficialDevelopments();
   await loadDiscussions();
-  await loadReports();
-  await loadBans();
+await loadReports();
+await loadBans();
+await loadRoles();
 
-  setupCreateDevelopmentForm();
+setupCreateDevelopmentForm();
 }
 
 
