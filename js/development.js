@@ -1,231 +1,273 @@
 const SUPABASE_URL = "https://diljkqsrqdktzyumrqkg.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_JjzaLH_H48oLIvuRz9F5jg_yyC5xxII";
+const SUPABASE_KEY = "sb_publishable_JjzaLH_H48oLIvuRz9F5jg_yyC5xxII";
 
-const supabaseClient = window.supabase.createClient(
+const supabase = window.supabase.createClient(
   SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
+  SUPABASE_KEY
 );
 
 const params = new URLSearchParams(window.location.search);
 const developmentId = params.get("id");
 
-const messageElement = document.getElementById("developmentMessage");
-const contentElement = document.getElementById("developmentContent");
+let currentUser = null;
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
-const STORAGE_BUCKET = "development-files";
-
-async function loadDevelopment() {
-  if (!developmentId) {
-    messageElement.textContent = "No development was specified.";
-    return;
+function escapeHtml(value) {
+  if (value === null || value === undefined) {
+    return "";
   }
 
-  const result = await supabaseClient
-    .from("developments")
-    .select("*")
-    .eq("id", developmentId)
-    .eq("is_approved", true)
-    .single();
-
-  if (result.error) {
-    console.error(result.error);
-    messageElement.textContent = "Unable to load this development.";
-    return;
-  }
-
-  const data = result.data;
-
-  document.getElementById("developmentTitle").textContent =
-    data.title;
-
-  document.getElementById("developmentAddress").textContent =
-    data.address || "Kelowna, British Columbia";
-
-  document.getElementById("developmentName").textContent =
-    data.title;
-
-  addStatusBanner(data);
-
-  const details =
-    document.getElementById("developmentDetails");
-
-  details.innerHTML = "";
-
-  if (data.address) {
-    addDetail(details, "Address", data.address);
-  }
-
-  if (data.developer) {
-    addDetail(details, "Developer", data.developer);
-  }
-
-  if (data.project_type) {
-    addDetail(details, "Project Type", data.project_type);
-  }
-
-  if (data.status) {
-    addDetail(details, "Status", data.status);
-  }
-
-  if (data.completion_year) {
-    addDetail(
-      details,
-      "Expected Completion",
-      String(data.completion_year)
-    );
-  }
-
-  if (data.units !== null) {
-    addDetail(
-      details,
-      "Units",
-      String(data.units)
-    );
-  }
-
-  if (data.storeys !== null) {
-    addDetail(
-      details,
-      "Storeys",
-      String(data.storeys)
-    );
-  }
-
-  document.getElementById("developmentDescription").textContent =
-    data.description ||
-    "No description has been provided yet.";
-
-  document.title =
-    data.title + " | Kelowna Developments";
-
-  messageElement.style.display = "none";
-  contentElement.style.display = "block";
-
-  await loadDiscussions();
-  await loadAttachments();
-  setupFileSelection();
-  await setupDiscussionForm();
-}
-
-function addDetail(container, label, value) {
-  const paragraph =
-    document.createElement("p");
-
-  const strong =
-    document.createElement("strong");
-
-  strong.textContent =
-    label + ":";
-
-  paragraph.appendChild(strong);
-
-  paragraph.appendChild(
-    document.createTextNode(
-      " " + value
-    )
-  );
-
-  container.appendChild(paragraph);
-}
-
-function addStatusBanner(data) {
-  const existing =
-    document.getElementById(
-      "developmentStatusBanner"
-    );
-
-  if (existing) {
-    existing.remove();
-  }
-
-  if (!data.status) {
-    return;
-  }
-
-  const banner =
-    document.createElement("div");
-
-  banner.id =
-    "developmentStatusBanner";
-
-  const statusClass =
-    getStatusClass(data.status);
-
-  banner.className =
-    "development-status-banner " +
-    statusClass;
-
-  const statusText =
-    document.createElement("span");
-
-  statusText.className =
-    "development-status-label";
-
-  statusText.textContent =
-    data.status;
-
-  banner.appendChild(statusText);
-
-  if (data.completion_year) {
-    const completion =
-      document.createElement("span");
-
-    completion.className =
-      "development-completion";
-
-    completion.textContent =
-      "Expected completion: " +
-      data.completion_year;
-
-    banner.appendChild(completion);
-  }
-
-  const title =
-    document.getElementById(
-      "developmentTitle"
-    );
-
-  title.parentNode.insertBefore(
-    banner,
-    title
-  );
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 function getStatusClass(status) {
-  const normalized =
-    String(status)
-      .toLowerCase()
-      .replace(/\s+/g, "-");
+  if (!status) {
+    return "status-default";
+  }
 
-  if (normalized === "concept") {
+  const value = status.toLowerCase();
+
+  if (value.includes("concept")) {
     return "status-concept";
   }
 
-  if (normalized === "proposed") {
+  if (value.includes("proposed")) {
     return "status-proposed";
   }
 
-  if (normalized === "approved") {
+  if (value.includes("approved")) {
     return "status-approved";
   }
 
-  if (
-    normalized === "under-construction"
-  ) {
+  if (value.includes("construction")) {
     return "status-construction";
   }
 
-  if (normalized === "completed") {
+  if (value.includes("completed")) {
     return "status-completed";
   }
 
   return "status-default";
 }
 
+async function loadDevelopment() {
+  if (!developmentId) {
+    showError("No development was specified.");
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("developments")
+    .select(`
+      id,
+      title,
+      address,
+      description,
+      developer,
+      project_type,
+      status,
+      completion_year,
+      units,
+      storeys
+    `)
+    .eq("id", developmentId)
+    .eq("is_approved", true)
+    .single();
+
+  if (error || !data) {
+    console.error("Development loading error:", error);
+    showError("Unable to load this development.");
+    return;
+  }
+
+  document.title = `${data.title} | Kelowna Developments`;
+
+  const titleElement = document.getElementById("developmentTitle");
+  const addressElement = document.getElementById("developmentAddress");
+  const nameElement = document.getElementById("developmentName");
+  const detailsElement = document.getElementById("developmentDetails");
+  const descriptionElement = document.getElementById("developmentDescription");
+
+  if (titleElement) {
+    titleElement.textContent = data.title;
+  }
+
+  if (addressElement) {
+    addressElement.textContent =
+      data.address || "Kelowna, British Columbia";
+  }
+
+  if (nameElement) {
+    nameElement.textContent = data.title;
+  }
+
+  if (detailsElement) {
+    detailsElement.innerHTML = `
+      <div class="detail-item">
+        <strong>Address</strong>
+        <span>${escapeHtml(data.address || "Kelowna, British Columbia")}</span>
+      </div>
+
+      <div class="detail-item">
+        <strong>Developer</strong>
+        <span>${escapeHtml(data.developer || "Not specified")}</span>
+      </div>
+
+      <div class="detail-item">
+        <strong>Project Type</strong>
+        <span>${escapeHtml(data.project_type || "Not specified")}</span>
+      </div>
+
+      <div class="detail-item">
+        <strong>Status</strong>
+        <span>${escapeHtml(data.status || "Not specified")}</span>
+      </div>
+
+      ${
+        data.completion_year
+          ? `
+            <div class="detail-item">
+              <strong>Expected Completion</strong>
+              <span>${escapeHtml(data.completion_year)}</span>
+            </div>
+          `
+          : ""
+      }
+
+      <div class="detail-item">
+        <strong>Units</strong>
+        <span>${data.units ?? "Not specified"}</span>
+      </div>
+
+      <div class="detail-item">
+        <strong>Storeys</strong>
+        <span>${data.storeys ?? "Not specified"}</span>
+      </div>
+    `;
+  }
+
+  if (descriptionElement) {
+    descriptionElement.innerHTML = data.description
+      ? escapeHtml(data.description).replace(/\n/g, "<br>")
+      : "No description has been provided.";
+  }
+
+  addStatusBanner(data);
+
+  await loadPresetImages();
+  await loadDiscussions();
+  await loadAttachments();
+  await setupDiscussionForm();
+}
+
+function addStatusBanner(data) {
+  const titleElement = document.getElementById("developmentTitle");
+
+  if (!titleElement) {
+    return;
+  }
+
+  const existingBanner = document.getElementById(
+    "developmentStatusBanner"
+  );
+
+  if (existingBanner) {
+    existingBanner.remove();
+  }
+
+  if (!data.status) {
+    return;
+  }
+
+  const banner = document.createElement("div");
+
+  banner.id = "developmentStatusBanner";
+  banner.className =
+    `development-status-banner ${getStatusClass(data.status)}`;
+
+  banner.innerHTML = `
+    <span class="development-status-label">
+      ${escapeHtml(data.status)}
+    </span>
+
+    ${
+      data.completion_year
+        ? `
+          <span class="development-completion">
+            Expected completion: ${escapeHtml(data.completion_year)}
+          </span>
+        `
+        : ""
+    }
+  `;
+
+  titleElement.parentNode.insertBefore(
+    banner,
+    titleElement
+  );
+}
+
+async function loadPresetImages() {
+  const gallery = document.getElementById(
+    "developmentPresetGallery"
+  );
+
+  if (!gallery) {
+    return;
+  }
+
+  gallery.innerHTML = "<p>Loading development photos...</p>";
+
+  const { data, error } = await supabase
+    .from("development_images")
+    .select(`
+      id,
+      image_url,
+      file_name,
+      created_at
+    `)
+    .eq("development_id", developmentId)
+    .order("created_at", {
+      ascending: true
+    });
+
+  if (error) {
+    console.error("Preset image loading error:", error);
+
+    gallery.innerHTML =
+      "<p>Unable to load development photos.</p>";
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    gallery.innerHTML = "";
+    return;
+  }
+
+  gallery.innerHTML = data.map(image => `
+    <a
+      href="${escapeHtml(image.image_url)}"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <img
+        src="${escapeHtml(image.image_url)}"
+        alt="${escapeHtml(image.file_name || "Development photo")}"
+        class="preset-gallery-image"
+      >
+    </a>
+  `).join("");
+}
+
 async function loadDiscussions() {
-  const discussionList =
-    document.getElementById("discussionList");
+  const discussionList = document.getElementById(
+    "discussionList"
+  );
 
   if (!discussionList) {
     return;
@@ -234,13 +276,14 @@ async function loadDiscussions() {
   discussionList.innerHTML =
     "<p>Loading discussions...</p>";
 
-  const result = await supabaseClient
+  const { data, error } = await supabase
     .from("discussions")
     .select(`
       id,
+      development_id,
+      user_id,
       content,
       created_at,
-      user_id,
       profiles (
         display_name,
         avatar_url
@@ -258,8 +301,8 @@ async function loadDiscussions() {
       ascending: true
     });
 
-  if (result.error) {
-    console.error(result.error);
+  if (error) {
+    console.error("Discussion loading error:", error);
 
     discussionList.innerHTML =
       "<p>Unable to load discussions.</p>";
@@ -267,155 +310,106 @@ async function loadDiscussions() {
     return;
   }
 
-  const data = result.data;
-
   if (!data || data.length === 0) {
     discussionList.innerHTML =
-      "<p>No discussions yet.</p>";
+      "<p>No discussions yet. Be the first to comment.</p>";
 
     return;
   }
 
-  discussionList.innerHTML = "";
+  discussionList.innerHTML = data.map(discussion => {
+    const profile = discussion.profiles || {};
 
-  data.forEach(function (discussion) {
-    const card =
-      document.createElement("div");
+    const displayName =
+      profile.display_name || "User";
 
-    card.className =
-      "discussion-card";
-
-    const author =
-      document.createElement("div");
-
-    author.className =
-      "discussion-author";
-
-    const authorName =
-      document.createElement("strong");
-
-    const profile =
-      Array.isArray(discussion.profiles)
-        ? discussion.profiles[0]
-        : discussion.profiles;
-
-    authorName.textContent =
-      profile && profile.display_name
-        ? profile.display_name
-        : "User";
-
-    author.appendChild(authorName);
-
-    const date =
-      document.createElement("small");
-
-    date.textContent =
-      new Date(
-        discussion.created_at
-      ).toLocaleString();
-
-    author.appendChild(date);
-
-    const paragraph =
-      document.createElement("p");
-
-    paragraph.textContent =
-      discussion.content;
-
-    card.appendChild(author);
-    card.appendChild(paragraph);
+    const date = new Date(
+      discussion.created_at
+    ).toLocaleString();
 
     const attachments =
       discussion.attachments || [];
 
-    if (attachments.length > 0) {
-      const attachmentContainer =
-        document.createElement("div");
+    const attachmentHtml = attachments.length
+      ? `
+        <div class="discussion-attachments">
+          ${attachments.map(file => {
+            if (file.file_type &&
+                file.file_type.startsWith("image/")) {
+              return `
+                <a
+                  href="${escapeHtml(file.file_url)}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img
+                    src="${escapeHtml(file.file_url)}"
+                    alt="${escapeHtml(file.file_name)}"
+                    class="discussion-image"
+                  >
+                </a>
+              `;
+            }
 
-      attachmentContainer.className =
-        "discussion-attachments";
+            return `
+              <a
+                href="${escapeHtml(file.file_url)}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="discussion-file"
+              >
+                ${escapeHtml(file.file_name)}
+              </a>
+            `;
+          }).join("")}
+        </div>
+      `
+      : "";
 
-      attachments.forEach(function (attachment) {
-        if (
-          attachment.file_type &&
-          attachment.file_type.startsWith("image/")
-        ) {
-          const imageLink =
-            document.createElement("a");
+    return `
+      <article class="discussion-card">
 
-          imageLink.href =
-            attachment.file_url;
+        <div class="discussion-header">
+          <strong>
+            ${escapeHtml(displayName)}
+          </strong>
 
-          imageLink.target =
-            "_blank";
+          <span>
+            ${escapeHtml(date)}
+          </span>
+        </div>
 
-          imageLink.rel =
-            "noopener noreferrer";
+        <div class="discussion-content">
+          ${escapeHtml(discussion.content).replace(/\n/g, "<br>")}
+        </div>
 
-          const image =
-            document.createElement("img");
+        ${attachmentHtml}
 
-          image.src =
-            attachment.file_url;
-
-          image.alt =
-            attachment.file_name;
-
-          image.loading =
-            "lazy";
-
-          image.className =
-            "discussion-image";
-
-          imageLink.appendChild(image);
-          attachmentContainer.appendChild(imageLink);
-        } else {
-          const fileLink =
-            document.createElement("a");
-
-          fileLink.href =
-            attachment.file_url;
-
-          fileLink.target =
-            "_blank";
-
-          fileLink.rel =
-            "noopener noreferrer";
-
-          fileLink.textContent =
-            "📎 " + attachment.file_name;
-
-          fileLink.className =
-            "discussion-file";
-
-          attachmentContainer.appendChild(fileLink);
-        }
-      });
-
-      card.appendChild(
-        attachmentContainer
-      );
-    }
-
-    discussionList.appendChild(card);
-  });
+      </article>
+    `;
+  }).join("");
 }
 
 async function loadAttachments() {
-  const imageGallery =
-    document.getElementById("imageGallery");
+  const imageGallery = document.getElementById(
+    "imageGallery"
+  );
 
-  const fileList =
-    document.getElementById("fileList");
+  const fileList = document.getElementById(
+    "fileList"
+  );
 
-  if (!imageGallery || !fileList) {
-    return;
+  if (imageGallery) {
+    imageGallery.innerHTML =
+      "Loading images...";
   }
 
-  imageGallery.innerHTML = "";
-  fileList.innerHTML = "";
+  if (fileList) {
+    fileList.innerHTML =
+      "Loading files...";
+  }
 
-  const result = await supabaseClient
+  const { data, error } = await supabase
     .from("attachments")
     .select(`
       id,
@@ -430,484 +424,315 @@ async function loadAttachments() {
       ascending: true
     });
 
-  if (result.error) {
-    console.error(result.error);
+  if (error) {
+    console.error("Attachment loading error:", error);
 
-    imageGallery.innerHTML =
-      "<p>Unable to load images.</p>";
-
-    fileList.innerHTML =
-      "<p>Unable to load files.</p>";
-
-    return;
-  }
-
-  const attachments =
-    result.data || [];
-
-  const images =
-    attachments.filter(function (attachment) {
-      return (
-        attachment.file_type &&
-        attachment.file_type.startsWith("image/")
-      );
-    });
-
-  const files =
-    attachments.filter(function (attachment) {
-      return !(
-        attachment.file_type &&
-        attachment.file_type.startsWith("image/")
-      );
-    });
-
-  if (images.length === 0) {
-    imageGallery.innerHTML =
-      "<p>No images have been uploaded yet.</p>";
-  } else {
-    images.forEach(function (attachment) {
-      const link =
-        document.createElement("a");
-
-      link.href =
-        attachment.file_url;
-
-      link.target =
-        "_blank";
-
-      link.rel =
-        "noopener noreferrer";
-
-      const image =
-        document.createElement("img");
-
-      image.src =
-        attachment.file_url;
-
-      image.alt =
-        attachment.file_name;
-
-      image.loading =
-        "lazy";
-
-      image.className =
-        "gallery-image";
-
-      link.appendChild(image);
-      imageGallery.appendChild(link);
-    });
-  }
-
-  if (files.length === 0) {
-    fileList.innerHTML =
-      "<p>No files have been uploaded yet.</p>";
-  } else {
-    files.forEach(function (attachment) {
-      const link =
-        document.createElement("a");
-
-      link.href =
-        attachment.file_url;
-
-      link.target =
-        "_blank";
-
-      link.rel =
-        "noopener noreferrer";
-
-      link.textContent =
-        "📎 " + attachment.file_name;
-
-      link.className =
-        "gallery-file";
-
-      fileList.appendChild(link);
-    });
-  }
-}
-
-function setupFileSelection() {
-  const fileInput =
-    document.getElementById("discussionFiles");
-
-  const selectedFiles =
-    document.getElementById("selectedFiles");
-
-  if (!fileInput || !selectedFiles) {
-    return;
-  }
-
-  fileInput.addEventListener(
-    "change",
-    function () {
-      selectedFiles.innerHTML = "";
-
-      const files =
-        Array.from(fileInput.files);
-
-      if (files.length === 0) {
-        return;
-      }
-
-      files.forEach(function (file) {
-        const item =
-          document.createElement("div");
-
-        if (file.size > MAX_FILE_SIZE) {
-          item.textContent =
-            file.name +
-            " — too large. Maximum size is 10 MB.";
-
-          item.className =
-            "selected-file-error";
-        } else {
-          item.textContent =
-            file.name +
-            " — " +
-            formatFileSize(file.size);
-
-          item.className =
-            "selected-file";
-        }
-
-        selectedFiles.appendChild(item);
-      });
+    if (imageGallery) {
+      imageGallery.innerHTML =
+        "<p>Unable to load images.</p>";
     }
+
+    if (fileList) {
+      fileList.innerHTML =
+        "<p>Unable to load files.</p>";
+    }
+
+    return;
+  }
+
+  const images = (data || []).filter(file =>
+    file.file_type &&
+    file.file_type.startsWith("image/")
   );
+
+  const files = (data || []).filter(file =>
+    !file.file_type ||
+    !file.file_type.startsWith("image/")
+  );
+
+  if (imageGallery) {
+    if (images.length === 0) {
+      imageGallery.innerHTML =
+        "<p>No discussion images yet.</p>";
+    } else {
+      imageGallery.innerHTML = images.map(file => `
+        <a
+          href="${escapeHtml(file.file_url)}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            src="${escapeHtml(file.file_url)}"
+            alt="${escapeHtml(file.file_name)}"
+            class="gallery-image"
+          >
+        </a>
+      `).join("");
+    }
+  }
+
+  if (fileList) {
+    if (files.length === 0) {
+      fileList.innerHTML =
+        "<p>No files yet.</p>";
+    } else {
+      fileList.innerHTML = files.map(file => `
+        <a
+          href="${escapeHtml(file.file_url)}"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="gallery-file"
+        >
+          ${escapeHtml(file.file_name)}
+        </a>
+      `).join("");
+    }
+  }
 }
 
 async function setupDiscussionForm() {
-  const formContainer =
-    document.getElementById(
-      "discussionFormContainer"
-    );
+  const form = document.getElementById(
+    "discussionForm"
+  );
 
-  const loginMessage =
-    document.getElementById(
-      "discussionLoginMessage"
-    );
+  const contentInput = document.getElementById(
+    "discussionContent"
+  );
 
-  const form =
-    document.getElementById(
-      "discussionForm"
-    );
+  const filesInput = document.getElementById(
+    "discussionFiles"
+  );
 
-  if (
-    !formContainer ||
-    !loginMessage ||
-    !form
-  ) {
+  const selectedFiles = document.getElementById(
+    "selectedFiles"
+  );
+
+  const message = document.getElementById(
+    "discussionFormMessage"
+  );
+
+  if (!form || !contentInput || !filesInput) {
     return;
   }
 
-  const userResult =
-    await supabaseClient.auth.getUser();
+  const {
+    data: {
+      user
+    }
+  } = await supabase.auth.getUser();
 
-  const user =
-    userResult.data.user;
+  currentUser = user;
 
-  if (user) {
-    formContainer.style.display =
-      "block";
-
-    loginMessage.style.display =
-      "none";
-  } else {
-    formContainer.style.display =
-      "none";
-
-    loginMessage.style.display =
-      "block";
+  if (!currentUser) {
+    form.innerHTML = `
+      <p>
+        Please log in to participate in the discussion.
+      </p>
+    `;
 
     return;
   }
 
-  form.addEventListener(
-    "submit",
-    async function (event) {
-      event.preventDefault();
+  filesInput.addEventListener("change", () => {
+    const files = Array.from(
+      filesInput.files || []
+    );
 
-      const contentInput =
-        document.getElementById(
-          "discussionContent"
-        );
+    if (!selectedFiles) {
+      return;
+    }
 
-      const fileInput =
-        document.getElementById(
-          "discussionFiles"
-        );
+    if (files.length === 0) {
+      selectedFiles.innerHTML = "";
+      return;
+    }
 
-      const selectedFiles =
-        fileInput
-          ? Array.from(fileInput.files)
-          : [];
+    const maxFileSize = 10 * 1024 * 1024;
 
-      const submitButton =
-        document.getElementById(
-          "discussionSubmitButton"
-        );
-
-      const formMessage =
-        document.getElementById(
-          "discussionFormMessage"
-        );
-
-      const content =
-        contentInput.value.trim();
-
-      if (!content) {
-        formMessage.textContent =
-          "Please enter something before posting.";
-
-        return;
+    selectedFiles.innerHTML = files.map(file => {
+      if (file.size > maxFileSize) {
+        return `
+          <div class="selected-file-error">
+            ${escapeHtml(file.name)}
+            — larger than 10 MB
+          </div>
+        `;
       }
 
-      if (content.length > 5000) {
-        formMessage.textContent =
-          "Your discussion is too long.";
+      return `
+        <div class="selected-file">
+          ${escapeHtml(file.name)}
+        </div>
+      `;
+    }).join("");
+  });
 
-        return;
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const content = contentInput.value.trim();
+    const files = Array.from(
+      filesInput.files || []
+    );
+
+    if (!content) {
+      message.textContent =
+        "Please enter a discussion message.";
+
+      return;
+    }
+
+    message.textContent =
+      "Posting discussion...";
+
+    const { data: discussion, error } = await supabase
+      .from("discussions")
+      .insert({
+        development_id: Number(developmentId),
+        user_id: currentUser.id,
+        content: content
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error(error);
+
+      message.textContent =
+        "Unable to post discussion: " +
+        error.message;
+
+      return;
+    }
+
+    const maxFileSize = 10 * 1024 * 1024;
+
+    for (const file of files) {
+      if (file.size > maxFileSize) {
+        continue;
       }
 
-      const oversizedFile =
-        selectedFiles.find(function (file) {
-          return file.size > MAX_FILE_SIZE;
+      const safeName = file.name
+        .toLowerCase()
+        .replace(/[^a-z0-9._-]/g, "-")
+        .replace(/-+/g, "-");
+
+      const storagePath =
+        `${developmentId}/${currentUser.id}/${crypto.randomUUID()}-${safeName}`;
+
+      const {
+        error: uploadError
+      } = await supabase.storage
+        .from("development-files")
+        .upload(
+          storagePath,
+          file,
+          {
+            cacheControl: "3600",
+            upsert: false,
+            contentType: file.type
+          }
+        );
+
+      if (uploadError) {
+        console.error(uploadError);
+        continue;
+      }
+
+      const {
+        data: publicUrlData
+      } = supabase.storage
+        .from("development-files")
+        .getPublicUrl(storagePath);
+
+      const fileUrl =
+        publicUrlData.publicUrl;
+
+      const {
+        error: attachmentError
+      } = await supabase
+        .from("attachments")
+        .insert({
+          development_id: Number(developmentId),
+          discussion_id: discussion.id,
+          user_id: currentUser.id,
+          file_name: file.name,
+          file_url: fileUrl,
+          file_type: file.type || "application/octet-stream",
+          file_size: file.size
         });
 
-      if (oversizedFile) {
-        formMessage.textContent =
-          oversizedFile.name +
-          " is larger than the 10 MB limit.";
+      if (attachmentError) {
+        console.error(attachmentError);
 
-        return;
+        await supabase.storage
+          .from("development-files")
+          .remove([storagePath]);
       }
-
-      submitButton.disabled =
-        true;
-
-      submitButton.textContent =
-        "Posting...";
-
-      formMessage.textContent =
-        "";
-
-      const currentUserResult =
-        await supabaseClient.auth.getUser();
-
-      const currentUser =
-        currentUserResult.data.user;
-
-      if (!currentUser) {
-        formMessage.textContent =
-          "You must be logged in to post a discussion.";
-
-        submitButton.disabled =
-          false;
-
-        submitButton.textContent =
-          "Post Discussion";
-
-        return;
-      }
-
-      const insertResult =
-        await supabaseClient
-          .from("discussions")
-          .insert({
-            development_id:
-              Number(developmentId),
-
-            user_id:
-              currentUser.id,
-
-            content:
-              content
-          })
-          .select("id")
-          .single();
-
-      if (insertResult.error) {
-        console.error(
-          insertResult.error
-        );
-
-        formMessage.textContent =
-          "There was a problem posting your discussion.";
-
-        submitButton.disabled =
-          false;
-
-        submitButton.textContent =
-          "Post Discussion";
-
-        return;
-      }
-
-      const discussionId =
-        insertResult.data.id;
-
-      const failedUploads = [];
-
-      for (const file of selectedFiles) {
-        const safeFileName =
-          file.name
-            .replace(
-              /[^a-zA-Z0-9._-]/g,
-              "_"
-            );
-
-        const uniqueName =
-          crypto.randomUUID() +
-          "-" +
-          safeFileName;
-
-        const storagePath =
-          developmentId +
-          "/" +
-          currentUser.id +
-          "/" +
-          uniqueName;
-
-        const uploadResult =
-          await supabaseClient
-            .storage
-            .from(STORAGE_BUCKET)
-            .upload(
-              storagePath,
-              file,
-              {
-                cacheControl: "3600",
-                upsert: false,
-                contentType:
-                  file.type ||
-                  "application/octet-stream"
-              }
-            );
-
-        if (uploadResult.error) {
-          console.error(
-            uploadResult.error
-          );
-
-          failedUploads.push(
-            file.name
-          );
-
-          continue;
-        }
-
-        const publicUrlResult =
-          supabaseClient
-            .storage
-            .from(STORAGE_BUCKET)
-            .getPublicUrl(
-              storagePath
-            );
-
-        const publicUrl =
-          publicUrlResult.data.publicUrl;
-
-        const attachmentResult =
-          await supabaseClient
-            .from("attachments")
-            .insert({
-              development_id:
-                Number(developmentId),
-
-              discussion_id:
-                discussionId,
-
-              user_id:
-                currentUser.id,
-
-              file_name:
-                file.name,
-
-              file_url:
-                publicUrl,
-
-              file_type:
-                file.type ||
-                "application/octet-stream",
-
-              file_size:
-                file.size
-            });
-
-        if (attachmentResult.error) {
-          console.error(
-            attachmentResult.error
-          );
-
-          failedUploads.push(
-            file.name
-          );
-
-          await supabaseClient
-            .storage
-            .from(STORAGE_BUCKET)
-            .remove([
-              storagePath
-            ]);
-        }
-      }
-
-      contentInput.value = "";
-
-      if (fileInput) {
-        fileInput.value = "";
-      }
-
-      const selectedFilesContainer =
-        document.getElementById(
-          "selectedFiles"
-        );
-
-      if (selectedFilesContainer) {
-        selectedFilesContainer.innerHTML =
-          "";
-      }
-
-      if (failedUploads.length > 0) {
-        formMessage.textContent =
-          "Discussion posted, but these files could not be uploaded: " +
-          failedUploads.join(", ");
-      } else if (selectedFiles.length > 0) {
-        formMessage.textContent =
-          "Discussion and files posted successfully.";
-      } else {
-        formMessage.textContent =
-          "Discussion posted successfully.";
-      }
-
-      submitButton.disabled =
-        false;
-
-      submitButton.textContent =
-        "Post Discussion";
-
-      await loadDiscussions();
-      await loadAttachments();
     }
-  );
+
+    contentInput.value = "";
+    filesInput.value = "";
+
+    if (selectedFiles) {
+      selectedFiles.innerHTML = "";
+    }
+
+    message.textContent =
+      "Discussion posted successfully.";
+
+    await loadDiscussions();
+    await loadAttachments();
+  });
 }
 
-function formatFileSize(bytes) {
-  if (bytes < 1024) {
-    return bytes + " B";
+function showError(text) {
+  const title = document.getElementById(
+    "developmentTitle"
+  );
+
+  const address = document.getElementById(
+    "developmentAddress"
+  );
+
+  const details = document.getElementById(
+    "developmentDetails"
+  );
+
+  const description = document.getElementById(
+    "developmentDescription"
+  );
+
+  if (title) {
+    title.textContent = "Unable to load development";
   }
 
-  if (bytes < 1024 * 1024) {
-    return (
-      (bytes / 1024).toFixed(1) +
-      " KB"
+  if (address) {
+    address.textContent = "";
+  }
+
+  if (details) {
+    details.textContent = text;
+  }
+
+  if (description) {
+    description.textContent = "";
+  }
+}
+
+async function initialize() {
+  try {
+    await loadDevelopment();
+  } catch (error) {
+    console.error(
+      "Unexpected development page error:",
+      error
+    );
+
+    showError(
+      "Something went wrong while loading this development."
     );
   }
-
-  return (
-    (bytes / (1024 * 1024)).toFixed(1) +
-    " MB"
-  );
 }
 
-loadDevelopment();
+initialize();
