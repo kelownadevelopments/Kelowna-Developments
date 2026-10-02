@@ -12,6 +12,9 @@ const developmentId = params.get("id");
 const messageElement = document.getElementById("developmentMessage");
 const contentElement = document.getElementById("developmentContent");
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const STORAGE_BUCKET = "development-files";
+
 async function loadDevelopment() {
   if (!developmentId) {
     messageElement.textContent = "No development was specified.";
@@ -42,8 +45,7 @@ async function loadDevelopment() {
   document.getElementById("developmentName").textContent =
     data.title;
 
-  const details =
-    document.getElementById("developmentDetails");
+  const details = document.getElementById("developmentDetails");
 
   details.innerHTML = "";
 
@@ -100,6 +102,8 @@ async function loadDevelopment() {
   contentElement.style.display = "block";
 
   await loadDiscussions();
+  await loadAttachments();
+  setupFileSelection();
   await setupDiscussionForm();
 }
 
@@ -124,6 +128,13 @@ async function loadDiscussions() {
       profiles (
         display_name,
         avatar_url
+      ),
+      attachments (
+        id,
+        file_name,
+        file_url,
+        file_type,
+        file_size
       )
     `)
     .eq("development_id", developmentId)
@@ -198,8 +209,255 @@ async function loadDiscussions() {
     card.appendChild(author);
     card.appendChild(paragraph);
 
+    const attachments =
+      discussion.attachments || [];
+
+    if (attachments.length > 0) {
+      const attachmentContainer =
+        document.createElement("div");
+
+      attachmentContainer.className =
+        "discussion-attachments";
+
+      attachments.forEach(function (attachment) {
+        if (
+          attachment.file_type &&
+          attachment.file_type.startsWith("image/")
+        ) {
+          const imageLink =
+            document.createElement("a");
+
+          imageLink.href =
+            attachment.file_url;
+
+          imageLink.target =
+            "_blank";
+
+          imageLink.rel =
+            "noopener noreferrer";
+
+          const image =
+            document.createElement("img");
+
+          image.src =
+            attachment.file_url;
+
+          image.alt =
+            attachment.file_name;
+
+          image.loading =
+            "lazy";
+
+          image.className =
+            "discussion-image";
+
+          imageLink.appendChild(image);
+          attachmentContainer.appendChild(imageLink);
+        } else {
+          const fileLink =
+            document.createElement("a");
+
+          fileLink.href =
+            attachment.file_url;
+
+          fileLink.target =
+            "_blank";
+
+          fileLink.rel =
+            "noopener noreferrer";
+
+          fileLink.textContent =
+            "📎 " + attachment.file_name;
+
+          fileLink.className =
+            "discussion-file";
+
+          attachmentContainer.appendChild(fileLink);
+        }
+      });
+
+      card.appendChild(
+        attachmentContainer
+      );
+    }
+
     discussionList.appendChild(card);
   });
+}
+
+async function loadAttachments() {
+  const imageGallery =
+    document.getElementById("imageGallery");
+
+  const fileList =
+    document.getElementById("fileList");
+
+  if (!imageGallery || !fileList) {
+    return;
+  }
+
+  imageGallery.innerHTML = "";
+  fileList.innerHTML = "";
+
+  const result = await supabaseClient
+    .from("attachments")
+    .select(`
+      id,
+      file_name,
+      file_url,
+      file_type,
+      file_size,
+      created_at
+    `)
+    .eq("development_id", developmentId)
+    .order("created_at", {
+      ascending: true
+    });
+
+  if (result.error) {
+    console.error(result.error);
+
+    imageGallery.innerHTML =
+      "<p>Unable to load images.</p>";
+
+    fileList.innerHTML =
+      "<p>Unable to load files.</p>";
+
+    return;
+  }
+
+  const attachments =
+    result.data || [];
+
+  const images =
+    attachments.filter(function (attachment) {
+      return (
+        attachment.file_type &&
+        attachment.file_type.startsWith("image/")
+      );
+    });
+
+  const files =
+    attachments.filter(function (attachment) {
+      return !(
+        attachment.file_type &&
+        attachment.file_type.startsWith("image/")
+      );
+    });
+
+  if (images.length === 0) {
+    imageGallery.innerHTML =
+      "<p>No images have been uploaded yet.</p>";
+  } else {
+    images.forEach(function (attachment) {
+      const link =
+        document.createElement("a");
+
+      link.href =
+        attachment.file_url;
+
+      link.target =
+        "_blank";
+
+      link.rel =
+        "noopener noreferrer";
+
+      const image =
+        document.createElement("img");
+
+      image.src =
+        attachment.file_url;
+
+      image.alt =
+        attachment.file_name;
+
+      image.loading =
+        "lazy";
+
+      image.className =
+        "gallery-image";
+
+      link.appendChild(image);
+      imageGallery.appendChild(link);
+    });
+  }
+
+  if (files.length === 0) {
+    fileList.innerHTML =
+      "<p>No files have been uploaded yet.</p>";
+  } else {
+    files.forEach(function (attachment) {
+      const link =
+        document.createElement("a");
+
+      link.href =
+        attachment.file_url;
+
+      link.target =
+        "_blank";
+
+      link.rel =
+        "noopener noreferrer";
+
+      link.textContent =
+        "📎 " + attachment.file_name;
+
+      link.className =
+        "gallery-file";
+
+      fileList.appendChild(link);
+    });
+  }
+}
+
+function setupFileSelection() {
+  const fileInput =
+    document.getElementById("discussionFiles");
+
+  const selectedFiles =
+    document.getElementById("selectedFiles");
+
+  if (!fileInput || !selectedFiles) {
+    return;
+  }
+
+  fileInput.addEventListener(
+    "change",
+    function () {
+      selectedFiles.innerHTML = "";
+
+      const files =
+        Array.from(fileInput.files);
+
+      if (files.length === 0) {
+        return;
+      }
+
+      files.forEach(function (file) {
+        const item =
+          document.createElement("div");
+
+        if (file.size > MAX_FILE_SIZE) {
+          item.textContent =
+            file.name +
+            " — too large. Maximum size is 10 MB.";
+
+          item.className =
+            "selected-file-error";
+        } else {
+          item.textContent =
+            file.name +
+            " — " +
+            formatFileSize(file.size);
+
+          item.className =
+            "selected-file";
+        }
+
+        selectedFiles.appendChild(item);
+      });
+    }
+  );
 }
 
 async function setupDiscussionForm() {
@@ -258,6 +516,16 @@ async function setupDiscussionForm() {
           "discussionContent"
         );
 
+      const fileInput =
+        document.getElementById(
+          "discussionFiles"
+        );
+
+      const selectedFiles =
+        fileInput
+          ? Array.from(fileInput.files)
+          : [];
+
       const submitButton =
         document.getElementById(
           "discussionSubmitButton"
@@ -281,6 +549,19 @@ async function setupDiscussionForm() {
       if (content.length > 5000) {
         formMessage.textContent =
           "Your discussion is too long.";
+
+        return;
+      }
+
+      const oversizedFile =
+        selectedFiles.find(function (file) {
+          return file.size > MAX_FILE_SIZE;
+        });
+
+      if (oversizedFile) {
+        formMessage.textContent =
+          oversizedFile.name +
+          " is larger than the 10 MB limit.";
 
         return;
       }
@@ -325,7 +606,9 @@ async function setupDiscussionForm() {
 
             content:
               content
-          });
+          })
+          .select("id")
+          .single();
 
       if (insertResult.error) {
         console.error(
@@ -344,11 +627,145 @@ async function setupDiscussionForm() {
         return;
       }
 
-      contentInput.value =
-        "";
+      const discussionId =
+        insertResult.data.id;
 
-      formMessage.textContent =
-        "Discussion posted successfully.";
+      const uploadedPaths = [];
+
+      let failedUploads = [];
+
+      for (const file of selectedFiles) {
+        const safeFileName =
+          file.name
+            .replace(/[^a-zA-Z0-9._-]/g, "_");
+
+        const uniqueName =
+          crypto.randomUUID() +
+          "-" +
+          safeFileName;
+
+        const storagePath =
+          developmentId +
+          "/" +
+          currentUser.id +
+          "/" +
+          uniqueName;
+
+        const uploadResult =
+          await supabaseClient
+            .storage
+            .from(STORAGE_BUCKET)
+            .upload(
+              storagePath,
+              file,
+              {
+                cacheControl: "3600",
+                upsert: false,
+                contentType:
+                  file.type ||
+                  "application/octet-stream"
+              }
+            );
+
+        if (uploadResult.error) {
+          console.error(
+            uploadResult.error
+          );
+
+          failedUploads.push(
+            file.name
+          );
+
+          continue;
+        }
+
+        uploadedPaths.push(
+          storagePath
+        );
+
+        const publicUrlResult =
+          supabaseClient
+            .storage
+            .from(STORAGE_BUCKET)
+            .getPublicUrl(
+              storagePath
+            );
+
+        const publicUrl =
+          publicUrlResult.data.publicUrl;
+
+        const attachmentResult =
+          await supabaseClient
+            .from("attachments")
+            .insert({
+              development_id:
+                Number(developmentId),
+
+              discussion_id:
+                discussionId,
+
+              user_id:
+                currentUser.id,
+
+              file_name:
+                file.name,
+
+              file_url:
+                publicUrl,
+
+              file_type:
+                file.type ||
+                "application/octet-stream",
+
+              file_size:
+                file.size
+            });
+
+        if (attachmentResult.error) {
+          console.error(
+            attachmentResult.error
+          );
+
+          failedUploads.push(
+            file.name
+          );
+
+          await supabaseClient
+            .storage
+            .from(STORAGE_BUCKET)
+            .remove([
+              storagePath
+            ]);
+        }
+      }
+
+      contentInput.value = "";
+
+      if (fileInput) {
+        fileInput.value = "";
+      }
+
+      const selectedFilesContainer =
+        document.getElementById(
+          "selectedFiles"
+        );
+
+      if (selectedFilesContainer) {
+        selectedFilesContainer.innerHTML =
+          "";
+      }
+
+      if (failedUploads.length > 0) {
+        formMessage.textContent =
+          "Discussion posted, but these files could not be uploaded: " +
+          failedUploads.join(", ");
+      } else if (selectedFiles.length > 0) {
+        formMessage.textContent =
+          "Discussion and files posted successfully.";
+      } else {
+        formMessage.textContent =
+          "Discussion posted successfully.";
+      }
 
       submitButton.disabled =
         false;
@@ -357,7 +774,26 @@ async function setupDiscussionForm() {
         "Post Discussion";
 
       await loadDiscussions();
+      await loadAttachments();
     }
+  );
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) {
+    return bytes + " B";
+  }
+
+  if (bytes < 1024 * 1024) {
+    return (
+      (bytes / 1024).toFixed(1) +
+      " KB"
+    );
+  }
+
+  return (
+    (bytes / (1024 * 1024)).toFixed(1) +
+    " MB"
   );
 }
 
