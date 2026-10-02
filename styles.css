@@ -57,9 +57,6 @@ textarea {
   gap: 32px;
 }
 
-
-/* Clean wordmark */
-
 .logo {
   display: inline-flex;
   align-items: center;
@@ -91,9 +88,6 @@ textarea {
   color: #66717c;
 }
 
-
-/* Navigation */
-
 .main-nav {
   display: flex;
   align-items: center;
@@ -122,9 +116,6 @@ textarea {
   color: #17202a;
   transform: translateY(-1px);
 }
-
-
-/* Account / Logout */
 
 .main-nav a#loginLink,
 .main-nav a#signupLink {
@@ -274,9 +265,6 @@ button:active {
   margin-right: 8px;
 }
 
-
-/* Hero information panel */
-
 .hero-panel {
   width: min(100%, 430px);
   margin-top: 52px;
@@ -372,9 +360,6 @@ button:active {
   color: #17202a;
 }
 
-
-/* Search and filters */
-
 .development-controls {
   display: flex;
   align-items: center;
@@ -412,9 +397,6 @@ button:active {
   min-width: 180px;
   padding: 0 14px;
 }
-
-
-/* Development grid */
 
 #developmentList {
   display: grid;
@@ -459,9 +441,6 @@ button:active {
   font-weight: 700;
   color: #394650 !important;
 }
-
-
-/* Empty state */
 
 .empty-state {
   grid-column: 1 / -1;
@@ -544,9 +523,6 @@ button:active {
   font-size: 0.82rem;
 }
 
-
-/* Hide footer navigation if still present */
-
 .site-footer nav,
 .footer-links {
   display: none;
@@ -556,6 +532,13 @@ button:active {
 /* =========================
    Auth Modal
 ========================= */
+
+/*
+   IMPORTANT:
+   The modal starts hidden and JavaScript adds
+   the "open" class when Log In/Create Account
+   is clicked.
+*/
 
 #authModal {
   position: fixed;
@@ -567,6 +550,14 @@ button:active {
   padding: 20px;
   background: rgba(10, 17, 24, 0.62);
   backdrop-filter: blur(6px);
+}
+
+#authModal.open {
+  display: flex;
+}
+
+#authModal.hidden {
+  display: none;
 }
 
 #authContent {
@@ -699,7 +690,9 @@ button:active {
   border-radius: 12px;
   text-decoration: none;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .dashboard-card:hover {
@@ -801,6 +794,420 @@ button:active {
 
 
 /* =========================
+   Development Page
+========================= */
+
+.development-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 32px;
+  align-items: start;
+}
+
+.development-main,
+.development-sidebar {
+  min-width: 0;
+}
+
+.development-sidebar {
+  position: sticky;
+  top: 24px;
+}
+
+.development-main .dashboard-section,
+.development-sidebar .dashboard-section {
+  margin-bottom: 24px;
+}
+
+.development-main h2,
+.development-sidebar h2 {
+  margin-top: 0;
+}
+
+.development-message {
+  padding: 24px;
+}
+
+.discussion-card {
+  padding: 18px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.discussion-card:last-child {
+  border-bottom: none;
+}
+
+.discussion-card p {
+  margin: 10px 0 8px;
+}
+
+.discussion-card small {
+  opacity: 0.65;
+}
+
+.discussion-author {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+#imageGallery,
+#fileList {
+  min-height: 80px;
+}
+
+
+/* =========================
+   Development Information
+========================= */
+
+.development-main .dashboard-section {
+  background: #ffffff;
+  border: 1px solid #e2e2e2;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+#developmentName {
+  font-size: 28px;
+  margin-bottom: 24px;
+}
+
+#developmentDetails {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+#developmentDetails p {
+  margin: 0;
+  padding: 16px;
+  background: #f6f7f8;
+  border-radius: 8px;
+}
+
+#developmentDetails strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.65;
+}
+
+.development-sidebar .dashboard-section {
+  background: #ffffff;
+  border: 1px solid #e2e2e2;
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.development-sidebar h2 {
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+
+/* =========================
+   Discussion Images
+========================= */
+
+.discussion-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.discussion-attachments a {
+  display: block;
+}
+
+.discussion-image {
+  display: block;
+  width: 180px;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e2e2e2;
+}
+
+.discussion-image:hover {
+  opacity: 0.9;
+}
+
+
+/* =========================
+   Development Image Gallery
+========================= */
+
+#imageGallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+#imageGallery a {
+  display: block;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.gallery-image {
+  display: block;
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+#imageGallery a:hover .gallery-image {
+  transform: scale(1.03);
+}
+
+
+/* =========================
+   Uploaded Files
+========================= */
+
+#fileList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gallery-file,
+.discussion-file {
+  display: block;
+  padding: 10px 12px;
+  background: #f6f7f8;
+  border-radius: 8px;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.gallery-file:hover,
+.discussion-file:hover {
+  background: #eef0f2;
+}
+
+
+/* =========================
+   Selected Uploads
+========================= */
+
+#selectedFiles {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.selected-file,
+.selected-file-error {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #f6f7f8;
+  font-size: 14px;
+}
+
+.selected-file-error {
+  background: #fff0f0;
+}
+
+
+/* =========================
+   Development Status
+========================= */
+
+.development-status-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  padding: 9px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.development-status-label {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.development-completion {
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.status-concept {
+  background: #e8e8e8;
+  color: #444;
+}
+
+.status-proposed {
+  background: #fff0c2;
+  color: #735500;
+}
+
+.status-approved {
+  background: #dceeff;
+  color: #15558a;
+}
+
+.status-construction {
+  background: #ffe0b2;
+  color: #8a4b00;
+}
+
+.status-completed {
+  background: #d9f2df;
+  color: #216b35;
+}
+
+.status-default {
+  background: #eeeeee;
+  color: #444;
+}
+
+
+/* =========================
+   Development Card Status
+========================= */
+
+.development-card .development-status-banner {
+  margin-bottom: 14px;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.development-card .development-status-label {
+  font-size: 12px;
+}
+
+.development-card .development-completion {
+  font-size: 12px;
+}
+
+
+/* =========================
+   Preset Development Photos
+========================= */
+
+.preset-image-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.preset-image-item {
+  overflow: hidden;
+  border: 1px solid #e2e2e2;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.preset-image-preview {
+  display: block;
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+}
+
+.preset-image-info {
+  padding: 12px;
+}
+
+.preset-image-info strong {
+  display: block;
+  margin-bottom: 12px;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+
+.delete-preset-image-button {
+  width: 100%;
+}
+
+
+/* =========================
+   Official Development Photos
+========================= */
+
+.development-featured-photos {
+  grid-column: 1 / -1;
+  margin-bottom: 28px;
+}
+
+#developmentPresetGallery {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.preset-gallery-image {
+  display: block;
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #e2e2e2;
+  transition: transform 0.2s ease;
+}
+
+.preset-gallery-image:hover {
+  transform: scale(1.015);
+}
+
+
+/* =========================
+   Development Card Images
+========================= */
+
+.development-card-image-link {
+  display: block;
+  overflow: hidden;
+  border-radius: 10px 10px 0 0;
+}
+
+.development-card-image {
+  display: block;
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.development-card-image-link:hover .development-card-image {
+  transform: scale(1.03);
+}
+
+.development-card-content {
+  padding: 20px;
+}
+
+.development-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.development-card-meta span {
+  padding: 6px 10px;
+  background: #f1f2f3;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+
+/* =========================
    Responsive
 ========================= */
 
@@ -833,6 +1240,30 @@ button:active {
 
   .hero h1 {
     font-size: clamp(2.8rem, 8vw, 4.5rem);
+  }
+}
+
+
+@media (max-width: 800px) {
+
+  .development-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .development-sidebar {
+    position: static;
+  }
+
+  #developmentPresetGallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .preset-gallery-image {
+    height: 220px;
+  }
+
+  .preset-image-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -911,6 +1342,51 @@ button:active {
 }
 
 
+@media (max-width: 600px) {
+
+  #developmentDetails {
+    grid-template-columns: 1fr;
+  }
+
+  .development-main .dashboard-section {
+    padding: 20px;
+  }
+
+  .discussion-image {
+    width: 140px;
+    height: 105px;
+  }
+
+  #imageGallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gallery-image {
+    height: 100px;
+  }
+
+  .preset-image-list {
+    grid-template-columns: 1fr;
+  }
+
+  .preset-image-preview {
+    height: 220px;
+  }
+
+  #developmentPresetGallery {
+    grid-template-columns: 1fr;
+  }
+
+  .preset-gallery-image {
+    height: 240px;
+  }
+
+  .development-card-image {
+    height: 210px;
+  }
+}
+
+
 @media (max-width: 480px) {
 
   .logo-text {
@@ -946,465 +1422,5 @@ button:active {
 
   #authContent {
     padding: 28px 22px;
-  }
-}
-
-/* Development Page */
-
-.development-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 32px;
-  align-items: start;
-}
-
-.development-main,
-.development-sidebar {
-  min-width: 0;
-}
-
-.development-sidebar {
-  position: sticky;
-  top: 24px;
-}
-
-.development-main .dashboard-section,
-.development-sidebar .dashboard-section {
-  margin-bottom: 24px;
-}
-
-.development-main h2,
-.development-sidebar h2 {
-  margin-top: 0;
-}
-
-.development-message {
-  padding: 24px;
-}
-
-.discussion-card {
-  padding: 18px 0;
-  border-bottom: 1px solid #ddd;
-}
-
-.discussion-card:last-child {
-  border-bottom: none;
-}
-
-.discussion-card p {
-  margin: 10px 0 8px;
-}
-
-.discussion-card small {
-  opacity: 0.65;
-}
-
-.discussion-author {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: center;
-}
-
-#imageGallery,
-#fileList {
-  min-height: 80px;
-}
-
-@media (max-width: 800px) {
-  .development-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .development-sidebar {
-    position: static;
-  }
-}
-
-/* Development Information */
-
-.development-main .dashboard-section {
-  background: #ffffff;
-  border: 1px solid #e2e2e2;
-  border-radius: 12px;
-  padding: 28px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-#developmentName {
-  font-size: 28px;
-  margin-bottom: 24px;
-}
-
-#developmentDetails {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-#developmentDetails p {
-  margin: 0;
-  padding: 16px;
-  background: #f6f7f8;
-  border-radius: 8px;
-}
-
-#developmentDetails strong {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  opacity: 0.65;
-}
-
-.development-sidebar .dashboard-section {
-  background: #ffffff;
-  border: 1px solid #e2e2e2;
-  border-radius: 12px;
-  padding: 22px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.development-sidebar h2 {
-  font-size: 20px;
-  margin-bottom: 16px;
-}
-
-@media (max-width: 600px) {
-  #developmentDetails {
-    grid-template-columns: 1fr;
-  }
-
-  .development-main .dashboard-section {
-    padding: 20px;
-  }
-}
-
-/* Discussion Images */
-
-.discussion-attachments {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.discussion-attachments a {
-  display: block;
-}
-
-.discussion-image {
-  display: block;
-  width: 180px;
-  height: 130px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid #e2e2e2;
-}
-
-.discussion-image:hover {
-  opacity: 0.9;
-}
-
-/* Development Image Gallery */
-
-#imageGallery {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-#imageGallery a {
-  display: block;
-  overflow: hidden;
-  border-radius: 8px;
-}
-
-.gallery-image {
-  display: block;
-  width: 100%;
-  height: 110px;
-  object-fit: cover;
-  transition: transform 0.2s ease;
-}
-
-#imageGallery a:hover .gallery-image {
-  transform: scale(1.03);
-}
-
-/* Uploaded Files */
-
-#fileList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.gallery-file,
-.discussion-file {
-  display: block;
-  padding: 10px 12px;
-  background: #f6f7f8;
-  border-radius: 8px;
-  text-decoration: none;
-  overflow-wrap: anywhere;
-}
-
-.gallery-file:hover,
-.discussion-file:hover {
-  background: #eef0f2;
-}
-
-/* Selected Uploads */
-
-#selectedFiles {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 10px;
-}
-
-.selected-file,
-.selected-file-error {
-  padding: 8px 10px;
-  border-radius: 6px;
-  background: #f6f7f8;
-  font-size: 14px;
-}
-
-.selected-file-error {
-  background: #fff0f0;
-}
-
-/* Mobile */
-
-@media (max-width: 600px) {
-  .discussion-image {
-    width: 140px;
-    height: 105px;
-  }
-
-  #imageGallery {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .gallery-image {
-    height: 100px;
-  }
-}
-
-/* Development Status */
-
-.development-status-banner {
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-bottom: 18px;
-  padding: 9px 14px;
-  border-radius: 7px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.development-status-label {
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.development-completion {
-  font-weight: 500;
-  opacity: 0.9;
-}
-
-.status-concept {
-  background: #e8e8e8;
-  color: #444;
-}
-
-.status-proposed {
-  background: #fff0c2;
-  color: #735500;
-}
-
-.status-approved {
-  background: #dceeff;
-  color: #15558a;
-}
-
-.status-construction {
-  background: #ffe0b2;
-  color: #8a4b00;
-}
-
-.status-completed {
-  background: #d9f2df;
-  color: #216b35;
-}
-
-.status-default {
-  background: #eeeeee;
-  color: #444;
-}
-
-/* Development Card Status */
-
-.development-card .development-status-banner {
-  margin-bottom: 14px;
-  width: fit-content;
-  max-width: 100%;
-}
-
-.development-card .development-status-label {
-  font-size: 12px;
-}
-
-.development-card .development-completion {
-  font-size: 12px;
-}
-
-/* Preset development photos */
-
-.preset-image-list {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-  margin-top: 20px;
-}
-
-.preset-image-item {
-  overflow: hidden;
-  border: 1px solid #e2e2e2;
-  border-radius: 10px;
-  background: #ffffff;
-}
-
-.preset-image-preview {
-  display: block;
-  width: 100%;
-  height: 190px;
-  object-fit: cover;
-}
-
-.preset-image-info {
-  padding: 12px;
-}
-
-.preset-image-info strong {
-  display: block;
-  margin-bottom: 12px;
-  overflow-wrap: anywhere;
-  font-size: 14px;
-}
-
-.delete-preset-image-button {
-  width: 100%;
-}
-
-@media (max-width: 800px) {
-  .preset-image-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 600px) {
-  .preset-image-list {
-    grid-template-columns: 1fr;
-  }
-
-  .preset-image-preview {
-    height: 220px;
-  }
-}
-
-/* Official development photos */
-
-.development-featured-photos {
-  grid-column: 1 / -1;
-  margin-bottom: 28px;
-}
-
-#developmentPresetGallery {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.preset-gallery-image {
-  display: block;
-  width: 100%;
-  height: 260px;
-  object-fit: cover;
-  border-radius: 10px;
-  border: 1px solid #e2e2e2;
-  transition: transform 0.2s ease;
-}
-
-.preset-gallery-image:hover {
-  transform: scale(1.015);
-}
-
-@media (max-width: 800px) {
-  #developmentPresetGallery {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .preset-gallery-image {
-    height: 220px;
-  }
-}
-
-@media (max-width: 600px) {
-  #developmentPresetGallery {
-    grid-template-columns: 1fr;
-  }
-
-  .preset-gallery-image {
-    height: 240px;
-  }
-}
-
-/* Development card preset images */
-
-.development-card-image-link {
-  display: block;
-  overflow: hidden;
-  border-radius: 10px 10px 0 0;
-}
-
-.development-card-image {
-  display: block;
-  width: 100%;
-  height: 240px;
-  object-fit: cover;
-  transition: transform 0.2s ease;
-}
-
-.development-card-image-link:hover .development-card-image {
-  transform: scale(1.03);
-}
-
-.development-card-content {
-  padding: 20px;
-}
-
-.development-card-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 14px;
-}
-
-.development-card-meta span {
-  padding: 6px 10px;
-  background: #f1f2f3;
-  border-radius: 6px;
-  font-size: 13px;
-}
-
-@media (max-width: 600px) {
-  .development-card-image {
-    height: 210px;
   }
 }
