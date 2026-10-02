@@ -1,7 +1,7 @@
 const SUPABASE_URL = "https://diljkqsrqdktzyumrqkg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_JjzaLH_H48oLIvuRz9F5jg_yyC5xxII";
 
-const supabase = window.supabase.createClient(
+const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
@@ -60,7 +60,7 @@ async function loadDevelopment() {
     return;
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from("developments")
     .select(`
       id,
@@ -220,9 +220,10 @@ async function loadPresetImages() {
     return;
   }
 
-  gallery.innerHTML = "<p>Loading development photos...</p>";
+  gallery.innerHTML =
+    "<p>Loading development photos...</p>";
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from("development_images")
     .select(`
       id,
@@ -276,7 +277,7 @@ async function loadDiscussions() {
   discussionList.innerHTML =
     "<p>Loading discussions...</p>";
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from("discussions")
     .select(`
       id,
@@ -334,8 +335,10 @@ async function loadDiscussions() {
       ? `
         <div class="discussion-attachments">
           ${attachments.map(file => {
-            if (file.file_type &&
-                file.file_type.startsWith("image/")) {
+            if (
+              file.file_type &&
+              file.file_type.startsWith("image/")
+            ) {
               return `
                 <a
                   href="${escapeHtml(file.file_url)}"
@@ -409,7 +412,7 @@ async function loadAttachments() {
       "Loading files...";
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from("attachments")
     .select(`
       id,
@@ -519,7 +522,7 @@ async function setupDiscussionForm() {
     data: {
       user
     }
-  } = await supabase.auth.getUser();
+  } = await supabaseClient.auth.getUser();
 
   currentUser = user;
 
@@ -571,6 +574,7 @@ async function setupDiscussionForm() {
     event.preventDefault();
 
     const content = contentInput.value.trim();
+
     const files = Array.from(
       filesInput.files || []
     );
@@ -585,7 +589,10 @@ async function setupDiscussionForm() {
     message.textContent =
       "Posting discussion...";
 
-    const { data: discussion, error } = await supabase
+    const {
+      data: discussion,
+      error
+    } = await supabaseClient
       .from("discussions")
       .insert({
         development_id: Number(developmentId),
@@ -622,7 +629,7 @@ async function setupDiscussionForm() {
 
       const {
         error: uploadError
-      } = await supabase.storage
+      } = await supabaseClient.storage
         .from("development-files")
         .upload(
           storagePath,
@@ -641,7 +648,7 @@ async function setupDiscussionForm() {
 
       const {
         data: publicUrlData
-      } = supabase.storage
+      } = supabaseClient.storage
         .from("development-files")
         .getPublicUrl(storagePath);
 
@@ -650,7 +657,7 @@ async function setupDiscussionForm() {
 
       const {
         error: attachmentError
-      } = await supabase
+      } = await supabaseClient
         .from("attachments")
         .insert({
           development_id: Number(developmentId),
@@ -665,7 +672,7 @@ async function setupDiscussionForm() {
       if (attachmentError) {
         console.error(attachmentError);
 
-        await supabase.storage
+        await supabaseClient.storage
           .from("development-files")
           .remove([storagePath]);
       }
@@ -704,7 +711,8 @@ function showError(text) {
   );
 
   if (title) {
-    title.textContent = "Unable to load development";
+    title.textContent =
+      "Unable to load development";
   }
 
   if (address) {
