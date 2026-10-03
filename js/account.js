@@ -10,6 +10,7 @@ const supabase = createClient(
 
 async function loadAccount() {
   const accountMessage = document.getElementById("accountMessage");
+  const accountRole = document.getElementById("accountRole");
 
   try {
     const {
@@ -52,9 +53,6 @@ async function loadAccount() {
     document.getElementById("accountCreated").textContent =
       formatDate(profile.created_at);
 
-    document.getElementById("accountBio").textContent =
-      profile.bio || "No bio has been added yet.";
-
     const { data: roleData, error: roleError } = await supabase
       .from("user_roles")
       .select("role")
@@ -62,16 +60,16 @@ async function loadAccount() {
       .maybeSingle();
 
     if (roleError) {
-      throw roleError;
-    }
+      console.error("Role loading error:", roleError);
+      accountRole.textContent = "User";
+    } else {
+      const role = roleData?.role || "user";
 
-    const role = roleData?.role || "user";
+      accountRole.textContent = formatRole(role);
 
-    document.getElementById("accountRole").textContent =
-      formatRole(role);
-
-    if (role === "owner") {
-      document.getElementById("accountOwnerDashboard").hidden = false;
+      if (role === "owner") {
+        document.getElementById("accountOwnerDashboard").hidden = false;
+      }
     }
 
     if (profile.is_banned) {
@@ -85,7 +83,7 @@ async function loadAccount() {
 
     if (accountMessage) {
       accountMessage.textContent =
-        "Unable to load your account information.";
+        "Unable to load some account information.";
       accountMessage.classList.add("error");
     }
   }
