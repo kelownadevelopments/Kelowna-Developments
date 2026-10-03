@@ -1547,7 +1547,7 @@ document
 button.addEventListener("click", async () => {
 const reportId = button.dataset.id;
 
-```
+
     button.disabled = true;
     button.textContent = "Saving...";
 
@@ -1570,7 +1570,7 @@ const reportId = button.dataset.id;
     await loadReports();
   });
 });
-```
+
 
 document
 .querySelectorAll(".ban-report-user-button")
