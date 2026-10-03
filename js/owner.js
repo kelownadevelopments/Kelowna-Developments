@@ -1541,227 +1541,182 @@ async function loadReports() {
 
 
 function setupReportButtons() {
-  document
-    .querySelectorAll(
-      ".dismiss-report-button"
-    )
-    .forEach(button => {
-      button.addEventListener(
-        "click",
-        async () => {
-          const reportId =
-            button.dataset.id;
+document
+.querySelectorAll(".dismiss-report-button")
+.forEach(button => {
+button.addEventListener("click", async () => {
+const reportId = button.dataset.id;
 
-          button.disabled = true;
-          button.textContent = "Saving...";
+```
+    button.disabled = true;
+    button.textContent = "Saving...";
 
-          const {
-            error
-          } = await supabase
-            .from("reports")
-            .update({
-              status: "dismissed"
-            })
-            .eq(
-              "id",
-              reportId
-            );
+    const { error } = await supabase
+      .from("reports")
+      .update({
+        status: "dismissed"
+      })
+      .eq("id", reportId);
 
-          if (error) {
-            console.error(error);
+    if (error) {
+      console.error(error);
 
-            button.disabled = false;
-            button.textContent =
-              "Dismiss";
+      button.disabled = false;
+      button.textContent = "Dismiss";
 
-            return;
-          }
+      return;
+    }
 
-          await loadReports();
-        }
+    await loadReports();
+  });
+});
+```
+
+document
+.querySelectorAll(".ban-report-user-button")
+.forEach(button => {
+button.addEventListener("click", async () => {
+const reportId = button.dataset.id;
+const userId = button.dataset.userId;
+
+    const duration = window.prompt(
+      "Enter ban duration:\n\n7 = 7 days\n30 = 30 days\n0 = permanent\n\nEnter 7, 30, or 0:"
+    );
+
+    if (duration === null) {
+      return;
+    }
+
+    const selectedDuration = duration.trim();
+
+    if (!["0", "7", "30"].includes(selectedDuration)) {
+      window.alert("Please enter 7, 30, or 0.");
+      return;
+    }
+
+    let reason = window.prompt(
+      "Enter the reason for the ban:"
+    );
+
+    if (reason === null) {
+      return;
+    }
+
+    reason = reason.trim();
+
+    if (!reason) {
+      reason = "Ban issued following a community report.";
+    }
+
+    button.disabled = true;
+    button.textContent = "Banning...";
+
+    const currentUser = await getCurrentUser();
+
+    if (!currentUser) {
+      button.disabled = false;
+      button.textContent = "Ban User";
+      return;
+    }
+
+    let expiresAt = null;
+
+    if (selectedDuration !== "0") {
+      const days = Number(selectedDuration);
+      const expiration = new Date();
+
+      expiration.setDate(
+        expiration.getDate() + days
       );
-    });
 
+      expiresAt = expiration.toISOString();
+    }
 
-  document
-    .querySelectorAll(
-      ".ban-report-user-button"
-    )
-    .forEach(button => {
-      button.addEventListener(
-        "click",
-        async () => {
-          const reportId =
-            button.dataset.id;
-
-          const userId =
-            button.dataset.userId;
-
-          const duration =
-            window.prompt(
-              "Enter ban duration:\n\n7 = 7 days\n30 = 30 days\n0 = permanent\n\nEnter 7, 30, or 0:"
-            );
-
-          if (
-            duration === null
-          ) {
-            return;
-          }
-
-          if (
-            !["0", "7", "30"].includes(
-              duration.trim()
-            )
-          ) {
-            window.alert(
-              "Please enter 7, 30, or 0."
-            );
-
-            return;
-          }
-
-          let reason =
-            window.prompt(
-              "Enter the reason for the ban:"
-            );
-
-          if (reason === null) {
-            return;
-          }
-
-          reason =
-            reason.trim();
-
-          if (!reason) {
-            reason =
-              "Ban issued following a community report.";
-          }
-
-          button.disabled = true;
-          button.textContent = "Banning...";
-
-          const currentUser =
-            await getCurrentUser();
-
-          if (!currentUser) {
-            return;
-          }
-
-          let expiresAt = null;
-
-          if (duration !== "0") {
-            const days =
-              Number(duration);
-
-            const expiration =
-              new Date();
-
-            expiration.setDate(
-              expiration.getDate() +
-              days
-            );
-
-            expiresAt =
-              expiration.toISOString();
-          }
-
-          const {
-            error: banError
-          } = await supabase
-            .from("bans")
-            .insert({
-              user_id:
-                userId,
-              banned_by:
-                currentUser.id,
-              reason,
-              expires_at:
-                expiresAt
-            });
-
-          if (banError) {
-            console.error(
-              "Unable to create ban:",
-              banError
-            );
-
-            button.disabled = false;
-            button.textContent =
-              "Ban User";
-
-            window.alert(
-              banError.message ||
-              "Unable to ban user."
-            );
-
-            return;
-          }
-
-          const {
-            error: profileError
-          } = await supabase
-            .from("profiles")
-            .update({
-              is_banned: true,
-              ban_reason: reason
-            })
-            .eq(
-              "id",
-              userId
-            );
-
-          if (profileError) {
-            console.error(
-              "Unable to update user profile:",
-              profileError
-            );
-          }
-
-          const {
-            error: reportError
-          } = await supabase
-            .from("reports")
-            .update({
-              status: "reviewed"
-            })
-            .eq(
-              "id",
-              reportId
-            );
-
-          if (reportError) {
-            console.error(
-              "Unable to update report:",
-              reportError
-            );
-          }
-
-          await supabase
-            .from("moderation_actions")
-            .insert({
-              moderator_id:
-                currentUser.id,
-              action:
-                "banned_user",
-              target_user_id:
-                userId,
-              reason
-            });
-
-          if (
-            reportModerationMessage
-          ) {
-            reportModerationMessage.textContent =
-              "User banned and report reviewed.";
-          }
-
-          await loadReports();
-          await loadBans();
-          await loadUsers();
-        }
+    const { error: banError } = await supabase
+      .from("bans")
+      .insert({
+        user_id: userId,
+        banned_by: currentUser.id,
+        reason: reason,
+        expires_at: expiresAt
       });
-    });
+
+    if (banError) {
+      console.error(
+        "Unable to create ban:",
+        banError
+      );
+
+      button.disabled = false;
+      button.textContent = "Ban User";
+
+      window.alert(
+        banError.message ||
+        "Unable to ban user."
+      );
+
+      return;
+    }
+
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({
+        is_banned: true,
+        ban_reason: reason
+      })
+      .eq("id", userId);
+
+    if (profileError) {
+      console.error(
+        "Unable to update user profile:",
+        profileError
+      );
+    }
+
+    const { error: reportError } = await supabase
+      .from("reports")
+      .update({
+        status: "reviewed"
+      })
+      .eq("id", reportId);
+
+    if (reportError) {
+      console.error(
+        "Unable to update report:",
+        reportError
+      );
+    }
+
+    const { error: moderationError } = await supabase
+      .from("moderation_actions")
+      .insert({
+        moderator_id: currentUser.id,
+        action: "banned_user",
+        target_user_id: userId,
+        reason: reason
+      });
+
+    if (moderationError) {
+      console.error(
+        "Unable to record moderation action:",
+        moderationError
+      );
+    }
+
+    if (reportModerationMessage) {
+      reportModerationMessage.textContent =
+        "User banned and report reviewed.";
+    }
+
+    await loadReports();
+    await loadBans();
+    await loadUsers();
+  });
+});
+
+
 }
+
 
 
 async function loadBans() {
