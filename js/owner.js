@@ -640,6 +640,7 @@ async function loadOfficialDevelopments() {
       completion_year,
       units,
       storeys,
+      is_featured,
       created_at,
       development_images (
         id,
@@ -719,6 +720,16 @@ async function loadOfficialDevelopments() {
             }
 
             <div class="development-card-content">
+
+              ${
+                development.is_featured
+                  ? `
+                    <div class="featured-development-badge">
+                      Featured
+                    </div>
+                  `
+                  : ""
+              }
 
               ${
                 development.status
@@ -835,12 +846,28 @@ async function loadOfficialDevelopments() {
                   View Development
                 </a>
 
-                <button
-                  type="button"
+                <a
+                  href="edit-development.html?id=${development.id}"
                   class="button edit-development-button"
-                  data-id="${development.id}"
                 >
                   Edit
+                </a>
+
+                <button
+                  type="button"
+                  class="button feature-development-button"
+                  data-id="${development.id}"
+                  data-featured="${
+                    development.is_featured
+                      ? "true"
+                      : "false"
+                  }"
+                >
+                  ${
+                    development.is_featured
+                      ? "Unfeature"
+                      : "Feature Development"
+                  }
                 </button>
 
                 <button
@@ -865,6 +892,81 @@ async function loadOfficialDevelopments() {
 
 
 function setupOfficialDevelopmentButtons() {
+  document
+    .querySelectorAll(".feature-development-button")
+    .forEach(button => {
+      button.addEventListener(
+        "click",
+        async () => {
+          const developmentId =
+            button.dataset.id;
+
+          const currentlyFeatured =
+            button.dataset.featured === "true";
+
+          const actionText =
+            currentlyFeatured
+              ? "remove this development from Featured?"
+              : "feature this development on the homepage?";
+
+          const confirmed =
+            window.confirm(
+              `Are you sure you want to ${actionText}`
+            );
+
+          if (!confirmed) {
+            return;
+          }
+
+          button.disabled = true;
+          button.textContent = "Saving...";
+
+          const {
+            error
+          } = await supabase
+            .from("developments")
+            .update({
+              is_featured:
+                !currentlyFeatured
+            })
+            .eq(
+              "id",
+              developmentId
+            );
+
+          if (error) {
+            console.error(
+              "Unable to update featured status:",
+              error
+            );
+
+            button.disabled = false;
+            button.textContent =
+              currentlyFeatured
+                ? "Unfeature"
+                : "Feature Development";
+
+            if (officialDevelopmentMessage) {
+              officialDevelopmentMessage.textContent =
+                error.message ||
+                "Unable to update featured status.";
+            }
+
+            return;
+          }
+
+          if (officialDevelopmentMessage) {
+            officialDevelopmentMessage.textContent =
+              currentlyFeatured
+                ? "Development removed from Featured."
+                : "Development added to Featured.";
+          }
+
+          await loadOfficialDevelopments();
+        }
+      );
+    });
+
   document
     .querySelectorAll(".edit-development-button")
     .forEach(button => {
@@ -1657,7 +1759,7 @@ function setupReportButtons() {
           await loadBans();
           await loadUsers();
         }
-      );
+      });
     });
 }
 
@@ -1960,6 +2062,7 @@ function setupUnbanButtons() {
       );
     });
 }
+
 
 async function loadRoles() {
   const roleManagementList =
@@ -2284,6 +2387,7 @@ async function loadRoles() {
     });
 }
 
+
 async function loadAuditLog() {
   const auditLogList =
     document.getElementById("auditLogList");
@@ -2500,6 +2604,7 @@ async function loadAuditLog() {
       .join("");
 }
 
+
 function setupCreateDevelopmentForm() {
   if (!createDevelopmentForm) {
     return;
@@ -2651,12 +2756,12 @@ async function initializeOwnerDashboard() {
   await loadDevelopmentRequests();
   await loadOfficialDevelopments();
   await loadDiscussions();
-await loadReports();
-await loadBans();
-await loadRoles();
-await loadAuditLog();
+  await loadReports();
+  await loadBans();
+  await loadRoles();
+  await loadAuditLog();
 
-setupCreateDevelopmentForm();
+  setupCreateDevelopmentForm();
 }
 
 
