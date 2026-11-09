@@ -562,7 +562,12 @@ return matchesSearch && matchesStatus;
 });
 
 if (filteredDevelopments.length === 0) {
-developmentList.innerHTML = <div class="empty-state"> <h3>No matching developments</h3> <p> Try changing your search or status filter. </p> </div>;
+developmentList.innerHTML = `
+  <div class="empty-state"> 
+    <h3>No matching developments</h3> 
+    <p> Try changing your search or status filter. </p> 
+  </div>
+`;
 return;
 }
 
