@@ -434,7 +434,7 @@ development => development.is_featured === true
 );
 
 if (featuredDevelopments.length === 0) {
-featuredList.innerHTML = <div class="empty-state"> <h3>No featured developments yet</h3> <p>Featured projects will appear here.</p> </div>;
+featuredList.innerHTML = <div class="empty-state"> <h3>No featured developments yet</h3> <p>Featured projects will appear here.<p> <div>;
 return;
 }
 
