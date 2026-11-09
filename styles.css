@@ -1424,3 +1424,9 @@ button:active {
     padding: 28px 22px;
   }
 }
+
+.status-cancelled {
+background-color: #fee2e2;
+color: #b91c1c;
+border-color: #fca5a5;
+}
