@@ -335,7 +335,7 @@ display_name: displayName
 }
 
 } catch (error) {
-console.error(“Authentication error:”, error);
+console.error("Authentication error:", error);
 
 if (authMessage) {
   authMessage.textContent =
