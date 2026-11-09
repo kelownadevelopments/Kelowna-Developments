@@ -537,6 +537,7 @@ async function loadDevelopments() {
       project_type,
       status,
       completion_year,
+      is_featured,
       units,
       storeys,
       created_at,
