@@ -578,7 +578,7 @@ async function loadDevelopments() {
 }
 
 async function loadFeaturedDevelopments() {
-const featuredList = document.getElementById(“featuredDevelopmentList”);
+const featuredList = document.getElementById("featuredDevelopmentList");
 
 if (!featuredList) {
 return;
