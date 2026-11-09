@@ -48,35 +48,39 @@ function normalizeStatus(status) {
 }
 
 function getStatusClass(status) {
-  const normalized = normalizeStatus(status);
+const normalized = normalizeStatus(status);
 
-  if (normalized === "concept") {
-    return "status-concept";
-  }
+if (normalized === “concept”) {
+return “status-concept”;
+}
 
-  if (normalized === "proposed") {
-    return "status-proposed";
-  }
+if (normalized === “proposed”) {
+return “status-proposed”;
+}
 
-  if (normalized === "approved") {
-    return "status-approved";
-  }
+if (normalized === “approved”) {
+return “status-approved”;
+}
 
-  if (
-    normalized === "under construction" ||
-    normalized === "construction"
-  ) {
-    return "status-construction";
-  }
+if (
+normalized === “under construction” ||
+normalized === “construction”
+) {
+return “status-construction”;
+}
 
-  if (
-    normalized === "completed" ||
-    normalized === "complete"
-  ) {
-    return "status-completed";
-  }
+if (normalized === “cancelled” || normalized === “canceled”) {
+return “status-cancelled”;
+}
 
-  return "status-default";
+if (
+normalized === “completed” ||
+normalized === “complete”
+) {
+return “status-completed”;
+}
+
+return “status-default”;
 }
 
 function openAuthModal(mode = "login") {
