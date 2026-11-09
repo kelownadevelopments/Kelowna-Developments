@@ -36,17 +36,22 @@ function escapeHtml(value) {
 }
 
 function normalizeStatus(status) {
-  if (!status) {
-    return "";
-  }
-
-  return String(status)
-    .trim()
-    .toLowerCase()
-    .replace(/[-_]+/g, " ")
-    .replace(/\s+/g, " ");
+if (!status) {
+return "";
 }
 
+const normalized = String(status)
+.trim()
+.toLowerCase()
+.replace(/[-_]+/g, " ")
+.replace(/\s+/g, " ");
+
+if (normalized === "canceled") {
+return "cancelled";
+}
+
+return normalized;
+}
 function getStatusClass(status) {
 const normalized = normalizeStatus(status);
 
