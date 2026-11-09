@@ -403,7 +403,11 @@ return;
 
 const { data: developments, error } = await supabase
 .from("developments")
-.select(id, title, address, developer, project_type, status, completion_year, is_featured, units, storeys, created_at, development_images ( id, image_url, file_name, created_at ))
+.select(id, title, address, developer, 
+        project_type, status, completion_year,
+        is_featured, units, storeys, created_at,
+        development_images ( id, image_url,
+        file_name, created_at ))
 .eq("is_approved", true)
 .order("created_at", {
 ascending: false
