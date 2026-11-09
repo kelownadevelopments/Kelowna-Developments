@@ -518,7 +518,7 @@ return `
   </article>
 `;
 
-}).join(””);
+}).join("");
 }
 
 function renderDevelopments() {
