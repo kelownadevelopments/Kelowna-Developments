@@ -69,7 +69,7 @@ normalized === "construction"
 return "status-construction";
 }
 
-if (normalized === "cancelled" || normalized === "canceled") {
+if (normalized === "cancelled" || normalized === "cancelled") {
 return "status-cancelled";
 }
 
