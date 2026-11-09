@@ -358,8 +358,8 @@ if (authSubmit) {
 }
 
 async function updateNavigation() {
-const loginLink = document.getElementById(“loginLink”);
-const signupLink = document.getElementById(“signupLink”);
+const loginLink = document.getElementById("loginLink");
+const signupLink = document.getElementById("signupLink");
 
 if (!loginLink || !signupLink) {
 return;
@@ -390,29 +390,29 @@ signupLink.dataset.loggedIn = "true";
 signupLink.classList.add("button");
 
 } catch (error) {
-console.error(“Unable to check authentication:”, error);
+console.error("Unable to check authentication:", error);
 }
 }
 
 async function loadDevelopments() {
-const developmentList = document.getElementById(“developmentList”);
+const developmentList = document.getElementById("developmentList");
 
 if (!developmentList) {
 return;
 }
 
 const { data: developments, error } = await supabase
-.from(“developments”)
+.from("developments")
 .select(id, title, address, developer, project_type, status, completion_year, is_featured, units, storeys, created_at, development_images ( id, image_url, file_name, created_at ))
-.eq(“is_approved”, true)
-.order(“created_at”, {
+.eq("is_approved", true)
+.order("created_at", {
 ascending: false
 });
 
 if (error) {
-console.error(“Unable to load developments:”, error);
+console.error("Unable to load developments:", error);
 developmentList.innerHTML =
-“Unable to load developments.”;
+"Unable to load developments.";
 return;
 }
 
@@ -423,7 +423,7 @@ loadFeaturedDevelopments();
 }
 
 function loadFeaturedDevelopments() {
-const featuredList = document.getElementById(“featuredDevelopmentList”);
+const featuredList = document.getElementById("featuredDevelopmentList");
 
 if (!featuredList) {
 return;
@@ -517,19 +517,19 @@ return `
 }
 
 function renderDevelopments() {
-const developmentList = document.getElementById(“developmentList”);
+const developmentList = document.getElementById("developmentList");
 
 if (!developmentList) {
 return;
 }
 
-const searchInput = document.getElementById(“developmentSearch”);
-const statusFilter = document.getElementById(“statusFilter”);
+const searchInput = document.getElementById("developmentSearch");
+const statusFilter = document.getElementById("statusFilter");
 
-const search = searchInput?.value.trim().toLowerCase() || “”;
+const search = searchInput?.value.trim().toLowerCase() || "";
 
 const selectedStatus = normalizeStatus(
-statusFilter?.value || “all”
+statusFilter?.value || "all"
 );
 
 const filteredDevelopments = allDevelopments.filter(development => {
