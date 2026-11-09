@@ -3,7 +3,10 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://diljkqsrqdktzyumrqkg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_JjzaLH_H48oLIvuRz9F5jg_yyC5xxII";
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 
 const authModal = document.getElementById("authModal");
 const authForm = document.getElementById("authForm");
@@ -20,16 +23,16 @@ let authMode = "login";
 let allDevelopments = [];
 
 function escapeHtml(value) {
-if (value === null || value === undefined) {
-return "";
-}
+  if (value === null || value === undefined) {
+    return "";
+  }
 
-return String(value)
-.replace(/&/g, "&")
-.replace(/</g, "<")
-.replace(/>/g, ">")
-.replace(/”/g, "")
-.replace(/’/g, "'");
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 function normalizeStatus(status) {
@@ -49,7 +52,6 @@ return "cancelled";
 
 return normalized;
 }
-
 function getStatusClass(status) {
 const normalized = normalizeStatus(status);
 
@@ -72,7 +74,7 @@ normalized === "construction"
 return "status-construction";
 }
 
-if (normalized === "cancelled") {
+if (normalized === "cancelled" || normalized === "cancelled") {
 return "status-cancelled";
 }
 
@@ -87,717 +89,950 @@ return "status-default";
 }
 
 function openAuthModal(mode = "login") {
-if (!authModal) {
-return;
-}
-
-authMode = mode;
-
-if (authTitle) {
-authTitle.textContent =
-authMode === "signup"
-? "Create your account"
-: "Log In";
-}
-
-if (authSubmit) {
-authSubmit.textContent =
-authMode === "signup"
-? "Create Account"
-: "Log In";
-}
-
-if (authSwitch) {
-authSwitch.textContent =
-authMode === "signup"
-? "Already have an account? Log in"
-: "Don’t have an account? Create one";
-}
-
-if (authDisplayName) {
-authDisplayName.style.display =
-authMode === "signup" ? "" : "none";
-
-authDisplayName.required =
-  authMode === "signup";
-
-}
-
-if (authMessage) {
-authMessage.textContent = "";
-}
-
-if (authForm) {
-authForm.reset();
-}
-
-authModal.classList.remove("hidden");
-authModal.classList.add("open");
-
-if (authEmail) {
-authEmail.focus();
-}
-}
-
-function closeModal() {
-if (!authModal) {
-return;
-}
-
-authModal.classList.remove("open");
-authModal.classList.add("hidden");
-}
-
-function setupAuthModal() {
-const loginLink = document.getElementById("loginLink");
-const signupLink = document.getElementById("signupLink");
-const communitySignup = document.getElementById("communitySignup");
-const heroSignup = document.getElementById("heroSignup");
-
-if (loginLink) {
-loginLink.addEventListener("click", event => {
-if (loginLink.dataset.loggedIn === "true") {
-return;
-}
-
-  event.preventDefault();
-  openAuthModal("login");
-});
-
-}
-
-if (signupLink) {
-signupLink.addEventListener("click", async event => {
-if (signupLink.dataset.loggedIn === "true") {
-event.preventDefault();
-
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        throw error;
-      }
-      window.location.href = "index.html";
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
+  if (!authModal) {
     return;
   }
-  event.preventDefault();
-  openAuthModal("signup");
-});
 
-}
+  authMode = mode;
 
-if (communitySignup) {
-communitySignup.addEventListener("click", event => {
-event.preventDefault();
-openAuthModal("signup");
-});
-}
-
-if (heroSignup) {
-heroSignup.addEventListener("click", event => {
-event.preventDefault();
-openAuthModal("signup");
-});
-}
-
-if (closeAuthModal) {
-closeAuthModal.addEventListener("click", closeModal);
-}
-
-if (authSwitch) {
-authSwitch.addEventListener("click", event => {
-event.preventDefault();
-
-  openAuthModal(
-    authMode === "login" ? "signup" : "login"
-  );
-});
-
-}
-
-if (authModal) {
-authModal.addEventListener("click", event => {
-if (
-event.target === authModal ||
-event.target.classList.contains("modal-background")
-) {
-closeModal();
-}
-});
-}
-
-if (authForm) {
-authForm.addEventListener("submit", handleAuthSubmit);
-}
-}
-
-async function handleAuthSubmit(event) {
-event.preventDefault();
-
-if (!authEmail || !authPassword) {
-return;
-}
-
-const email = authEmail.value.trim();
-const password = authPassword.value;
-const displayName = authDisplayName
-? authDisplayName.value.trim()
-: "";
-
-if (!email || !password) {
-if (authMessage) {
-authMessage.textContent =
-"Please enter your email and password.";
-}
-
-return;
-
-}
-
-if (authMode === "signup" && !displayName) {
-if (authMessage) {
-authMessage.textContent =
-"Please enter a display name.";
-}
-
-return;
-
-}
-
-const submitButton = authForm
-? authForm.querySelector('button[type="submit"]')
-: null;
-
-if (submitButton) {
-submitButton.disabled = true;
-}
-
-if (authSubmit) {
-authSubmit.textContent =
-authMode === "signup"
-? "Creating Account…"
-: "Logging In…";
-}
-
-try {
-if (authMode === "signup") {
-const { data, error } = await supabase.auth.signUp({
-email,
-password,
-options: {
-data: {
-display_name: displayName
-}
-}
-});
-
-  if (error) {
-    throw error;
-  }
-  if (authMessage) {
-    authMessage.textContent = data.session
-      ? "Account created successfully."
-      : "Account created successfully. Check your email if confirmation is required, then log in.";
-  }
-  authMode = "login";
   if (authTitle) {
-    authTitle.textContent = "Log In";
+    authTitle.textContent =
+      authMode === "signup"
+        ? "Create your account"
+        : "Log In";
   }
+
   if (authSubmit) {
-    authSubmit.textContent = "Log In";
+    authSubmit.textContent =
+      authMode === "signup"
+        ? "Create Account"
+        : "Log In";
   }
+
   if (authSwitch) {
     authSwitch.textContent =
-      "Don't have an account? Create one";
+      authMode === "signup"
+        ? "Already have an account? Log in"
+        : "Don't have an account? Create one";
   }
+
   if (authDisplayName) {
-    authDisplayName.style.display = "none";
-    authDisplayName.required = false;
+    authDisplayName.style.display =
+      authMode === "signup"
+        ? ""
+        : "none";
+
+    authDisplayName.required =
+      authMode === "signup";
   }
-  if (authPassword) {
-    authPassword.value = "";
+
+  if (authMessage) {
+    authMessage.textContent = "";
   }
-} else {
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  });
-  if (error) {
-    throw error;
-  }
-  closeModal();
+
   if (authForm) {
     authForm.reset();
   }
-  await updateNavigation();
+
+  authModal.classList.remove("hidden");
+  authModal.classList.add("open");
+
+  if (authEmail) {
+    authEmail.focus();
+  }
 }
 
-} catch (error) {
-console.error("Authentication error:", error);
+function closeModal() {
+  if (!authModal) {
+    return;
+  }
 
-if (authMessage) {
-  authMessage.textContent =
-    error.message || "Something went wrong.";
+  authModal.classList.remove("open");
+  authModal.classList.add("hidden");
 }
 
-} finally {
-if (submitButton) {
-submitButton.disabled = false;
+function setupAuthModal() {
+  const loginLink =
+    document.getElementById("loginLink");
+
+  const signupLink =
+    document.getElementById("signupLink");
+
+  const communitySignup =
+    document.getElementById("communitySignup");
+
+  const heroSignup =
+    document.getElementById("heroSignup");
+
+  if (loginLink) {
+    loginLink.addEventListener(
+      "click",
+      event => {
+        if (
+          loginLink.dataset.loggedIn ===
+          "true"
+        ) {
+          return;
+        }
+
+        event.preventDefault();
+        openAuthModal("login");
+      }
+    );
+  }
+
+  if (signupLink) {
+    signupLink.addEventListener(
+      "click",
+      async event => {
+        if (
+          signupLink.dataset.loggedIn ===
+          "true"
+        ) {
+          event.preventDefault();
+
+          try {
+            const { error } =
+              await supabase.auth.signOut();
+
+            if (error) {
+              throw error;
+            }
+
+            window.location.href =
+              "index.html";
+          } catch (error) {
+            console.error(
+              "Logout error:",
+              error
+            );
+          }
+
+          return;
+        }
+
+        event.preventDefault();
+        openAuthModal("signup");
+      }
+    );
+  }
+
+  if (communitySignup) {
+    communitySignup.addEventListener(
+      "click",
+      event => {
+        event.preventDefault();
+        openAuthModal("signup");
+      }
+    );
+  }
+
+  if (heroSignup) {
+    heroSignup.addEventListener(
+      "click",
+      event => {
+        event.preventDefault();
+        openAuthModal("signup");
+      }
+    );
+  }
+
+  if (closeAuthModal) {
+    closeAuthModal.addEventListener(
+      "click",
+      closeModal
+    );
+  }
+
+  if (authSwitch) {
+    authSwitch.addEventListener(
+      "click",
+      event => {
+        event.preventDefault();
+
+        openAuthModal(
+          authMode === "login"
+            ? "signup"
+            : "login"
+        );
+      }
+    );
+  }
+
+  if (authModal) {
+    authModal.addEventListener(
+      "click",
+      event => {
+        if (
+          event.target === authModal ||
+          event.target.classList.contains(
+            "modal-background"
+          )
+        ) {
+          closeModal();
+        }
+      }
+    );
+  }
+
+  if (authForm) {
+    authForm.addEventListener(
+      "submit",
+      handleAuthSubmit
+    );
+  }
 }
 
-if (authSubmit) {
-  authSubmit.textContent =
-    authMode === "signup"
-      ? "Create Account"
-      : "Log In";
-}
+async function handleAuthSubmit(event) {
+  event.preventDefault();
 
-}
+  if (!authEmail || !authPassword) {
+    return;
+  }
+
+  const email =
+    authEmail.value.trim();
+
+  const password =
+    authPassword.value;
+
+  const displayName =
+    authDisplayName
+      ? authDisplayName.value.trim()
+      : "";
+
+  if (!email || !password) {
+    if (authMessage) {
+      authMessage.textContent =
+        "Please enter your email and password.";
+    }
+
+    return;
+  }
+
+  if (
+    authMode === "signup" &&
+    !displayName
+  ) {
+    if (authMessage) {
+      authMessage.textContent =
+        "Please enter a display name.";
+    }
+
+    return;
+  }
+
+  const submitButton =
+    authForm
+      ? authForm.querySelector(
+          'button[type="submit"]'
+        )
+      : null;
+
+  if (submitButton) {
+    submitButton.disabled = true;
+  }
+
+  if (authSubmit) {
+    authSubmit.textContent =
+      authMode === "signup"
+        ? "Creating Account..."
+        : "Logging In...";
+  }
+
+  try {
+    if (authMode === "signup") {
+      const { data, error } =
+        await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              display_name:
+                displayName
+            }
+          }
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      if (authMessage) {
+        if (data.session) {
+          authMessage.textContent =
+            "Account created successfully.";
+        } else {
+          authMessage.textContent =
+            "Account created successfully. Check your email if confirmation is required, then log in.";
+        }
+      }
+
+      authMode = "login";
+
+      if (authTitle) {
+        authTitle.textContent =
+          "Log In";
+      }
+
+      if (authSubmit) {
+        authSubmit.textContent =
+          "Log In";
+      }
+
+      if (authSwitch) {
+        authSwitch.textContent =
+          "Don't have an account? Create one";
+      }
+
+      if (authDisplayName) {
+        authDisplayName.style.display =
+          "none";
+
+        authDisplayName.required =
+          false;
+      }
+
+      if (authPassword) {
+        authPassword.value = "";
+      }
+    } else {
+      const { error } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      closeModal();
+
+      if (authForm) {
+        authForm.reset();
+      }
+
+      await updateNavigation();
+    }
+  } catch (error) {
+    console.error(
+      "Authentication error:",
+      error
+    );
+
+    if (authMessage) {
+      authMessage.textContent =
+        error.message ||
+        "Something went wrong.";
+    }
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+    }
+
+    if (authSubmit) {
+      authSubmit.textContent =
+        authMode === "signup"
+          ? "Create Account"
+          : "Log In";
+    }
+  }
 }
 
 async function updateNavigation() {
-const loginLink = document.getElementById("loginLink");
-const signupLink = document.getElementById("signupLink");
+  const loginLink =
+    document.getElementById("loginLink");
 
-if (!loginLink || !signupLink) {
-return;
-}
+  const signupLink =
+    document.getElementById("signupLink");
 
-try {
-const {
-data: { session }
-} = await supabase.auth.getSession();
+  if (!loginLink || !signupLink) {
+    return;
+  }
 
-const user = session?.user || null;
-if (!user) {
-  loginLink.textContent = "Log In";
-  loginLink.href = "#";
-  loginLink.dataset.loggedIn = "false";
-  signupLink.textContent = "Create Account";
-  signupLink.href = "#";
-  signupLink.dataset.loggedIn = "false";
-  signupLink.classList.add("button");
-  return;
-}
-loginLink.textContent = "Account";
-loginLink.href = "account.html";
-loginLink.dataset.loggedIn = "true";
-signupLink.textContent = "Log Out";
-signupLink.href = "#";
-signupLink.dataset.loggedIn = "true";
-signupLink.classList.add("button");
+  try {
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
 
-} catch (error) {
-console.error("Unable to check authentication:", error);
-}
+    const user =
+      session?.user || null;
+
+    if (!user) {
+      loginLink.textContent =
+        "Log In";
+
+      loginLink.href =
+        "#";
+
+      loginLink.dataset.loggedIn =
+        "false";
+
+      signupLink.textContent =
+        "Create Account";
+
+      signupLink.href =
+        "#";
+
+      signupLink.dataset.loggedIn =
+        "false";
+
+      signupLink.classList.add(
+        "button"
+      );
+
+      return;
+    }
+
+    loginLink.textContent =
+      "Account";
+
+    loginLink.href =
+      "account.html";
+
+    loginLink.dataset.loggedIn =
+      "true";
+
+    signupLink.textContent =
+      "Log Out";
+
+    signupLink.href =
+      "#";
+
+    signupLink.dataset.loggedIn =
+      "true";
+
+    signupLink.classList.add(
+      "button"
+    );
+  } catch (error) {
+    console.error(
+      "Unable to check authentication:",
+      error
+    );
+  }
 }
 
 async function loadDevelopments() {
-const developmentList = document.getElementById("developmentList");
+  const developmentList =
+    document.getElementById(
+      "developmentList"
+    );
 
-if (!developmentList) {
-return;
-}
+  if (!developmentList) {
+    return;
+  }
 
-const { data: developments, error } = await supabase
-.from("developments")
-.select(id, title, address, developer, 
-        project_type, status, completion_year,
-        is_featured, units, storeys, created_at,
-        development_images ( id, image_url,
-        file_name, created_at ))
-.eq("is_approved", true)
-.order("created_at", {
-ascending: false
-});
-
-if (error) {
-console.error("Unable to load developments:", error);
-developmentList.innerHTML =
-"Unable to load developments.";
-return;
-}
-
-allDevelopments = developments || [];
-
-renderDevelopments();
-loadFeaturedDevelopments();
-}
-
-function loadFeaturedDevelopments() {
-const featuredList = document.getElementById("featuredDevelopmentList");
-
-if (!featuredList) {
-return;
-}
-
-const featuredDevelopments = allDevelopments.filter(
-development => development.is_featured === true
-);
-
-if (featuredDevelopments.length === 0) {
-featuredList.innerHTML = `
-  <div class="empty-state"> 
-    <h3>No featured developments yet</h3> 
-    <p>Featured projects will appear here.</p> 
-  </div>
-`;
-return;
-}
-
-featuredList.innerHTML = featuredDevelopments.map(development => {
-const images = development.development_images || [];
-
-const firstImage = images.length
-  ? [...images].sort(
-      (a, b) => new Date(a.created_at) - new Date(b.created_at)
-    )[0]
-  : null;
-const imageHtml = firstImage
-  ? `
-    <a
-      href="development.html?id=${development.id}"
-      class="development-card-image-link"
-    >
-      <img
-        src="${escapeHtml(firstImage.image_url)}"
-        alt="${escapeHtml(firstImage.file_name || development.title)}"
-        class="development-card-image"
-      >
-    </a>
-  `
-  : "";
-return `
-  <article class="development-card">
-    ${imageHtml}
-    <div class="development-card-content">
-      <div class="featured-label">FEATURED</div>
-      ${
-        development.status
-          ? `
-            <div class="development-status-banner ${getStatusClass(development.status)}">
-              <span class="development-status-label">
-                ${escapeHtml(development.status)}
-              </span>
-            </div>
-          `
-          : ""
+  const {
+    data: developments,
+    error
+  } = await supabase
+    .from("developments")
+    .select(`
+      id,
+      title,
+      address,
+      developer,
+      project_type,
+      status,
+      completion_year,
+      units,
+      storeys,
+      created_at,
+      development_images (
+        id,
+        image_url,
+        file_name,
+        created_at
+      )
+    `)
+    .eq(
+      "is_approved",
+      true
+    )
+    .order(
+      "created_at",
+      {
+        ascending: false
       }
-      <h3>
-        <a href="development.html?id=${development.id}">
-          ${escapeHtml(development.title)}
-        </a>
-      </h3>
-      ${
-        development.address
-          ? `<p class="development-card-address">${escapeHtml(development.address)}</p>`
-          : ""
-      }
-      ${
-        development.developer
-          ? `<p><strong>Developer:</strong> ${escapeHtml(development.developer)}</p>`
-          : ""
-      }
-      ${
-        development.project_type
-          ? `<p><strong>Type:</strong> ${escapeHtml(development.project_type)}</p>`
-          : ""
-      }
-      ${
-        development.completion_year
-          ? `<p><strong>Expected completion:</strong> ${escapeHtml(development.completion_year)}</p>`
-          : ""
-      }
-      <div class="development-actions">
-        <a
-          href="development.html?id=${development.id}"
-          class="button"
-        >
-          View Development
-        </a>
-      </div>
-    </div>
-  </article>
-`;
+    );
 
-}).join("");
+  if (error) {
+    console.error(
+      "Unable to load developments:",
+      error
+    );
+
+    developmentList.innerHTML =
+      "<p>Unable to load developments.</p>";
+
+    return;
+  }
+
+  allDevelopments =
+    developments || [];
+
+  renderDevelopments();
 }
 
 function renderDevelopments() {
-const developmentList = document.getElementById("developmentList");
+  const developmentList =
+    document.getElementById(
+      "developmentList"
+    );
 
-if (!developmentList) {
-return;
-}
+  if (!developmentList) {
+    return;
+  }
 
-const searchInput = document.getElementById("developmentSearch");
-const statusFilter = document.getElementById("statusFilter");
+  const searchInput =
+    document.getElementById(
+      "developmentSearch"
+    );
 
-const search = searchInput?.value.trim().toLowerCase() || "";
+  const statusFilter =
+    document.getElementById(
+      "statusFilter"
+    );
 
-const selectedStatus = normalizeStatus(
-statusFilter?.value || "all"
-);
+  const search =
+    searchInput?.value
+      .trim()
+      .toLowerCase() || "";
 
-const filteredDevelopments = allDevelopments.filter(development => {
-const developmentStatus = normalizeStatus(development.status);
+  const selectedStatus =
+    normalizeStatus(
+      statusFilter?.value || "all"
+    );
 
-const searchableText = [
-  development.title,
-  development.address,
-  development.developer,
-  development.project_type,
-  development.status,
-  development.description
-]
-  .filter(Boolean)
-  .join(" ")
-  .toLowerCase();
-const matchesSearch =
-  !search || searchableText.includes(search);
-const matchesStatus =
-  !selectedStatus ||
-  selectedStatus === "all" ||
-  developmentStatus === selectedStatus;
-return matchesSearch && matchesStatus;
+  const filteredDevelopments =
+    allDevelopments.filter(
+      development => {
+        const developmentStatus =
+          normalizeStatus(
+            development.status
+          );
 
-});
+        const searchableText = [
+          development.title,
+          development.address,
+          development.developer,
+          development.project_type,
+          development.status,
+          development.description
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
 
-if (filteredDevelopments.length === 0) {
-developmentList.innerHTML = `
-  <div class="empty-state"> 
-    <h3>No matching developments</h3> 
-    <p> Try changing your search or status filter. </p> 
-  </div>
-`;
-return;
-}
+        const matchesSearch =
+          !search ||
+          searchableText.includes(
+            search
+          );
 
-developmentList.innerHTML = filteredDevelopments.map(development => {
-const images = development.development_images || [];
+        const matchesStatus =
+          !selectedStatus ||
+          selectedStatus === "all" ||
+          developmentStatus ===
+            selectedStatus;
 
-const firstImage = images.length
-  ? [...images].sort(
-      (a, b) => new Date(a.created_at) - new Date(b.created_at)
-    )[0]
-  : null;
-const imageHtml = firstImage
-  ? `
-    <a
-      href="development.html?id=${development.id}"
-      class="development-card-image-link"
-    >
-      <img
-        src="${escapeHtml(firstImage.image_url)}"
-        alt="${escapeHtml(firstImage.file_name || development.title)}"
-        class="development-card-image"
-      >
-    </a>
-  `
-  : "";
-return `
-  <article class="development-card">
-    ${imageHtml}
-    <div class="development-card-content">
-      ${
-        development.status
-          ? `
-            <div class="development-status-banner ${getStatusClass(development.status)}">
-              <span class="development-status-label">
-                ${escapeHtml(development.status)}
-              </span>
-              ${
-                development.completion_year
-                  ? `
-                    <span class="development-completion">
-                      Expected completion:
-                      ${escapeHtml(development.completion_year)}
-                    </span>
-                  `
-                  : ""
-              }
-            </div>
-          `
-          : ""
+        return (
+          matchesSearch &&
+          matchesStatus
+        );
       }
-      <h3>
-        <a href="development.html?id=${development.id}">
-          ${escapeHtml(development.title)}
-        </a>
-      </h3>
-      ${
-        development.address
-          ? `
-            <p class="development-card-address">
-              ${escapeHtml(development.address)}
-            </p>
-          `
-          : ""
-      }
-      ${
-        development.developer
-          ? `
-            <p>
-              <strong>Developer:</strong>
-              ${escapeHtml(development.developer)}
-            </p>
-          `
-          : ""
-      }
-      ${
-        development.project_type
-          ? `
-            <p>
-              <strong>Type:</strong>
-              ${escapeHtml(development.project_type)}
-            </p>
-          `
-          : ""
-      }
-      ${
-        development.units !== null &&
-        development.units !== undefined
-          ? `
-            <p>
-              <strong>Units:</strong>
-              ${escapeHtml(development.units)}
-            </p>
-          `
-          : ""
-      }
-      ${
-        development.storeys !== null &&
-        development.storeys !== undefined
-          ? `
-            <p>
-              <strong>Storeys:</strong>
-              ${escapeHtml(development.storeys)}
-            </p>
-          `
-          : ""
-      }
-      <div class="development-actions">
-        <a
-          href="development.html?id=${development.id}"
-          class="button"
-        >
-          View Development
-        </a>
+    );
+
+  if (
+    filteredDevelopments.length ===
+    0
+  ) {
+    developmentList.innerHTML = `
+      <div class="empty-state">
+        <h3>No matching developments</h3>
+        <p>
+          Try changing your search or status filter.
+        </p>
       </div>
-    </div>
-  </article>
-`;
+    `;
 
-}).join("");
+    return;
+  }
+
+  developmentList.innerHTML =
+    filteredDevelopments
+      .map(
+        development => {
+          const images =
+            development.development_images ||
+            [];
+
+          const firstImage =
+            images.length
+              ? [...images].sort(
+                  (a, b) =>
+                    new Date(
+                      a.created_at
+                    ) -
+                    new Date(
+                      b.created_at
+                    )
+                )[0]
+              : null;
+
+          const imageHtml =
+            firstImage
+              ? `
+                <a
+                  href="development.html?id=${development.id}"
+                  class="development-card-image-link"
+                >
+                  <img
+                    src="${escapeHtml(
+                      firstImage.image_url
+                    )}"
+                    alt="${escapeHtml(
+                      firstImage.file_name ||
+                      development.title
+                    )}"
+                    class="development-card-image"
+                  >
+                </a>
+              `
+              : "";
+
+          return `
+            <article class="development-card">
+
+              ${imageHtml}
+
+              <div class="development-card-content">
+
+                ${
+                  development.status
+                    ? `
+                      <div
+                        class="development-status-banner ${getStatusClass(
+                          development.status
+                        )}"
+                      >
+                        <span class="development-status-label">
+                          ${escapeHtml(
+                            development.status
+                          )}
+                        </span>
+
+                        ${
+                          development.completion_year
+                            ? `
+                              <span class="development-completion">
+                                Expected completion:
+                                ${escapeHtml(
+                                  development.completion_year
+                                )}
+                              </span>
+                            `
+                            : ""
+                        }
+                      </div>
+                    `
+                    : ""
+                }
+
+                <h3>
+                  <a
+                    href="development.html?id=${development.id}"
+                  >
+                    ${escapeHtml(
+                      development.title
+                    )}
+                  </a>
+                </h3>
+
+                ${
+                  development.address
+                    ? `
+                      <p class="development-card-address">
+                        ${escapeHtml(
+                          development.address
+                        )}
+                      </p>
+                    `
+                    : ""
+                }
+
+                ${
+                  development.developer
+                    ? `
+                      <p>
+                        <strong>Developer:</strong>
+                        ${escapeHtml(
+                          development.developer
+                        )}
+                      </p>
+                    `
+                    : ""
+                }
+
+                ${
+                  development.project_type
+                    ? `
+                      <p>
+                        <strong>Type:</strong>
+                        ${escapeHtml(
+                          development.project_type
+                        )}
+                      </p>
+                    `
+                    : ""
+                }
+
+                ${
+                  development.units !==
+                    null &&
+                  development.units !==
+                    undefined
+                    ? `
+                      <p>
+                        <strong>Units:</strong>
+                        ${escapeHtml(
+                          development.units
+                        )}
+                      </p>
+                    `
+                    : ""
+                }
+
+                ${
+                  development.storeys !==
+                    null &&
+                  development.storeys !==
+                    undefined
+                    ? `
+                      <p>
+                        <strong>Storeys:</strong>
+                        ${escapeHtml(
+                          development.storeys
+                        )}
+                      </p>
+                    `
+                    : ""
+                }
+
+                <div class="development-actions">
+                  <a
+                    href="development.html?id=${development.id}"
+                    class="button"
+                  >
+                    View Development
+                  </a>
+                </div>
+
+              </div>
+
+            </article>
+          `;
+        }
+      )
+      .join("");
 }
 
 function setupDevelopmentSearch() {
-const searchInput = document.getElementById("developmentSearch");
-const statusFilter = document.getElementById("statusFilter");
+  const searchInput =
+    document.getElementById(
+      "developmentSearch"
+    );
 
-if (searchInput) {
-searchInput.addEventListener("input", renderDevelopments);
-}
+  const statusFilter =
+    document.getElementById(
+      "statusFilter"
+    );
 
-if (statusFilter) {
-statusFilter.addEventListener("change", renderDevelopments);
-}
+  if (searchInput) {
+    searchInput.addEventListener(
+      "input",
+      renderDevelopments
+    );
+  }
+
+  if (statusFilter) {
+    statusFilter.addEventListener(
+      "change",
+      renderDevelopments
+    );
+  }
 }
 
 function setupDevelopmentRequestForm() {
-const form = document.getElementById("developmentRequestForm");
+  const form =
+    document.getElementById(
+      "developmentRequestForm"
+    );
 
-if (!form) {
-return;
-}
-
-const message = document.getElementById("developmentRequestMessage");
-
-form.addEventListener("submit", async event => {
-event.preventDefault();
-
-const {
-  data: { session }
-} = await supabase.auth.getSession();
-const user = session?.user || null;
-if (!user) {
-  if (message) {
-    message.textContent =
-      "You must be logged in to submit a development.";
+  if (!form) {
+    return;
   }
-  openAuthModal("login");
-  return;
-}
-const title =
-  document.getElementById("requestTitle")?.value.trim() || "";
-const address =
-  document.getElementById("requestAddress")?.value.trim() || "";
-const developer =
-  document.getElementById("requestDeveloper")?.value.trim() || "";
-const projectType =
-  document.getElementById("requestProjectType")?.value.trim() || "";
-const units =
-  document.getElementById("requestUnits")?.value || "";
-const storeys =
-  document.getElementById("requestStoreys")?.value || "";
-const description =
-  document.getElementById("requestDescription")?.value.trim() || "";
-if (!title) {
-  if (message) {
-    message.textContent =
-      "Please enter a development title.";
-  }
-  return;
-}
-if (message) {
-  message.textContent = "Submitting development request...";
-}
-const { error } = await supabase
-  .from("development_requests")
-  .insert({
-    submitted_by: user.id,
-    title,
-    address: address || null,
-    description: description || null,
-    developer: developer || null,
-    project_type: projectType || null,
-    units: units ? Number(units) : null,
-    storeys: storeys ? Number(storeys) : null
-  });
-if (error) {
-  console.error("Development request error:", error);
-  if (message) {
-    message.textContent =
-      error.message || "Unable to submit development request.";
-  }
-  return;
-}
-form.reset();
-if (message) {
-  message.textContent =
-    "Development request submitted successfully.";
-}
 
-});
+  const message =
+    document.getElementById(
+      "developmentRequestMessage"
+    );
+
+  form.addEventListener(
+    "submit",
+    async event => {
+      event.preventDefault();
+
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
+
+      const user =
+        session?.user || null;
+
+      if (!user) {
+        if (message) {
+          message.textContent =
+            "You must be logged in to submit a development.";
+        }
+
+        openAuthModal("login");
+        return;
+      }
+
+      const title =
+        document
+          .getElementById(
+            "requestTitle"
+          )
+          ?.value.trim() || "";
+
+      const address =
+        document
+          .getElementById(
+            "requestAddress"
+          )
+          ?.value.trim() || "";
+
+      const developer =
+        document
+          .getElementById(
+            "requestDeveloper"
+          )
+          ?.value.trim() || "";
+
+      const projectType =
+        document
+          .getElementById(
+            "requestProjectType"
+          )
+          ?.value.trim() || "";
+
+      const units =
+        document.getElementById(
+          "requestUnits"
+        )?.value || "";
+
+      const storeys =
+        document.getElementById(
+          "requestStoreys"
+        )?.value || "";
+
+      const description =
+        document
+          .getElementById(
+            "requestDescription"
+          )
+          ?.value.trim() || "";
+
+      if (!title) {
+        if (message) {
+          message.textContent =
+            "Please enter a development title.";
+        }
+
+        return;
+      }
+
+      if (message) {
+        message.textContent =
+          "Submitting development request...";
+      }
+
+      const { error } =
+        await supabase
+          .from(
+            "development_requests"
+          )
+          .insert({
+            submitted_by: user.id,
+            title,
+            address:
+              address || null,
+            description:
+              description || null,
+            developer:
+              developer || null,
+            project_type:
+              projectType || null,
+            units: units
+              ? Number(units)
+              : null,
+            storeys: storeys
+              ? Number(storeys)
+              : null
+          });
+
+      if (error) {
+        console.error(
+          "Development request error:",
+          error
+        );
+
+        if (message) {
+          message.textContent =
+            error.message ||
+            "Unable to submit development request.";
+        }
+
+        return;
+      }
+
+      form.reset();
+
+      if (message) {
+        message.textContent =
+          "Development request submitted successfully.";
+      }
+    }
+  );
 }
 
 async function initializeApp() {
-setupAuthModal();
-setupDevelopmentSearch();
-setupDevelopmentRequestForm();
+  setupAuthModal();
+  setupDevelopmentSearch();
+  setupDevelopmentRequestForm();
 
-await updateNavigation();
-await loadDevelopments();
+  await updateNavigation();
+  await loadDevelopments();
 }
 
-if (document.readyState === "loading") {
-document.addEventListener("DOMContentLoaded", initializeApp);
+if (
+  document.readyState ===
+  "loading"
+) {
+  document.addEventListener(
+    "DOMContentLoaded",
+    initializeApp
+  );
 } else {
-initializeApp();
+  initializeApp();
 }
 
-supabase.auth.onAuthStateChange(() => {
-updateNavigation();
-});
+supabase.auth.onAuthStateChange(
+  () => {
+    updateNavigation();
+  }
+);
