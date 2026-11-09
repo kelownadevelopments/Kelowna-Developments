@@ -124,15 +124,15 @@ authDisplayName.required =
 }
 
 if (authMessage) {
-authMessage.textContent = “”;
+authMessage.textContent = "";
 }
 
 if (authForm) {
 authForm.reset();
 }
 
-authModal.classList.remove(“hidden”);
-authModal.classList.add(“open”);
+authModal.classList.remove("hidden");
+authModal.classList.add("open");
 
 if (authEmail) {
 authEmail.focus();
@@ -144,19 +144,19 @@ if (!authModal) {
 return;
 }
 
-authModal.classList.remove(“open”);
-authModal.classList.add(“hidden”);
+authModal.classList.remove("open");
+authModal.classList.add("hidden");
 }
 
 function setupAuthModal() {
-const loginLink = document.getElementById(“loginLink”);
-const signupLink = document.getElementById(“signupLink”);
-const communitySignup = document.getElementById(“communitySignup”);
-const heroSignup = document.getElementById(“heroSignup”);
+const loginLink = document.getElementById("loginLink");
+const signupLink = document.getElementById("signupLink");
+const communitySignup = document.getElementById("communitySignup");
+const heroSignup = document.getElementById("heroSignup");
 
 if (loginLink) {
-loginLink.addEventListener(“click”, event => {
-if (loginLink.dataset.loggedIn === “true”) {
+loginLink.addEventListener("click", event => {
+if (loginLink.dataset.loggedIn === "true") {
 return;
 }
 
@@ -167,8 +167,8 @@ return;
 }
 
 if (signupLink) {
-signupLink.addEventListener(“click”, async event => {
-if (signupLink.dataset.loggedIn === “true”) {
+signupLink.addEventListener("click", async event => {
+if (signupLink.dataset.loggedIn === "true") {
 event.preventDefault();
 
     try {
@@ -189,25 +189,25 @@ event.preventDefault();
 }
 
 if (communitySignup) {
-communitySignup.addEventListener(“click”, event => {
+communitySignup.addEventListener("click", event => {
 event.preventDefault();
-openAuthModal(“signup”);
+openAuthModal("signup");
 });
 }
 
 if (heroSignup) {
-heroSignup.addEventListener(“click”, event => {
+heroSignup.addEventListener("click", event => {
 event.preventDefault();
-openAuthModal(“signup”);
+openAuthModal("signup");
 });
 }
 
 if (closeAuthModal) {
-closeAuthModal.addEventListener(“click”, closeModal);
+closeAuthModal.addEventListener("click", closeModal);
 }
 
 if (authSwitch) {
-authSwitch.addEventListener(“click”, event => {
+authSwitch.addEventListener("click", event => {
 event.preventDefault();
 
   openAuthModal(
@@ -218,10 +218,10 @@ event.preventDefault();
 }
 
 if (authModal) {
-authModal.addEventListener(“click”, event => {
+authModal.addEventListener("click", event => {
 if (
 event.target === authModal ||
-event.target.classList.contains(“modal-background”)
+event.target.classList.contains("modal-background")
 ) {
 closeModal();
 }
@@ -229,7 +229,7 @@ closeModal();
 }
 
 if (authForm) {
-authForm.addEventListener(“submit”, handleAuthSubmit);
+authForm.addEventListener("submit", handleAuthSubmit);
 }
 }
 
@@ -244,12 +244,12 @@ const email = authEmail.value.trim();
 const password = authPassword.value;
 const displayName = authDisplayName
 ? authDisplayName.value.trim()
-: “”;
+: "";
 
 if (!email || !password) {
 if (authMessage) {
 authMessage.textContent =
-“Please enter your email and password.”;
+"Please enter your email and password.";
 }
 
 return;
@@ -259,7 +259,7 @@ return;
 if (authMode === “signup” && !displayName) {
 if (authMessage) {
 authMessage.textContent =
-“Please enter a display name.”;
+"Please enter a display name.";
 }
 
 return;
@@ -267,7 +267,7 @@ return;
 }
 
 const submitButton = authForm
-? authForm.querySelector(‘button[type=“submit”]’)
+? authForm.querySelector(‘button[type="submit"]’)
 : null;
 
 if (submitButton) {
@@ -276,13 +276,13 @@ submitButton.disabled = true;
 
 if (authSubmit) {
 authSubmit.textContent =
-authMode === “signup”
-? “Creating Account…”
-: “Logging In…”;
+authMode === "signup"
+? "Creating Account…"
+: "Logging In…";
 }
 
 try {
-if (authMode === “signup”) {
+if (authMode === "signup") {
 const { data, error } = await supabase.auth.signUp({
 email,
 password,
