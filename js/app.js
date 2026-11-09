@@ -95,28 +95,28 @@ authMode = mode;
 
 if (authTitle) {
 authTitle.textContent =
-authMode === “signup”
-? “Create your account”
-: “Log In”;
+authMode === "signup"
+? "Create your account"
+: "Log In";
 }
 
 if (authSubmit) {
 authSubmit.textContent =
-authMode === “signup”
-? “Create Account”
-: “Log In”;
+authMode === "signup"
+? "Create Account"
+: "Log In";
 }
 
 if (authSwitch) {
 authSwitch.textContent =
-authMode === “signup”
-? “Already have an account? Log in”
-: “Don’t have an account? Create one”;
+authMode === "signup"
+? "Already have an account? Log in"
+: "Don’t have an account? Create one";
 }
 
 if (authDisplayName) {
 authDisplayName.style.display =
-authMode === “signup” ? “” : “none”;
+authMode === "signup" ? "" : "none";
 
 authDisplayName.required =
   authMode === "signup";
