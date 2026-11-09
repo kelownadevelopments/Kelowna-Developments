@@ -267,7 +267,7 @@ return;
 }
 
 const submitButton = authForm
-? authForm.querySelector(‘button[type="submit"]’)
+? authForm.querySelector(‘button[type="submit"]')
 : null;
 
 if (submitButton) {
