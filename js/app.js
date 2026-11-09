@@ -1,50 +1,50 @@
-import { createClient } from “https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm”;
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const SUPABASE_URL = “https://diljkqsrqdktzyumrqkg.supabase.co”;
-const SUPABASE_KEY = “sb_publishable_JjzaLH_H48oLIvuRz9F5jg_yyC5xxII”;
+const SUPABASE_URL = "https://diljkqsrqdktzyumrqkg.supabase.co";
+const SUPABASE_KEY = "sb_publishable_JjzaLH_H48oLIvuRz9F5jg_yyC5xxII";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const authModal = document.getElementById(“authModal”);
-const authForm = document.getElementById(“authForm”);
-const authEmail = document.getElementById(“email”);
-const authPassword = document.getElementById(“password”);
-const authDisplayName = document.getElementById(“displayName”);
-const authTitle = document.getElementById(“authTitle”);
-const authSubmit = document.getElementById(“authButtonText”);
-const authSwitch = document.getElementById(“switchAuth”);
-const authMessage = document.getElementById(“authMessage”);
-const closeAuthModal = document.getElementById(“closeModal”);
+const authModal = document.getElementById("authModal");
+const authForm = document.getElementById("authForm");
+const authEmail = document.getElementById("email");
+const authPassword = document.getElementById("password");
+const authDisplayName = document.getElementById("displayName");
+const authTitle = document.getElementById("authTitle");
+const authSubmit = document.getElementById("authButtonText");
+const authSwitch = document.getElementById("switchAuth");
+const authMessage = document.getElementById("authMessage");
+const closeAuthModal = document.getElementById("closeModal");
 
-let authMode = “login”;
+let authMode = "login";
 let allDevelopments = [];
 
 function escapeHtml(value) {
 if (value === null || value === undefined) {
-return “”;
+return "";
 }
 
 return String(value)
-.replace(/&/g, “&”)
-.replace(/</g, “<”)
-.replace(/>/g, “>”)
-.replace(/”/g, “"”)
-.replace(/’/g, “'”);
+.replace(/&/g, "&")
+.replace(/</g, "<")
+.replace(/>/g, ">")
+.replace(/”/g, """)
+.replace(/’/g, "'");
 }
 
 function normalizeStatus(status) {
 if (!status) {
-return “”;
+return "";
 }
 
 const normalized = String(status)
 .trim()
 .toLowerCase()
-.replace(/[-_]+/g, “ “)
-.replace(/\s+/g, “ “);
+.replace(/[-_]+/g, " ")
+.replace(/\s+/g, " ");
 
-if (normalized === “canceled”) {
-return “cancelled”;
+if (normalized === "canceled") {
+return "cancelled";
 }
 
 return normalized;
@@ -53,40 +53,40 @@ return normalized;
 function getStatusClass(status) {
 const normalized = normalizeStatus(status);
 
-if (normalized === “concept”) {
-return “status-concept”;
+if (normalized === "concept") {
+return "status-concept";
 }
 
-if (normalized === “proposed”) {
-return “status-proposed”;
+if (normalized === "proposed") {
+return "status-proposed";
 }
 
-if (normalized === “approved”) {
-return “status-approved”;
-}
-
-if (
-normalized === “under construction” ||
-normalized === “construction”
-) {
-return “status-construction”;
-}
-
-if (normalized === “cancelled”) {
-return “status-cancelled”;
+if (normalized === "approved") {
+return "status-approved";
 }
 
 if (
-normalized === “completed” ||
-normalized === “complete”
+normalized === "under construction" ||
+normalized === "construction"
 ) {
-return “status-completed”;
+return "status-construction";
 }
 
-return “status-default”;
+if (normalized === "cancelled") {
+return "status-cancelled";
 }
 
-function openAuthModal(mode = “login”) {
+if (
+normalized === "completed" ||
+normalized === "complete"
+) {
+return "status-completed";
+}
+
+return "status-default";
+}
+
+function openAuthModal(mode = "login") {
 if (!authModal) {
 return;
 }
@@ -676,32 +676,32 @@ return `
   </article>
 `;
 
-}).join(””);
+}).join("");
 }
 
 function setupDevelopmentSearch() {
-const searchInput = document.getElementById(“developmentSearch”);
-const statusFilter = document.getElementById(“statusFilter”);
+const searchInput = document.getElementById("developmentSearch");
+const statusFilter = document.getElementById("statusFilter");
 
 if (searchInput) {
-searchInput.addEventListener(“input”, renderDevelopments);
+searchInput.addEventListener("input", renderDevelopments);
 }
 
 if (statusFilter) {
-statusFilter.addEventListener(“change”, renderDevelopments);
+statusFilter.addEventListener("change", renderDevelopments);
 }
 }
 
 function setupDevelopmentRequestForm() {
-const form = document.getElementById(“developmentRequestForm”);
+const form = document.getElementById("developmentRequestForm");
 
 if (!form) {
 return;
 }
 
-const message = document.getElementById(“developmentRequestMessage”);
+const message = document.getElementById("developmentRequestMessage");
 
-form.addEventListener(“submit”, async event => {
+form.addEventListener("submit", async event => {
 event.preventDefault();
 
 const {
@@ -778,8 +778,8 @@ await updateNavigation();
 await loadDevelopments();
 }
 
-if (document.readyState === “loading”) {
-document.addEventListener(“DOMContentLoaded”, initializeApp);
+if (document.readyState === "loading") {
+document.addEventListener("DOMContentLoaded", initializeApp);
 } else {
 initializeApp();
 }
