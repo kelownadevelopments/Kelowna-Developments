@@ -256,7 +256,7 @@ return;
 
 }
 
-if (authMode === “signup” && !displayName) {
+if (authMode === "signup" && !displayName) {
 if (authMessage) {
 authMessage.textContent =
 "Please enter a display name.";
