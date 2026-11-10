@@ -537,6 +537,7 @@ async function loadDevelopments() {
       project_type,
       status,
       completion_year,
+      is_featured,
       units,
       storeys,
       created_at,
@@ -574,6 +575,70 @@ async function loadDevelopments() {
     developments || [];
 
   renderDevelopments();
+}
+
+async function loadFeaturedDevelopments() {
+const featuredList = document.getElementById("featuredDevelopmentList");
+
+if (!featuredList) {
+return;
+}
+
+const featuredDevelopments = allDevelopments.filter(
+development => development.is_featured === true
+);
+
+if (featuredDevelopments.length === 0) {
+  
+<WritingBlock id="83162" variant="standard">featuredList.innerHTML = `
+`;
+  
+return;
+}
+
+featuredList.innerHTML = featuredDevelopments.map(development => {
+const images = development.development_images || [];
+
+const firstImage = images.length
+  ? [...images].sort(
+      (a, b) => new Date(a.created_at) - new Date(b.created_at)
+    )[0]
+  : null;
+return `
+  <article class="development-card">
+    ${firstImage ? `
+      <a href="development.html?id=${development.id}" class="development-card-image-link">
+        <img
+          src="${escapeHtml(firstImage.image_url)}"
+          alt="${escapeHtml(firstImage.file_name || development.title)}"
+          class="development-card-image"
+        >
+      </a>
+    ` : ""}
+    <div class="development-card-content">
+      <div class="featured-label">FEATURED</div>
+      <div class="development-status-banner ${getStatusClass(development.status)}">
+        <span class="development-status-label">${escapeHtml(development.status || "")}</span>
+      </div>
+      <h3>
+        <a href="development.html?id=${development.id}">
+          ${escapeHtml(development.title)}
+        </a>
+      </h3>
+      ${development.address ? `<p class="development-card-address">${escapeHtml(development.address)}</p>` : ""}
+      ${development.developer ? `<p><strong>Developer:</strong> ${escapeHtml(development.developer)}</p>` : ""}
+      ${development.project_type ? `<p><strong>Type:</strong> ${escapeHtml(development.project_type)}</p>` : ""}
+      ${development.completion_year ? `<p><strong>Expected completion:</strong> ${escapeHtml(development.completion_year)}</p>` : ""}
+      <div class="development-actions">
+        <a href="development.html?id=${development.id}" class="button">
+          View Development
+        </a>
+      </div>
+    </div>
+  </article>
+`;
+
+}).join(””);
 }
 
 function renderDevelopments() {
